@@ -2,6 +2,7 @@ function CVShapeItemElement(data,renderer){
     this.data = data;
     this.renderer = renderer;
     this.frameNum = -1;
+    this.pathsSegments = [];
 }
 
 CVShapeItemElement.prototype.adjustTrim = function(){
@@ -20,17 +21,20 @@ CVShapeItemElement.prototype.renderShape = function(){
     ctx.save();
     this.renderTransform(num);
     if(this.data.type=="pathShape"){
-        this.pathLength = this.renderPath(num);
+        if(this.data.trim){
+            this.renderTrimPath(num);
+        }else{
+            this.renderPath(num);
+        }
     }else if(this.data.type=="rectShape"){
         this.renderRect(num);
     }else if(this.data.type=="ellipseShape"){
         this.pathLength = this.renderEllipse(num);
     }
-    if(this.data.trim){
-        this.renderTrim(num);
-    }
     this.renderFill(num);
     this.renderStroke(num);
+    this.renderer.canvasContext.lineCap = 'round';
+    this.renderer.canvasContext.lineJoin = 'round';
     this.renderer.canvasContext.stroke();
     this.renderer.canvasContext.fill();
     ctx.restore();
@@ -55,6 +59,21 @@ CVShapeItemElement.prototype.renderTransform = function(num){
 
     }
 };
+
+CVShapeItemElement.prototype.renderTrimPath = function(num){
+    var animData = this.data.an;
+    var path = animData.path[animData.path[num].forwardFrame];
+    var i = 0, len = this.pathsSegments.length;
+    var segmentsData;
+    while(i<len){
+        if(this.pathsSegments[i].str == path.pathString){
+            segmentsData = this.pathsSegments[i].segments;
+            break;
+        }
+        i += 1;
+    }
+    console.log('path: ',path);
+}
 
 CVShapeItemElement.prototype.renderPath = function(num){
     var animData = this.data.an;
@@ -97,16 +116,31 @@ CVShapeItemElement.prototype.renderPath = function(num){
 
 CVShapeItemElement.prototype.renderEllipse = function(num){
     var animData = this.data.an;
-    if(animData.ell[num].forwardFrame == animData.renderedFrame.ell){
-        if(this.data.trim){
-            return this.cachedData.pathLengths['ellipse_'+animData.ell[num].forwardFrame];
-        }
-        return 0;
-    }
     var ell = animData.ell[animData.ell[num].forwardFrame];
     animData.renderedFrame.ell = ell.forwardFrame;
 
-    this.shape.setAttribute('rx',ell.size[0]/2);
+    var ctx = this.renderer.canvasContext;
+
+    ctx.beginPath();
+    if(ctx.ellipse){
+        ctx.ellipse(ell.p[0], ell.p[1], ell.size[0]/2, ell.size[1]/2, 0, 0, Math.PI*2, true);
+    }else{
+        var kappa = .5522848,w = ell.size[0], h = ell.size[1],x=ell.p[0],y=ell.p[1];
+            ox = (w / 2) * kappa, // control point offset horizontal
+            oy = (h / 2) * kappa, // control point offset vertical
+            xe = x + w,           // x-end
+            ye = y + h,           // y-end
+            xm = x + w / 2,       // x-middle
+            ym = y + h / 2;       // y-middle
+
+        ctx.moveTo(x, ym);
+        ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+        ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+        ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+        ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+    }
+
+    /*this.shape.setAttribute('rx',ell.size[0]/2);
     this.shape.setAttribute('ry',ell.size[1]/2);
     this.shape.setAttribute('cx',ell.p[0]);
     this.shape.setAttribute('cy',ell.p[1]);
@@ -126,7 +160,7 @@ CVShapeItemElement.prototype.renderEllipse = function(num){
             }
         }
         return this.cachedData.pathLengths['ellipse_'+num];
-    }
+    }*/
 };
 
 CVShapeItemElement.prototype.renderRect = function(num){
