@@ -1,5 +1,7 @@
-var BaseElement = function (data, animationItem){
+var BaseElement = function (data,parentType, animationItem){
     this.animationItem = animationItem;
+    this.type = parentType;
+    this.parentType = parentType;
     this.data = data;
     this.init();
 };
@@ -15,15 +17,30 @@ BaseElement.prototype.init = function(){
 };
 
 BaseElement.prototype.createElements = function(){
-    this.layerElement = document.createElementNS(svgNS,'g');
+    if(this.type=='svg'){
+        if(this.parentType=='svg'){
+            this.layerElement = document.createElementNS(svgNS,'g');
+        }else{
+            this.layerElement = document.createElementNS(svgNS,'svg');
+        }
+        this.anchorElement = document.createElementNS(svgNS,'g');
+    }else{
+        this.layerElement = document.createElement('div');
+        styleDiv(this.layerElement);
+        this.anchorElement = document.createElement('div');
+        styleDiv(this.anchorElement);
+        //this.anchorElement.style.width = this.data.width+'px';
+        //this.anchorElement.style.height = this.data.height+'px';
+    }
 
-    this.anchorElement = document.createElementNS(svgNS,'g');
     this.anchorElement.setAttribute('id',this.data.layerName);
     this.layerElement.appendChild(this.anchorElement);
 
-
-    this.maskingGroup = this.anchorElement;
-
+    if(this.type=='svg'){
+        this.maskingGroup = this.anchorElement;
+    }else{
+        this.maskingGroup = this.svgElem;
+    }
     this.maskedElement = this.svgElem;
 
 };
@@ -76,10 +93,11 @@ BaseElement.prototype.renderFrame = function(num){
     }
 
     if(this.data.relateds && (transformChanged || anchorChanged)){
-        var relateds = this.data.relateds, i, len = relateds.length, item, itemCont;
+        var relateds = this.data.relateds, i, len = relateds.length, item, itemCont, type;
         for(i=0;i<len;i++){
             item = relateds[i].item;
             itemCont = relateds[i].itemCont;
+            type = relateds[i].type;
             if(anchorChanged){
                 item.setAttribute('transform','translate('+ -animData.tr.a[0]+" "+ -animData.tr.a[1]+")");
             }

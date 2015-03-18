@@ -1,6 +1,6 @@
-function IShapeElement(data, animationItem){
+function IShapeElement(data,parentType, animationItem){
     this.shapes = [];
-    this.parent.constructor.call(this,data, animationItem);
+    this.parent.constructor.call(this,data,parentType, animationItem);
 }
 createElement(BaseElement, IShapeElement);
 
