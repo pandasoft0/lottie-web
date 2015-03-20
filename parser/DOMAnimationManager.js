@@ -12,8 +12,6 @@
     var mainLayers = [];
     var filesDirectory;
     var callback;
-    var pendingLayers = [];
-    var totalLayers = 0;
 
     function getCompositionAnimationData(compo, compositionData,fDirectory){
         mainComp = compo;
@@ -160,21 +158,18 @@
         return textDataOb;
     }
 
-    function analyzeNextLayer(){
-        if(pendingLayers.length == 0){
-            renderNextFrame();
-        }else{
-            var pendingItem = pendingLayers.pop();
-            UI.setProgress(pendingLayers.length/totalLayers);
-            var layerOb = pendingItem.lOb;
-            var layerInfo = pendingItem.lInfo;
-            var frameRate = pendingItem.frameRate;
+    function createLayers(compo, layersData, frameRate){
+        var i, len = compo.layers.length;
+        for(i = 0;i<len;i++){
+            var layerOb = {};
+            var layerInfo = compo.layers[i+1];
             var lType = extrasInstance.layerType(layerInfo);
+
             if(lType == 'AudioLayer' || lType == 'CameraLayer' || layerInfo.enabled == false){
                 //TODO add audios
+                layersData.push(layerOb);
                 layerOb.enabled = false;
-                analyzeNextLayer();
-                return;
+                continue;
             }else if(lType == 'TextLayer'){
                 var textProp = layerInfo.property("Source Text");
                 var textDocument = textProp.value;
@@ -206,8 +201,10 @@
             layerOb.an = {};
 
             if(lType=='PreCompLayer'){
+                layerOb.layers = [];
                 layerOb.width = layerInfo.source.width;
                 layerOb.height = layerInfo.source.height;
+                createLayers(layerInfo.source,layerOb.layers,layerInfo.source.frameRate);
             }else if(lType == 'StillLayer'){
                 addStillAsset(layerOb,layerInfo);
                 layerOb.width = layerInfo.source.width;
@@ -224,6 +221,7 @@
             layerOb.outPoint = layerInfo.outPoint*frameRate;
             layerOb.startTime = layerInfo.startTime*frameRate;
             layerOb.lastData = {};
+            layersData.push(layerOb);
 
             layerOb.ks = {};
             if(layerInfo.transform.opacity.numKeys>1){
@@ -254,31 +252,6 @@
 
             if(layerInfo.canSetTimeRemapEnabled && layerInfo.timeRemapEnabled){
                 extrasInstance.convertToBezierValues(layerInfo['Time Remap'], frameRate, layerOb,'tm');
-            }
-            if(!renderCancelled){
-                extrasInstance.setTimeout(analyzeNextLayer,100);
-            }else{
-                callback.apply();
-            }
-        }
-    }
-
-    function createLayers(compo, layersData, frameRate){
-        var i, len = compo.layers.length;
-        for(i = 0;i<len;i++){
-            var layerOb = {};
-            var layerInfo = compo.layers[i+1];
-            var lType = extrasInstance.layerType(layerInfo);
-            layersData.push(layerOb);
-            if(lType == 'AudioLayer' || lType == 'CameraLayer' || layerInfo.enabled == false){
-                //TODO add audios
-                layerOb.enabled = false;
-                continue;
-            }
-            pendingLayers.push({lInfo:layerInfo,lOb:layerOb,frameRate:frameRate});
-            if(lType=='PreCompLayer'){
-                layerOb.layers = [];
-                createLayers(layerInfo.source,layerOb.layers,layerInfo.source.frameRate);
             }
 
         }
@@ -376,8 +349,7 @@
          processFinalData(mainLayers);
          callback.apply();*/
         // END TO TRAVERSE LAYER BY LAYER. NEEDED FOR TIME REMAP?
-        totalLayers = pendingLayers.length;
-        analyzeNextLayer();
+        renderNextFrame();
     }
 
     function iterateLayer(layerInfo, layerOb,frameRate){

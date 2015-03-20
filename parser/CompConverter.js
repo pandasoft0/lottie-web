@@ -93,16 +93,14 @@
     }
 
     function searchNextComposition(){
-        if(!renderCancelled){
-            var len = compositionsList.length;
-            while(currentExportingComposition < len){
-                if(compositionsList[currentExportingComposition].queued === true){
-                    currentCompositionData = compositionsList[currentExportingComposition];
-                    exportNextComposition();
-                    return;
-                }
-                currentExportingComposition+=1;
+        var len = compositionsList.length;
+        while(currentExportingComposition < len){
+            if(compositionsList[currentExportingComposition].queued === true){
+                currentCompositionData = compositionsList[currentExportingComposition];
+                exportNextComposition();
+                return;
             }
+            currentExportingComposition+=1;
         }
         //If we get here there are no more compositions to render and callback is executed
         helperFootage.remove();
