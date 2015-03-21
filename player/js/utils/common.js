@@ -1,4 +1,11 @@
 var subframeEnabled = false;
+var svgElement = document.createElementNS(svgNS,'svg');
+var shapeHelper = document.createElementNS(svgNS,'path');
+var supportsPath2D = typeof Path2D === 'function';
+supportsPath2D = false;
+var body;
+
+svgElement.appendChild(shapeHelper);
 
 function styleDiv(element){
     element.style.position = "absolute";
@@ -38,3 +45,20 @@ function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function getPathSize(path){
+    if(!body){
+        body = document.getElementsByTagName('body')[0];
+        body.appendChild(svgElement);
+    }
+    shapeHelper.setAttribute('d',path);
+    return svgElement.getBBox();
+}
