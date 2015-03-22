@@ -29,9 +29,6 @@
     function registerAnimation(elem){
         animationManager.registerAnimation(elem);
     }
-    function resize(){
-        animationManager.resize();
-    }
     function setSubframeRendering(flag){
         subframeEnabled = flag;
     }
@@ -65,7 +62,6 @@
     bodymovinjs.searchAnimations = searchAnimations;
     bodymovinjs.registerAnimation = registerAnimation;
     bodymovinjs.setSubframeRendering = setSubframeRendering;
-    bodymovinjs.resize = resize;
 
     window.bodymovin = bodymovinjs;
     //window.onkeydown = keyActive;

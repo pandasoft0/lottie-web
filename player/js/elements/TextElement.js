@@ -1,5 +1,5 @@
-function ITextElement(data, animationItem){
-    this.parent.constructor.call(this,data, animationItem);
+function ITextElement(data,parentType, animationItem){
+    this.parent.constructor.call(this,data,parentType, animationItem);
 }
 createElement(BaseElement, ITextElement);
 
