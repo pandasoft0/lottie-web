@@ -1,7 +1,10 @@
-var dataManager = (function(){
+function dataFunctionManager(isWorker){
     var frameRate = 0;
     var matrixInstance =  new MatrixManager();
-    var storedBezierCurves = {};
+    var animations = {};
+    var worker;
+    var isWorker = isWorker;
+    var degToRads = Math.PI/180;
 
     function completeTimeRemap(tm, layerFrames, offsetFrame){
         var interpolatedProperty = getInterpolatedValues(tm,layerFrames, offsetFrame);
@@ -23,6 +26,7 @@ var dataManager = (function(){
                 layerData.parent = convertLayerNameToID(layerData.parent);
             }
             layerData.renderedFrame = {};
+            layerData.renderedData = {};
             animArray = [];
             lastFrame = -1;
             if(layerData.tm){
@@ -30,13 +34,24 @@ var dataManager = (function(){
             }
             if(layerData.type=='PreCompLayer'){
                 completeLayers(layerData.layers);
+            }else if(layerData.type == 'ShapeLayer'){
+                var i, len = layerData.shapes.length;
+                for(i=0;i<len;i+=1){
+                    shapeItem = layerData.shapes[i];
+                    shapeItem.renderedData = {};
+                }
             }
         })
     }
 
-    function completeData(layers, fRate){
-        frameRate = fRate;
-        completeLayers(layers);
+    function completeData(animationData){
+        animations[animationData._id] = {data:animationData,renderedFrames:[]};
+        frameRate = animationData.animation.frameRate;
+        completeLayers(animationData.animation.layers);
+        if(moduleOb.hasWorker){
+            worker.postMessage({type:'new',animation:JSON.stringify(animationData)});
+            //worker.postMessage({type:'renderAllFrames',id:animationData._id})
+        }
     }
 
     function convertLayerNameToID(string){
@@ -389,7 +404,7 @@ var dataManager = (function(){
     var fillOpacity,fillColor, shape, strokeColor, strokeOpacity, strokeWidth, elmPos, elmSize, elmRound;
     var shapeTrOb = {};
 
-    function iterateLayers(layers, frameNum,renderType){
+    function iterateLayers(layers, frameNum,renderType, rendered){
 
         var offsettedFrameNum, i, len;
         var j, jLen = layers.length, item;
@@ -397,9 +412,11 @@ var dataManager = (function(){
             item = layers[j];
             offsettedFrameNum = frameNum - item.startTime;
             if(frameNum < item.inPoint || frameNum > item.outPoint){
+                rendered.push('');
                 continue;
             }
             if(item.an[offsettedFrameNum]){
+                rendered.push('');
                 continue;
             }
             trOb = {};
@@ -411,9 +428,10 @@ var dataManager = (function(){
             rot = getInterpolatedValue(item.ks.r,offsettedFrameNum, item.startTime);
             scale = getInterpolatedValue(item.ks.s,offsettedFrameNum, item.startTime);
             trOb.s = scale instanceof Array ? scale.length > 1 ? [scale[0]/100,scale[1]/100,scale[2]/100] : [scale[0]/100,scale[0]/100,scale[0]/100] : [scale/100,scale/100,scale/100];
-            trOb.r = rot instanceof Array ? rot.length > 1 ? [rot[0]*Math.PI/180,rot[1]*Math.PI/180,rot[2]*Math.PI/180] : [rot[0]*Math.PI/180,rot[0]*Math.PI/180,rot[0]*Math.PI/180] : [0,0,rot*Math.PI/180];
+            trOb.r = rot instanceof Array ? rot.length > 1 ? [rot[0]*degToRads,rot[1]*degToRads,rot[2]*degToRads] : [rot[0]*degToRads,rot[0]*degToRads,rot[0]*degToRads] : [0,0,rot*degToRads];
             trOb.p = pos;
-            item.an[offsettedFrameNum] = {
+            rendered[j] = {};
+            rendered[j].an = {
                 forwardFrame : offsettedFrameNum,
                 tr: dataOb,
                 matrixValue: matrixInstance.getMatrix2(trOb),
@@ -439,10 +457,13 @@ var dataManager = (function(){
             }
             if(item.type == 'PreCompLayer'){
                 timeRemapped = item.tm ? item.tm[offsettedFrameNum] < 0 ? 0 : item.tm[offsettedFrameNum] : offsettedFrameNum;
-                iterateLayers(item.layers,timeRemapped,renderType);
+                rendered.renderedArray = [];
+                iterateLayers(item.layers,timeRemapped,renderType,rendered.renderedArray);
             }else if(item.type == 'ShapeLayer'){
+                rendered[j].shapes = [];
                 len = item.shapes.length;
                 for(i=0;i<len;i+=1){
+                    rendered[j].shapes.push({});
                     shapeItem = item.shapes[i];
                     if(!shapeItem._created){
                         shapeItem.an.tr = [];
@@ -467,7 +488,7 @@ var dataManager = (function(){
                     if(shapeItem.fl){
                         fillColor = getInterpolatedValue(shapeItem.fl.c,offsettedFrameNum, item.startTime);
                         fillOpacity = getInterpolatedValue(shapeItem.fl.o,offsettedFrameNum, item.startTime);
-                        shapeItem.an.fill[offsettedFrameNum] = {
+                        rendered[j].shapes[i].fill = {
                             color : rgbToHex(Math.round(fillColor[0]),Math.round(fillColor[1]),Math.round(fillColor[2])),
                             opacity : fillOpacity instanceof Array ? fillOpacity[0]/100 : fillOpacity/100,
                             forwardFrame : offsettedFrameNum
@@ -475,18 +496,18 @@ var dataManager = (function(){
                     }
                     if(shapeItem.ks){
                         shape = getInterpolatedValue(shapeItem.ks,offsettedFrameNum, item.startTime);
-                        shapeItem.an.path[offsettedFrameNum] = {
+                        rendered[j].shapes[i].path = {
                             pathNodes: shape,
                             closed: shapeItem.closed,
                             forwardFrame : offsettedFrameNum
                         };
                         if(renderType == 'svg'){
-                            shapeItem.an.path[offsettedFrameNum].pathString = createPathString(shape,shapeItem.closed);
+                            rendered[j].shapes[i].path.pathString = createPathString(shape,shapeItem.closed);
                         }
                     }else if(shapeItem.el){
                         elmPos = getInterpolatedValue(shapeItem.el.p,offsettedFrameNum, item.startTime);
                         elmSize = getInterpolatedValue(shapeItem.el.s,offsettedFrameNum, item.startTime);
-                        shapeItem.an.ell[offsettedFrameNum] = {
+                        rendered[j].shapes[i].ell = {
                             p : elmPos,
                             size : elmSize,
                             forwardFrame : offsettedFrameNum
@@ -495,7 +516,7 @@ var dataManager = (function(){
                         elmPos = getInterpolatedValue(shapeItem.rc.p,offsettedFrameNum, item.startTime);
                         elmSize = getInterpolatedValue(shapeItem.rc.s,offsettedFrameNum, item.startTime);
                         elmRound = getInterpolatedValue(shapeItem.rc.r,offsettedFrameNum, item.startTime);
-                        shapeItem.an.rect[offsettedFrameNum] = {
+                        rendered[j].shapes[i].rect = {
                             position : elmPos,
                             size : elmSize,
                             roundness : elmRound,
@@ -506,7 +527,7 @@ var dataManager = (function(){
                         strokeColor = getInterpolatedValue(shapeItem.st.c,offsettedFrameNum, item.startTime);
                         strokeOpacity = getInterpolatedValue(shapeItem.st.o,offsettedFrameNum, item.startTime);
                         strokeWidth = getInterpolatedValue(shapeItem.st.w,offsettedFrameNum, item.startTime);
-                        shapeItem.an.stroke[offsettedFrameNum] = {
+                        rendered[j].shapes[i].stroke = {
                             color : rgbToHex(Math.round(strokeColor[0]),Math.round(strokeColor[1]),Math.round(strokeColor[2])),
                             opacity : strokeOpacity instanceof Array ? strokeOpacity[0]/100 : strokeOpacity/100,
                             width : strokeWidth instanceof Array ? strokeWidth[0] : strokeWidth,
@@ -521,18 +542,19 @@ var dataManager = (function(){
                     shapeTrOb.s = getInterpolatedValue(shapeItem.tr.s,offsettedFrameNum, item.startTime);
                     shapeTrOb.s = shapeTrOb.s instanceof Array ? shapeTrOb.s.length > 1 ? [shapeTrOb.s[0]/100,shapeTrOb.s[1]/100,shapeTrOb.s[2]/100] : [shapeTrOb.s[0]/100,shapeTrOb.s[0]/100,shapeTrOb.s[0]/100] : [shapeTrOb.s/100,shapeTrOb.s/100,shapeTrOb.s/100];
                     shapeTrOb.r = getInterpolatedValue(shapeItem.tr.r,offsettedFrameNum, item.startTime);
-                    shapeTrOb.r = shapeTrOb.r instanceof Array ? shapeTrOb.r.length > 1 ? [shapeTrOb.r[0]*Math.PI/180,shapeTrOb.r[1]*Math.PI/180,shapeTrOb.r[2]*Math.PI/180] : [shapeTrOb.r[0]*Math.PI/180,shapeTrOb.r[0]*Math.PI/180,shapeTrOb.r[0]*Math.PI/180] : [0,0,shapeTrOb.r*Math.PI/180];
+                    shapeTrOb.r = shapeTrOb.r instanceof Array ? shapeTrOb.r.length > 1 ? [shapeTrOb.r[0]*degToRads,shapeTrOb.r[1]*degToRads,shapeTrOb.r[2]*degToRads] : [shapeTrOb.r[0]*degToRads,shapeTrOb.r[0]*degToRads,shapeTrOb.r[0]*degToRads] : [0,0,shapeTrOb.r*degToRads];
                     shapeTrOb.p = getInterpolatedValue(shapeItem.tr.p,offsettedFrameNum, item.startTime);
                     shapeTrOb.mt = matrixInstance.getMatrix2(shapeTrOb);
                     shapeTrOb.mtArr = matrixInstance.getMatrixArray(shapeTrOb);
                     shapeTrOb.forwardFrame = offsettedFrameNum;
                     shapeItem.an.tr[offsettedFrameNum] = shapeTrOb;
+                    rendered[j].shapes[i].tr = shapeTrOb;
 
                     if(shapeItem.trim){
                         var trimS = getInterpolatedValue(shapeItem.trim.s,offsettedFrameNum, item.startTime);
                         var trimE = getInterpolatedValue(shapeItem.trim.e,offsettedFrameNum, item.startTime);
                         var trimO = getInterpolatedValue(shapeItem.trim.o,offsettedFrameNum, item.startTime);
-                        shapeItem.trim.an[offsettedFrameNum] = {
+                        rendered[j].shapes[i].trim = {
                             s: trimS,
                             e: trimE,
                             o: trimO,
@@ -547,13 +569,156 @@ var dataManager = (function(){
         }
     }
 
-    function renderFrame(layers,num, renderType){
-        iterateLayers(layers, num, renderType);
+    function prerenderFrames(renderData,num){
+        var totalFrames = 1;
+        if(worker){
+            var renderingFrames = [];
+            totalFrames = 10;
+        }
+        while(totalFrames > 0){
+            num += 1;
+            if(num >= renderData.data.animation.totalFrames){
+                renderData.renderFinished = true;
+                break;
+            }
+            if(!renderData.renderedFrames[num]){
+                if(!worker){
+                    renderFrame(renderData.data._id,num);
+                }else{
+                    renderData.renderedFrames[num] = 1;
+                    renderingFrames.push(num);
+                }
+                totalFrames -= 1;
+            }
+        }
+        if(worker){
+            worker.postMessage({type:'renderFrames',id:renderData.data._id,frames:renderingFrames});
+        }
+    }
+
+    function renderFrames(id,frames){
+        var i, len = frames.length;
+        var renderedFrames = [];
+        for(i=0;i<len;i+=1){
+            renderedFrames.push({num:frames[i],data:renderFrame(id,frames[i])})
+        }
+        self.postMessage({frames:renderedFrames,id:id, type:'done'});
+    }
+
+    function renderFrame(animationId,num){
+        if(animations[animationId].renderedFrames[num]==2 && !isWorker){
+            //console.log('returning');
+            if(!animations[animationId].renderFinished){
+                prerenderFrames(animations[animationId],num);
+            }
+            return;
+        }
+        animations[animationId].renderedFrames[num] = 2;
+        var renderedArray = [];
+        iterateLayers(animations[animationId].data.animation.layers, num, animations[animationId].data._animType, renderedArray);
+        if(!isWorker){
+            populateLayers(animations[animationId].data.animation.layers, num,renderedArray);
+        }
+        return renderedArray;
+    }
+
+    function populateLayers(layers, num, rendered){
+        var i, len = layers.length, j, jLen;
+        var offsettedFrameNum, timeRemapped;
+        var shapes;
+        for(i=0;i<len;i+=1){
+            if(rendered[i] == ''){
+                continue;
+            }
+            offsettedFrameNum = num - layers[i].startTime;
+            layers[i].renderedData[offsettedFrameNum] = rendered[i];
+            if(layers[i].type == 'PreCompLayer'){
+                timeRemapped = layers[i].tm ? layers[i].tm[offsettedFrameNum] < 0 ? 0 : layers[i].tm[offsettedFrameNum] : offsettedFrameNum;
+                populateLayers(layers[i].layers,timeRemapped,rendered.renderedArray);
+            }else if(layers[i].type == 'ShapeLayer'){
+                shapes = layers[i].shapes;
+                jLen = shapes.length;
+                for(j=0;j<jLen;j+=1){
+                    shapes[j].renderedData[offsettedFrameNum] = rendered[i].shapes[j];
+                }
+            }
+        }
+    }
+
+    function renderAllFrames(id){
+        var animationData = animations[id].data;
+        var i, len = animationData.animation.totalFrames;
+        var renderedFrames = [];
+        for(i=0;i<len;i+=1){
+            renderedFrames.push({num:i,data:renderFrame(id,i)})
+        }
+        self.postMessage({frames:renderedFrames,id:id, type:'done'});
+    }
+
+    function startWorker(){
+        if(Worker && (window.URL || window.webkitURL) && Blob && 1 == 2){
+            function handleEvents(){
+                self.onmessage = function(e){
+                    var data = e.data;
+                    if(data.type == 'new'){
+                        dataManager.completeData(JSON.parse(data.animation));
+                    }else if(data.type == 'renderAllFrames'){
+                        dataManager.renderAllFrames(data.id);
+                    }else if(data.type == 'renderFrames'){
+                        dataManager.renderFrames(data.id, data.frames);
+                    }
+                }
+            }
+            window.URL = window.URL || window.webkitURL;
+            var blobURL = URL.createObjectURL( new Blob([
+            componentToHex.toString(),
+            rgbToHex.toString(),
+            handleEvents.toString(),
+            Matrix.toString(),
+            setMatrixPrototype.toString(),
+            'setMatrixPrototype();',
+            matrixManagerFunction.toString(),
+            bezFunction.toString(),
+            'var MatrixManager = matrixManagerFunction;',
+
+            dataFunctionManager.toString(),
+
+            'var bez = bezFunction();var dataManager = dataFunctionManager(true);handleEvents();' ], { type: 'application/javascript' } ) );
+
+            worker = new Worker( blobURL );
+            URL.revokeObjectURL( blobURL );
+
+            worker.addEventListener('message',function(e){
+                if(e.data.type == 'done'){
+                    var animation = animations[e.data.id].data.animation;
+                    var i, len = e.data.frames.length;
+                    for(i=0;i<len;i+=1){
+                        if(animations[e.data.id].renderedFrames[e.data.frames[i].num] == 2){
+                            continue;
+                        }
+                        animations[e.data.id].renderedFrames[e.data.frames[i].num] = 2;
+                        savedItems.push(e.data.frames[i].num);
+                        populateLayers(animation.layers, e.data.frames[i].num,e.data.frames[i].data);
+
+                    }
+                }
+            });
+            moduleOb.hasWorker = true;
+
+        }
     }
 
     var moduleOb = {};
     moduleOb.completeData = completeData;
     moduleOb.renderFrame = renderFrame;
+    moduleOb.startWorker = startWorker;
+    moduleOb.renderAllFrames = renderAllFrames;
+    moduleOb.renderFrames = renderFrames;
+    moduleOb.hasWorker = false;
 
     return moduleOb;
-}());
+};
+
+var dataManager = dataFunctionManager();
+dataManager.startWorker();
+var savedItems = [];
