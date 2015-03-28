@@ -22,7 +22,6 @@ CVShapeItemElement.prototype.renderShape = function(){
         return;
     }
     var num = this.frameNum;
-    this.currentData = this.data.renderedData[num];
     var ctx = this.renderer.canvasContext;
     var flag = this.renderTransform(num);
     if(this.data.type=="pathShape"){
@@ -62,11 +61,12 @@ CVShapeItemElement.prototype.prepareFrame = function(num){
     this.frameNum = num;
 };
 
-CVShapeItemElement.prototype.renderTransform = function(){
-    var animData = this.currentData;
+CVShapeItemElement.prototype.renderTransform = function(num){
+    var animData = this.data.an;
     if(animData.tr){
         var ctx = this.renderer.canvasContext;
-        var tr = animData.tr;
+        var tr = animData.tr[animData.tr[num].forwardFrame];
+        animData.renderedFrame.tr = tr.forwardFrame;
         var matrixValue = tr.mtArr;
         if(matrixValue[0] == 1 && matrixValue[1] == 0 && matrixValue[2] == 0 && matrixValue[3] == 1 && matrixValue[4] == 0 && matrixValue[5] == 0 && tr.o >= 1){
             return false;
@@ -91,7 +91,7 @@ CVShapeItemElement.prototype.addToTrim = function(pos,s,e){
 };
 
 CVShapeItemElement.prototype.renderTrimPath = function(num){
-    var trimData = this.currentData.trim;
+    var trimData = this.data.trim.an[this.data.trim.an[num].forwardFrame];
     if(trimData.e == trimData.s){
         return;
     }
@@ -99,7 +99,8 @@ CVShapeItemElement.prototype.renderTrimPath = function(num){
         return;
     }
     var path2d = new Path2D();
-    var path = this.currentData.path;
+    var animData = this.data.an;
+    var path = animData.path[animData.path[num].forwardFrame];
     var pathNodes = path.pathNodes;
     var segments = [];
     var totalLength = 0;
@@ -114,8 +115,6 @@ CVShapeItemElement.prototype.renderTrimPath = function(num){
     }
     len = segments.length;
     var segmentLength = totalLength*(trimData.e - trimData.s)/100;
-    console.log('trimData.e: ',trimData.e);
-    console.log('segmentLength: ',segmentLength);
     var offset = ((trimData.s/100 + (trimData.o%360)/360)%1)*totalLength;
     var endedCount = 0;
     if(offset + segmentLength - totalLength > 0.00001){
@@ -181,14 +180,15 @@ CVShapeItemElement.prototype.renderTrimPath = function(num){
 };
 
 CVShapeItemElement.prototype.renderPath = function(num){
-    var animData = this.currentData;
-    var path = animData.path;
+    var animData = this.data.an;
+    var path = animData.path[animData.path[num].forwardFrame];
 
     if(this.renderedPaths[num]){
         return;
     }
     var path2d = new Path2D();
 
+    animData.renderedFrame.path = path.pathString;
     var ctx = this.renderer.canvasContext;
 
     var pathNodes = path.pathNodes;
@@ -211,8 +211,10 @@ CVShapeItemElement.prototype.renderPath = function(num){
     this.renderedPaths[num] = path2d;
 };
 
-CVShapeItemElement.prototype.renderEllipse = function(){
-    var ell = this.currentData.ell;
+CVShapeItemElement.prototype.renderEllipse = function(num){
+    var animData = this.data.an;
+    var ell = animData.ell[animData.ell[num].forwardFrame];
+    animData.renderedFrame.ell = ell.forwardFrame;
 
     var ctx = this.renderer.canvasContext;
 
@@ -221,8 +223,9 @@ CVShapeItemElement.prototype.renderEllipse = function(){
     ctx.closePath();
 };
 
-CVShapeItemElement.prototype.renderRect = function(){
-    var rect = this.currentData.rect;
+CVShapeItemElement.prototype.renderRect = function(num){
+    var animData = this.data.an;
+    var rect = animData.rect[animData.rect[num].forwardFrame];
     var roundness = rect.roundness;
     var ctx = this.renderer.canvasContext;
     ctx.beginPath();
@@ -246,9 +249,10 @@ CVShapeItemElement.prototype.renderRect = function(){
 };
 
 CVShapeItemElement.prototype.renderFill = function(num){
-    var animData = this.currentData;
+    var animData = this.data.an;
     if(animData.fill){
-        var fill = animData.fill;
+        var fill = animData.fill[animData.fill[num].forwardFrame];
+        animData.renderedFrame.fill = {color:fill.color,opacity:fill.opacity};
         if(this.data.fillEnabled!==false){
             if(fill.opacity < 1){
                 this.renderer.canvasContext.fillStyle=fillToRgba(fill.color, fill.opacity);
@@ -262,9 +266,10 @@ CVShapeItemElement.prototype.renderFill = function(num){
 };
 
 CVShapeItemElement.prototype.renderStroke = function(num){
-    var animData = this.currentData;
+    var animData = this.data.an;
     if(animData.stroke){
-        var stroke = animData.stroke;
+        var stroke = animData.stroke[animData.stroke[num].forwardFrame];
+        animData.renderedFrame.stroke = stroke.forwardFrame;
         /*ctx.strokeStyle="red";
          */
         this.renderer.canvasContext.lineWidth=stroke.width;

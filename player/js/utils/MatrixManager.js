@@ -1,4 +1,4 @@
-function matrixManagerFunction(){
+var MatrixManager = function(){
 
     var mat = new Matrix();
 
@@ -136,4 +136,3 @@ function matrixManagerFunction(){
     }
 
 };
-var MatrixManager = matrixManagerFunction;

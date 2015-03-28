@@ -14,12 +14,12 @@ var AnimationItem = function () {
     this.animationData = {};
     this.layers = [];
     this.assets = [];
+    this.renderedFrames = {};
     this.effectsManager = null;
     this.isPaused = true;
     this.isScrolling = false;
     this.loop = true;
     this.renderer = null;
-    this.animationID = randomString(10);
 };
 
 AnimationItem.prototype.setData = function (wrapper) {
@@ -60,14 +60,12 @@ AnimationItem.prototype.configAnimation = function (animData) {
 
     this.effectsManager = new EffectsManager();
     this.animationData = animData;
-    this.animationData._id = this.animationID;
-    this.animationData._animType = this.animType;
     this.layers = this.animationData.animation.layers;
     this.assets = this.animationData.assets;
     this.totalFrames = this.animationData.animation.totalFrames;
     this.frameRate = this.animationData.animation.frameRate;
     this.frameMult = this.animationData.animation.frameRate / 1000;
-    dataManager.completeData(this.animationData);
+    dataManager.completeData(this.layers, this.frameRate);
     this.renderer.buildItems(this.animationData.animation.layers);
     this.updaFrameModifier();
     this.checkLoaded();
@@ -80,22 +78,13 @@ AnimationItem.prototype.elementLoaded = function () {
 
 AnimationItem.prototype.checkLoaded = function () {
     if (this.pendingElements == 0) {
-        this.prerenderFrames();
+        this.isLoaded = true;
+        this.renderer.buildStage(this.container, this.layers);
+        this.buildControls();
+        this.gotoFrame();
+        //TODO Need polyfill for ios 5.1
+        this.dispatchEvent('bmLoaded');
     }
-};
-
-AnimationItem.prototype.prerenderFrames = function(){
-    var i = 0;
-    var totalFrames = Math.min(0,this.totalFrames);
-    while(i<totalFrames){
-        dataManager.renderFrame(this.animationID,i);
-        i+=1;
-    }
-    this.isLoaded = true;
-    this.renderer.buildStage(this.container, this.layers);
-    this.buildControls();
-    //TODO Need polyfill for ios 5.1
-    this.dispatchEvent('bmLoaded');
 };
 
 AnimationItem.prototype.resize = function () {
@@ -114,6 +103,7 @@ AnimationItem.prototype.buildControls = function () {
 
 AnimationItem.prototype.gotoFrame = function () {
     if(subframeEnabled){
+        //this.renderedFrames = [];
         this.currentFrame = Math.round(this.currentRawFrame*100)/100;
     }else{
         this.currentFrame = Math.floor(this.currentRawFrame);
@@ -128,7 +118,10 @@ AnimationItem.prototype.renderFrame = function () {
     if(this.isLoaded === false){
         return;
     }
-    dataManager.renderFrame(this.animationID,this.currentFrame);
+    if(!this.renderedFrames[this.currentFrame]){
+        this.renderedFrames[this.currentFrame] = true;
+        dataManager.renderFrame(this.layers,this.currentFrame,this.animType);
+    }
     this.renderer.renderFrame(this.currentFrame);
 };
 

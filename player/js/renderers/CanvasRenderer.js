@@ -36,7 +36,7 @@ CanvasRenderer.prototype.createImage = function (data) {
 
 CanvasRenderer.prototype.createComp = function (data) {
     data.element = new CVCompElement(data, this);
-    this.buildItems(data.layers);
+    this.buildItems(data.layers, data.element.getType());
 };
 
 CanvasRenderer.prototype.createSolid = function (data) {
