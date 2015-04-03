@@ -98,12 +98,8 @@ var animationManager = (function(){
         }
     }
 
-    function start(){
-        initTime = Date.now();
-        requestAnimationFrame(resume);
-    }
-    //start();
-    setTimeout(start,3000);
+    initTime = Date.now();
+    requestAnimationFrame(resume);
 
     moduleOb.registerAnimation = registerAnimation;
     moduleOb.setSpeed = setSpeed;
@@ -115,6 +111,5 @@ var animationManager = (function(){
     moduleOb.togglePause = togglePause;
     moduleOb.searchAnimations = searchAnimations;
     moduleOb.resize = resize;
-    moduleOb.start = start;
     return moduleOb;
 }());

@@ -20,7 +20,6 @@ var AnimationItem = function () {
     this.loop = true;
     this.renderer = null;
     this.animationID = randomString(10);
-    this.renderedFrameCount = 0;
 };
 
 AnimationItem.prototype.setData = function (wrapper) {
@@ -28,6 +27,7 @@ AnimationItem.prototype.setData = function (wrapper) {
     //this.wrapper.style.position = 'relative';
     var self = this;
     this.path = this.wrapper.attributes.getNamedItem("data-animation-path") ? this.wrapper.attributes.getNamedItem("data-animation-path").value : '';
+    this.playerType = this.wrapper.attributes.getNamedItem("data-bm-player") ? this.wrapper.attributes.getNamedItem("data-bm-player").value : '0';
     this.animType = this.wrapper.attributes.getNamedItem("data-anim-type") ? this.wrapper.attributes.getNamedItem("data-anim-type").value : 'div';
     switch(this.animType){
         case 'canvas':
@@ -84,25 +84,33 @@ AnimationItem.prototype.checkLoaded = function () {
     }
 };
 
-AnimationItem.prototype.prerenderFrames = function(timeoutFlag){
-    if(this.renderedFrameCount === this.totalFrames){
-        //TODO Need polyfill for ios 5.1
-        this.renderer.buildStage(this.container, this.layers);
-        this.gotoFrame();
-        this.isLoaded = true;
-    }else{
-        dataManager.renderFrame(this.animationID,this.renderedFrameCount);
-        this.renderedFrameCount+=1;
-        if(timeoutFlag){
-            setTimeout(this.prerenderFrames.bind(this),0);
-        }else{
-            this.prerenderFrames(true);
-        }
+AnimationItem.prototype.prerenderFrames = function(){
+    var i = 0;
+    var totalFrames = Math.min(2,this.totalFrames);
+    while(i<totalFrames){
+        dataManager.renderFrame(this.animationID,i);
+        i+=1;
     }
+    this.isLoaded = true;
+    this.renderer.buildStage(this.container, this.layers);
+    this.buildControls();
+    //TODO Need polyfill for ios 5.1
+    this.dispatchEvent('bmLoaded');
+    this.gotoFrame();
 };
 
 AnimationItem.prototype.resize = function () {
     this.renderer.updateContainerSize();
+};
+
+AnimationItem.prototype.buildControls = function () {
+
+    if(this.playerType === '0'){
+        return;
+    }
+
+    this.player = playerManager.createPlayer(this.playerType);
+    this.player.buildControls(this,this.wrapper);
 };
 
 AnimationItem.prototype.gotoFrame = function () {
@@ -112,6 +120,9 @@ AnimationItem.prototype.gotoFrame = function () {
         this.currentFrame = Math.floor(this.currentRawFrame);
     }
     this.renderFrame();
+    if(this.player){
+        this.player.setProgress(this.currentFrame / this.totalFrames);
+    }
 };
 
 AnimationItem.prototype.renderFrame = function () {
@@ -122,12 +133,25 @@ AnimationItem.prototype.renderFrame = function () {
     this.renderer.renderFrame(this.currentFrame);
 };
 
+AnimationItem.prototype.dispatchEvent = function(eventName){
+    var event;
+    if(document.createEvent){
+        event = document.createEvent("CustomEvent");
+        event.initCustomEvent(eventName, false, false, {});
+    }else{
+        event = new CustomEvent('bmPlay');
+        //this.wrapper.dispatchEvent(event);
+    }
+    this.wrapper.dispatchEvent(event);
+};
+
 AnimationItem.prototype.play = function (name) {
     if(name && this.name != name){
         return;
     }
     if(this.isPaused === true){
         this.isPaused = false;
+        this.dispatchEvent('bmPlay');
     }
 };
 
@@ -137,6 +161,7 @@ AnimationItem.prototype.pause = function (name) {
     }
     if(this.isPaused === false){
         this.isPaused = true;
+        this.dispatchEvent('bmPause');
     }
 };
 
@@ -160,6 +185,7 @@ AnimationItem.prototype.stop = function (name) {
     this.isPaused = true;
     this.currentFrame = this.currentRawFrame = 0;
     this.gotoFrame();
+    this.dispatchEvent('bmStop');
 };
 
 AnimationItem.prototype.goToAndStop = function (pos) {
