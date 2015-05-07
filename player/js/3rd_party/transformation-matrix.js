@@ -450,16 +450,17 @@ Matrix.prototype = {
      */
     decompose: function(useLU) {
 
-        var a = this.props[0],
-            b = this.props[1],
-            c = this.props[2],
-            d = this.props[3],
+        var me = this,
+            a = me.a,
+            b = me.b,
+            c = me.c,
+            d = me.d,
             acos = Math.acos,
             atan = Math.atan,
             sqrt = Math.sqrt,
             pi = Math.PI,
 
-            translate = {x: this.props[4], y: this.props[5]},
+            translate = {x: me.e, y: me.f},
             rotation  = 0,
             scale     = {x: 1, y: 1},
             skew      = {x: 0, y: 0},
@@ -529,13 +530,9 @@ Matrix.prototype = {
         var me = this;
 
         return {
-            x: x * this.props[0] + y * this.props[2] + this.props[4],
-            y: x * this.props[1] + y * this.props[3] + this.props[5]
-        };
-        /*return {
             x: x * me.a + y * me.c + me.e,
             y: x * me.b + y * me.d + me.f
-        };*/
+        };
     },
 
     /**

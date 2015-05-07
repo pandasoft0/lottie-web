@@ -1,80 +1,61 @@
-function ShapeItemElement(data,parentElement){
-    this.stylesList = [];
-    this.currentMatrix = new Matrix();
-    this.shape = parentElement;
+function ShapeItemElement(data){
     this.data = data;
-    this.searchShapes(this.data);
+    this.shapeG = document.createElementNS(svgNS, "g");
+    this.pathLength = 0;
+    this.cachedData = [];
+    this.renderedFrame = {
+        path: '',
+        stroke: {},
+        fill: {},
+        tr: {
+            a: []
+        },
+        trim:{},
+        ellipse:{},
+        rect:{}
+    };
+    if(this.data.type === 'pathShape'){
+        this.shape = document.createElementNS(svgNS, "path");
+    }else if(this.data.type === 'rectShape'){
+        this.shape = document.createElementNS(svgNS, "rect");
+    }else if(this.data.type === 'ellipseShape'){
+        this.shape = document.createElementNS(svgNS, "ellipse");
+        if(this.data.trim){
+            this.adjustTrim();
+        }
+    }else{
+        this.shape = document.createElementNS(svgNS, "path");
+    }
+    if(this.data.trim){
+        this.shape.setAttribute('stroke-linecap','round');
+    }else{
+        this.shape.setAttribute('stroke-linejoin','round');
+        this.shape.setAttribute('stroke-linecap','round');
+    }
+    if(!this.data.renderedData){
+        this.data.renderedData = {};
+    }
+    this.shape.setAttribute('name',this.data.name);
+    styleUnselectableDiv(this.shapeG);
     styleUnselectableDiv(this.shape);
+    this.shapeG.appendChild(this.shape);
 }
 
-ShapeItemElement.prototype.searchShapes = function(arr){
-    var i, len = arr.length - 1;
-    var pathNode;
-    for(i=len;i>=0;i-=1){
-        if(arr[i].ty == 'fl' || arr[i].ty == 'st'){
-            pathNode = document.createElementNS(svgNS, "path");
-            this.shape.appendChild(pathNode);
-            this.stylesList.push({
-                path: pathNode,
-                type: arr[i].ty,
-                d: ''
-            })
-        }else if(arr[i].ty == 'gr'){
-            this.searchShapes(arr[i].it);
+ShapeItemElement.prototype.adjustTrim = function(){
+    var trimData = this.data.trim;
+    var i, len = trimData.length;
+    for(i=0;i<len;i+=1){
+        if(trimData[i].o){
+            trimData[i].o -= 90;
         }
     }
 };
 
 ShapeItemElement.prototype.getElement = function(){
-    return this.shape;
+    return this.shapeG;
 };
 
-ShapeItemElement.prototype.renderShape = function(num,matrix){
-    var props = matrix.props;
-    this.currentMatrix.reset();
-    this.currentMatrix.transform(props[0],props[1],props[2],props[3],props[4],props[5]);
-    this.posCount = 0;
-    this.frameNum = num;
-    var i, len = this.stylesList.length;
-    for(i=0;i<len;i+=1){
-        this.stylesList[i].d = '';
-    }
-    len = this.data.length - 1;
-    for(i=len;i>=0;i-=1){
-        if(this.data[i].ty == 'tr'){
-            var mtArr = this.data[i].renderedData[num].mtArr;
-            this.currentMatrix.transform(mtArr[0],mtArr[1],mtArr[2],mtArr[3],mtArr[4],mtArr[5]);
-            this.currentMatrix.translate(-this.data[i].renderedData[num].a[0],-this.data[i].renderedData[num].a[1]);
-        }else if(this.data[i].ty == 'sh'){
-            this.renderPath(this.data[i],num);
-        }else if(this.data[i].ty == 'el'){
-            this.renderEllipse(this.data[i].renderedData[num]);
-        }else if(this.data[i].ty == 'fl'){
-            this.stylesList[this.posCount].path.setAttribute('fill',this.data[i].renderedData[num].color);
-            this.stylesList[this.posCount].path.setAttribute('fill-opacity',this.data[i].renderedData[num].opacity);
-            this.posCount += 1;
-        }else if(this.data[i].ty == 'st'){
-            this.stylesList[this.posCount].path.setAttribute('stroke-width',this.data[i].renderedData[num].width);
-            this.stylesList[this.posCount].path.setAttribute('stroke',this.data[i].renderedData[num].color);
-            this.stylesList[this.posCount].path.setAttribute('stroke-opacity',this.data[i].renderedData[num].opacity);
-            this.stylesList[this.posCount].path.setAttribute('fill-opacity',0);
-            this.posCount += 1;
-        }
-    }
-
-    len = this.stylesList.length;
-    for(i=0;i<len;i+=1){
-        if(this.stylesList[i].lastPath != this.stylesList[i].d){
-            this.stylesList[i].path.setAttribute('d',this.stylesList[i].d);
-            this.stylesList[i].lastPath = this.stylesList[i].d;
-        }
-        //this.stylesList[i].path.setAttribute('transform',this.currentMatrix.toCSS())
-    }
-
-
-
-    return;
-
+ShapeItemElement.prototype.renderShape = function(num){
     this.currentData = this.data.renderedData[num];
     if(this.data.type=="pathShape"){
         this.pathLength = this.renderPath(num);
@@ -91,106 +72,66 @@ ShapeItemElement.prototype.renderShape = function(num,matrix){
     this.renderTransform(num);
 };
 
-ShapeItemElement.prototype.renderPath = function(pathData,num){
-    if(!pathData.renderedFrames){
-        pathData.renderedFrames = [];
+ShapeItemElement.prototype.renderPath = function(num){
+    var animData = this.currentData;
+    var path = animData.path;
+
+    if(path.pathString == this.renderedFrame.path){
+        if(this.data.trim){
+            return this.cachedData.pathLengths[path.pathString];
+        }
+        return;
     }
-    var pathString = '';
-    if(pathData.renderedFrames[num]){
-        pathString = pathData.renderedFrames[num];
-    }else{
-        pathString =  this.createPathString(pathData.renderedData[num].path.pathNodes);
-        pathData.renderedFrames[num] = pathString;
-    }
-    var i, len = this.stylesList.length;
-    for(i=0;i<len;i+=1){
-        //this.stylesList[i].d += pathData.path.pathString;
-        this.stylesList[i].d += pathString;
+    this.renderedFrame.path = path.pathString;
+
+    this.shape.setAttribute('d',path.pathString);
+    if(this.data.trim){
+        if(this.cachedData.pathLengths == null){
+            this.cachedData.pathLengths = {};
+        }
+        if(this.cachedData.pathLengths[path.pathString] == null){
+            this.cachedData.pathLengths[path.pathString] = this.shape.getTotalLength();
+        }
+        return this.cachedData.pathLengths[path.pathString];
     }
 };
 
-ShapeItemElement.prototype.createPathString = function(paths,closed){
-    var pathV,pathO,pathI;
-    var pathString = '';
-    var pathData;
-    var k, kLen;
+ShapeItemElement.prototype.renderEllipse = function(num){
 
-    if(!(paths instanceof Array)){
-        pathV = paths.v;
-        pathO = paths.o;
-        pathI = paths.i;
-        kLen = pathV.length;
-        pt = this.currentMatrix.applyToPoint(pathV[0][0],pathV[0][1]);
-        pathString += "M"+pt.x+','+pt.y;
-        //pathString += "M"+pathV[0].join(',');
-        var pt;
-        for(k=1;k<kLen;k++){
-            //pathString += " C"+pathO[k-1].join(',') + " "+pathI[k].join(',') + " "+pathV[k].join(',');
-            pt = this.currentMatrix.applyToPoint(pathO[k-1][0],pathO[k-1][1]);
-            pathString += " C"+pt.x+','+pt.y;
-            pt = this.currentMatrix.applyToPoint(pathI[k][0],pathI[k][1]);
-            pathString += " "+pt.x+','+pt.y;
-            pt = this.currentMatrix.applyToPoint(pathV[k][0],pathV[k][1]);
-            pathString += " "+pt.x+','+pt.y;
-        }
-        if(closed !== false){
-            //pathString += " C"+pathO[k-1].join(',') + " "+pathI[0].join(',') + " "+pathV[0].join(',');
-            pt = this.currentMatrix.applyToPoint(pathO[k-1][0],pathO[k-1][1]);
-            pathString += " C"+pt.x+','+pt.y;
-            pt = this.currentMatrix.applyToPoint(pathI[0][0],pathI[0][1]);
-            pathString += " "+pt.x+','+pt.y;
-            pt = this.currentMatrix.applyToPoint(pathV[0][0],pathV[0][1]);
-            pathString += " "+pt.x+','+pt.y;
-        }
-        return pathString;
+    var ell = this.currentData.ell;
+
+    if(this.renderedFrame.ellipse.rx != ell.size[0]){
+        this.shape.setAttribute('rx',ell.size[0]/2);
+        this.renderedFrame.ellipse.rx = ell.size[0];
     }
-    var l,lLen = paths.length;
-    pathString = '';
-    for(l = 0;l<lLen;l+=1){
-        pathData = paths[l];
-        pathV = pathData.v;
-        pathO = pathData.o;
-        pathI = pathData.i;
-        kLen = pathV.length;
-        pathString += "M"+pathV[0].join(',');
-        for(k=1;k<kLen;k++){
-            pathString += " C"+pathO[k-1].join(',') + " "+pathI[k].join(',') + " "+pathV[k].join(',');
-        }
-        if(closed !== false){
-            pathString += " C"+pathO[k-1].join(',') + " "+pathI[0].join(',') + " "+pathV[0].join(',');
-        }
+    if(this.renderedFrame.ellipse.ry != ell.size[1]){
+        this.shape.setAttribute('ry',ell.size[1]/2);
+        this.renderedFrame.ellipse.ry = ell.size[1];
     }
-    return pathString;
-}
-
-
-ShapeItemElement.prototype.renderEllipse = function(ellipseData){
-
-    var ellipseStr = 'M';
-    ellipseStr+=ellipseData.p[0] - ellipseData.size[0]/2+','+ellipseData.p[1];
-    ellipseStr+='A'+ellipseData.size[0]/2+','+ellipseData.size[1]/2+' ';
-    ellipseStr+= '0 1,0 ';
-    ellipseStr+=ellipseData.p[0] + ellipseData.size[0]/2+','+ellipseData.p[1];
-    ellipseStr+='A'+ellipseData.size[0]/2+','+ellipseData.size[1]/2+' ';
-    ellipseStr+= '0 1,0 ';
-    ellipseStr+=ellipseData.p[0] - ellipseData.size[0]/2+','+ellipseData.p[1];
-
-    var pSized = this.currentMatrix.applyToPoint(ellipseData.p[0],ellipseData.p[1]);
-    var sSized = this.currentMatrix.applyToPoint(ellipseData.size[0],ellipseData.size[1]);
-
-    ellipseStr = 'M';
-    ellipseStr+=pSized.x - sSized.x/2+','+pSized.y;
-    ellipseStr+='A'+sSized.x/2+','+sSized.y/2+' ';
-    ellipseStr+= '0 1,0 ';
-    ellipseStr+=pSized.x + sSized.x/2+','+pSized.y;
-    ellipseStr+='A'+sSized.x/2+','+sSized.y/2+' ';
-    ellipseStr+= '0 1,0 ';
-    ellipseStr+=pSized.x - sSized.x/2+','+pSized.y;
-
-    var i, len = this.stylesList.length;
-
-    for(i=0;i<len;i+=1){
-        this.stylesList[i].d += ellipseStr;
+    if(this.renderedFrame.ellipse.cx != ell.p[0]){
+        this.shape.setAttribute('cx',ell.p[0]);
+        this.renderedFrame.ellipse.ry = ell.p[0];
+    }
+    if(this.renderedFrame.ellipse.cy != ell.p[1]){
+        this.shape.setAttribute('cy',ell.p[1]);
+        this.renderedFrame.ellipse.ry = ell.p[1];
+    }
+    if(this.data.trim){
+        if(this.cachedData.pathLengths == null){
+            this.cachedData.pathLengths = {};
+        }
+        if(this.cachedData.pathLengths['ellipse_'+num] == null){
+            if(ell.size[0] == ell.size[1]){
+                this.cachedData.pathLengths['ellipse_'+num] = Math.PI*ell.size[0];
+            }else{
+                var major = Math.max(ell.size[0],ell.size[1])/2;
+                var minor = Math.max(ell.size[0],ell.size[1])/2;
+                var h = (major-minor)/(major+minor);
+                var perim = (major+minor)*Math.PI*(1+(1/4)*h+(1/64)*Math.pow(h,2)+(1/256)*Math.pow(h,3));
+                this.cachedData.pathLengths['ellipse_'+num] = perim;
+            }
+        }
+        return this.cachedData.pathLengths['ellipse_'+num];
     }
 };
 
@@ -292,16 +233,6 @@ ShapeItemElement.prototype.renderTransform = function(num){
             this.renderedFrame.tr.a[0] = tr.a[0];
             this.renderedFrame.tr.a[1] = tr.a[1];
             this.shape.setAttribute('transform', 'translate('+(-tr.a[0])+', '+(-tr.a[1])+')');
-        }
-    }
-};
-
-ShapeItemElement.prototype.adjustTrim = function(){
-    var trimData = this.data.trim;
-    var i, len = trimData.length;
-    for(i=0;i<len;i+=1){
-        if(trimData[i].o){
-            trimData[i].o -= 90;
         }
     }
 };

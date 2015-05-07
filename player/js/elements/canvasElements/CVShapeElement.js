@@ -14,7 +14,7 @@ CVShapeElement.prototype.createElements = function(){
         if(this.data.trim){
             this.data.shapes[i].trim = this.data.trim;
         }
-        shapeItem = new CVShapeItemElement(this.data.shapes[i], this.renderer, true);
+        shapeItem = new CVShapeItemElement(this.data.shapes[i], this.renderer);
         this.shapes.push(shapeItem);
     }
 };

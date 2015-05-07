@@ -87,5 +87,4 @@ function createColorMap(){
         colorMap[i] = hex.length == 1 ? '0' + hex : hex;
     }
 }
-
 createColorMap();
