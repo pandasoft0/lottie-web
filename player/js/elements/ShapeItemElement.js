@@ -1,166 +1,175 @@
-function ShapeItemElement(data){
+function ShapeItemElement(data,parentElement){
+    this.stylesList = [];
+    this.currentMatrix = new Matrix();
+    this.shape = parentElement;
     this.data = data;
-    this.shapeG = document.createElementNS(svgNS, "g");
-    this.pathLength = 0;
-    this.cachedData = [];
-    this.renderedFrame = {
-        path: '',
-        stroke: {},
-        fill: {},
-        tr: {
-            a: []
-        },
-        trim:{},
-        ellipse:{},
-        rect:{}
-    };
-    if(this.data.type === 'pathShape'){
-        this.shape = document.createElementNS(svgNS, "path");
-    }else if(this.data.type === 'rectShape'){
-        this.shape = document.createElementNS(svgNS, "rect");
-    }else if(this.data.type === 'ellipseShape'){
-        this.shape = document.createElementNS(svgNS, "ellipse");
-        if(this.data.trim){
-            this.adjustTrim();
-        }
-    }else{
-        this.shape = document.createElementNS(svgNS, "path");
-    }
-    if(this.data.trim){
-        this.shape.setAttribute('stroke-linecap','round');
-    }else{
-        this.shape.setAttribute('stroke-linejoin','round');
-        this.shape.setAttribute('stroke-linecap','round');
-    }
-    if(!this.data.renderedData){
-        this.data.renderedData = {};
-    }
-    this.shape.setAttribute('name',this.data.name);
-    styleUnselectableDiv(this.shapeG);
+    this.searchShapes(this.data);
     styleUnselectableDiv(this.shape);
-    this.shapeG.appendChild(this.shape);
 }
 
-ShapeItemElement.prototype.adjustTrim = function(){
-    var trimData = this.data.trim;
-    var i, len = trimData.length;
-    for(i=0;i<len;i+=1){
-        if(trimData[i].o){
-            trimData[i].o -= 90;
+ShapeItemElement.prototype.searchShapes = function(arr){
+    var i, len = arr.length - 1;
+    var j, jLen;
+    var pathNode;
+    var ownArrays = [];
+    for(i=len;i>=0;i-=1){
+        if(arr[i].ty == 'fl' || arr[i].ty == 'st'){
+            this.stylesList.push({
+                elements: [],
+                type: arr[i].ty,
+                d: ''
+            });
+            arr[i].style = this.stylesList[this.stylesList.length - 1];
+            ownArrays.push(arr[i].style);
+        }else if(arr[i].ty == 'gr'){
+            this.searchShapes(arr[i].it);
+        }else if(arr[i].ty == 'tr'){
+            arr[i].matrix = new Matrix();
+        }else if(arr[i].ty == 'sh'){
+            arr[i].elements = [];
+            jLen = this.stylesList.length;
+            for(j=0;j<jLen;j+=1){
+                if(!this.stylesList[j].closed){
+                    pathNode = document.createElementNS(svgNS, "path");
+                    arr[i].elements.push(pathNode);
+                    this.shape.appendChild(pathNode);
+                    this.stylesList[j].elements.push(pathNode);
+                }
+            }
+
+        }else if(arr[i].ty == 'rc'){
+            arr[i].elements = [];
+            jLen = this.stylesList.length;
+            for(j=0;j<jLen;j+=1){
+                if(!this.stylesList[j].closed){
+                    pathNode = document.createElementNS(svgNS, "rect");
+                    arr[i].elements.push(pathNode);
+                    this.shape.appendChild(pathNode);
+                    this.stylesList[j].elements.push(pathNode);
+                }
+            }
+
+        }else if(arr[i].ty == 'el'){
+            arr[i].elements = [];
+            jLen = this.stylesList.length;
+            for(j=0;j<jLen;j+=1){
+                if(!this.stylesList[j].closed){
+                    pathNode = document.createElementNS(svgNS, "ellipse");
+                    arr[i].elements.push(pathNode);
+                    this.shape.appendChild(pathNode);
+                    this.stylesList[j].elements.push(pathNode);
+                }
+            }
+
         }
+    }
+    len = ownArrays.length;
+    for(i=0;i<len;i+=1){
+        ownArrays[i].closed = true;
+        console.log('ownArrays[i]: ',ownArrays[i]);
     }
 };
 
 ShapeItemElement.prototype.getElement = function(){
-    return this.shapeG;
+    return this.shape;
 };
 
-ShapeItemElement.prototype.renderShape = function(num){
-    this.currentData = this.data.renderedData[num];
-    if(this.data.type=="pathShape"){
-        this.pathLength = this.renderPath(num);
-    }else if(this.data.type=="rectShape"){
-        this.renderRect(num);
-    }else if(this.data.type=="ellipseShape"){
-        this.pathLength = this.renderEllipse(num);
+ShapeItemElement.prototype.renderShape = function(num,matrix,items){
+    if(!items){
+        items = this.data;
     }
-    if(this.data.trim){
-        this.renderTrim(num);
-    }
-    this.renderFill(num);
-    this.renderStroke(num);
-    this.renderTransform(num);
-};
-
-ShapeItemElement.prototype.renderPath = function(num){
-    var animData = this.currentData;
-    var path = animData.path;
-
-    if(path.pathString == this.renderedFrame.path){
-        if(this.data.trim){
-            return this.cachedData.pathLengths[path.pathString];
-        }
-        return;
-    }
-    this.renderedFrame.path = path.pathString;
-
-    this.shape.setAttribute('d',path.pathString);
-    if(this.data.trim){
-        if(this.cachedData.pathLengths == null){
-            this.cachedData.pathLengths = {};
-        }
-        if(this.cachedData.pathLengths[path.pathString] == null){
-            this.cachedData.pathLengths[path.pathString] = this.shape.getTotalLength();
-        }
-        return this.cachedData.pathLengths[path.pathString];
-    }
-};
-
-ShapeItemElement.prototype.renderEllipse = function(num){
-
-    var ell = this.currentData.ell;
-
-    if(this.renderedFrame.ellipse.rx != ell.size[0]){
-        this.shape.setAttribute('rx',ell.size[0]/2);
-        this.renderedFrame.ellipse.rx = ell.size[0];
-    }
-    if(this.renderedFrame.ellipse.ry != ell.size[1]){
-        this.shape.setAttribute('ry',ell.size[1]/2);
-        this.renderedFrame.ellipse.ry = ell.size[1];
-    }
-    if(this.renderedFrame.ellipse.cx != ell.p[0]){
-        this.shape.setAttribute('cx',ell.p[0]);
-        this.renderedFrame.ellipse.ry = ell.p[0];
-    }
-    if(this.renderedFrame.ellipse.cy != ell.p[1]){
-        this.shape.setAttribute('cy',ell.p[1]);
-        this.renderedFrame.ellipse.ry = ell.p[1];
-    }
-    if(this.data.trim){
-        if(this.cachedData.pathLengths == null){
-            this.cachedData.pathLengths = {};
-        }
-        if(this.cachedData.pathLengths['ellipse_'+num] == null){
-            if(ell.size[0] == ell.size[1]){
-                this.cachedData.pathLengths['ellipse_'+num] = Math.PI*ell.size[0];
-            }else{
-                var major = Math.max(ell.size[0],ell.size[1])/2;
-                var minor = Math.max(ell.size[0],ell.size[1])/2;
-                var h = (major-minor)/(major+minor);
-                var perim = (major+minor)*Math.PI*(1+(1/4)*h+(1/64)*Math.pow(h,2)+(1/256)*Math.pow(h,3));
-                this.cachedData.pathLengths['ellipse_'+num] = perim;
+    this.posCount = 0;
+    this.frameNum = num;
+    var i, len;
+    var j, jLen;
+    var styleElem;
+    len = items.length - 1;
+    var groupMatrix;
+    for(i=len;i>=0;i-=1){
+        if(items[i].ty == 'tr'){
+            var props = matrix.props;
+            var mtArr = items[i].renderedData[num].mtArr;
+            groupMatrix = items[i].matrix;
+            groupMatrix.reset().transform(props[0],props[1],props[2],props[3],props[4],props[5]).transform(mtArr[0],mtArr[1],mtArr[2],mtArr[3],mtArr[4],mtArr[5]).translate(-items[i].renderedData[num].a[0],-items[i].renderedData[num].a[1]);
+        }else if(items[i].ty == 'sh'){
+            this.renderPath(items[i],num,groupMatrix);
+        }else if(items[i].ty == 'el'){
+            this.renderEllipse(items[i],num,groupMatrix);
+        }else if(items[i].ty == 'rc'){
+            this.renderRect(items[i],num,groupMatrix);
+        }else if(items[i].ty == 'fl'){
+            styleElem = items[i].style;
+            jLen = styleElem.elements.length;
+            for(j=0;j<jLen;j+=1){
+                styleElem.elements[j].setAttribute('fill',items[i].renderedData[num].color);
+                styleElem.elements[j].setAttribute('fill-opacity',items[i].renderedData[num].opacity);
             }
+        }else if(items[i].ty == 'st'){
+            styleElem = items[i].style;
+            jLen = styleElem.elements.length;
+            for(j=0;j<jLen;j+=1){
+                styleElem.elements[j].setAttribute('stroke-width',items[i].renderedData[num].width);
+                styleElem.elements[j].setAttribute('stroke',items[i].renderedData[num].color);
+                styleElem.elements[j].setAttribute('stroke-opacity',items[i].renderedData[num].opacity);
+                styleElem.elements[j].setAttribute('fill-opacity',0);
+            }
+        }else if(items[i].ty == 'gr'){
+            this.renderShape(num,this.currentMatrix,items[i].it);
         }
-        return this.cachedData.pathLengths['ellipse_'+num];
     }
 };
 
-ShapeItemElement.prototype.renderRect = function(num){
-    var animData = this.currentData;
-    if(animData.rect){
-        var rect = animData.rect;
+ShapeItemElement.prototype.renderPath = function(pathData,num,matrix){
+    if(!pathData.renderedFrames){
+        pathData.renderedFrames = [];
+    }
+    var pathString = '';
+    if(pathData.renderedFrames[num]){
+        pathString = pathData.renderedFrames[num];
+    }else{
+        pathString = pathData.renderedData[num].path.pathString;
+        pathData.renderedFrames[num] = pathString;
+    }
+    var elements = pathData.elements;
+    var i, len = elements.length;
+    for(i=0;i<len;i+=1){
+        //this.stylesList[i].d += pathData.path.pathString;
+        elements[i].setAttribute('d',pathString);
+        elements[i].setAttribute('transform','matrix('+matrix.props.join(',')+')');
+    }
+};
 
-        if(this.renderedFrame.rect.rx != rect.roundness){
-            this.shape.setAttribute('rx',rect.roundness);
-            this.shape.setAttribute('ry',rect.roundness);
-            this.renderedFrame.rect.rx = rect.roundness;
-        }
-        if(this.renderedFrame.rect.width != rect.size[0]){
-            this.shape.setAttribute('width',rect.size[0]);
-            this.renderedFrame.rect.width = rect.size[0];
-        }
-        if(this.renderedFrame.rect.height != rect.size[1]){
-            this.shape.setAttribute('height',rect.size[1]);
-            this.renderedFrame.rect.height = rect.size[1];
-        }
-        if(this.renderedFrame.rect.x != rect.position[0] - rect.size[0]){
-            this.shape.setAttribute('x',rect.position[0] - rect.size[0]/2);
-            this.renderedFrame.rect.x = rect.position[0] - rect.size[0];
-        }
-        if(this.renderedFrame.rect.y != rect.position[1] - rect.size[1]){
-            this.shape.setAttribute('y',rect.position[1] - rect.size[1]/2);
-            this.renderedFrame.rect.y = rect.position[1] - rect.size[1];
-        }
+
+ShapeItemElement.prototype.renderEllipse = function(ellipseData,num,matrix){
+    // cx="40" cy="40" rx="30" ry="15"
+
+
+    var elements = ellipseData.elements;
+    var ellipseAttrs = ellipseData.renderedData[num];
+    console.log(ellipseAttrs);
+    var i, len = elements.length;
+    for(i=0;i<len;i+=1){
+        elements[i].setAttribute('cx',ellipseAttrs.p[0]);
+        elements[i].setAttribute('cy',ellipseAttrs.p[1]);
+        elements[i].setAttribute('rx',ellipseAttrs.size[0]/2);
+        elements[i].setAttribute('ry',ellipseAttrs.size[1]/2);
+        //elements[i].setAttribute('transform','matrix('+matrix.props.join(',')+')');
+    }
+};
+
+ShapeItemElement.prototype.renderRect = function(rectData,num,matrix){
+    var elements = rectData.elements;
+    var ellipseAttrs = rectData.renderedData[num];
+    var animData = this.currentData;
+    var i, len = elements.length;
+    for(i=0;i<len;i+=1){
+        elements[i].setAttribute('rx',ellipseAttrs.roundness);
+        elements[i].setAttribute('ry',ellipseAttrs.roundness);
+        elements[i].setAttribute('width',ellipseAttrs.size[0]);
+        elements[i].setAttribute('height',ellipseAttrs.size[1]);
+        elements[i].setAttribute('x',ellipseAttrs.position[0] - ellipseAttrs.size[0]/2);
+        elements[i].setAttribute('y',ellipseAttrs.position[1] - ellipseAttrs.size[1]/2);
+        //elements[i].setAttribute('transform','matrix('+matrix.props.join(',')+')');
     }
 };
 
@@ -237,9 +246,19 @@ ShapeItemElement.prototype.renderTransform = function(num){
     }
 };
 
+ShapeItemElement.prototype.adjustTrim = function(){
+    var trimData = this.data.trim;
+    var i, len = trimData.length;
+    for(i=0;i<len;i+=1){
+        if(trimData[i].o){
+            trimData[i].o -= 90;
+        }
+    }
+};
+
 ShapeItemElement.prototype.renderTrim = function(num){
     var trimData = this.currentData.trim;
-    if(this.pathLength == 0){
+    if(this.pathLength === 0){
         this.shape.setAttribute('stroke-opacity',0);
     }else{
         if(this.renderedFrame.trim.e == trimData.e && this.renderedFrame.trim.s == trimData.s && this.renderedFrame.trim.o == trimData.o){
