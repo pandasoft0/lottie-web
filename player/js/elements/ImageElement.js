@@ -18,7 +18,6 @@ IImageElement.prototype.createElements = function(){
 
     var img = new Image();
     img.addEventListener('load', imageLoaded, false);
-    img.addEventListener('error', imageLoaded, false);
     img.src = this.path+this.assets[this.data.assetId].path;
 
     this.parent.createElements.call(this);
@@ -54,11 +53,11 @@ IImageElement.prototype.renderFrame = function(num,parentMatrix){
         var renderedFrameData = this.renderedFrames[this.globalData.frameNum];
         if(this.lastData.tr != renderedFrameData.tr){
             this.lastData.tr = renderedFrameData.tr;
-            this.layerElement.setAttribute('transform',renderedFrameData.tr);
+            this.image.setAttribute('transform',renderedFrameData.tr);
         }
         if(this.lastData.o != renderedFrameData.o){
             this.lastData.o = renderedFrameData.o;
-            this.layerElement.setAttribute('opacity',renderedFrameData.o);
+            this.image.setAttribute('opacity',renderedFrameData.o);
         }
     }
 };

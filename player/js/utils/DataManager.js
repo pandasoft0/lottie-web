@@ -106,12 +106,8 @@ function dataFunctionManager(){
         var i, len = arr.length;
         var j, jLen;
         var transformData;
-        var isTrimmed = false;
-        for(i=len-1;i>=0;i-=1){
+        for(i=0;i<len;i+=1){
             arr[i].renderedData = [];
-            if(arr[i].ty == 'tm'){
-                isTrimmed = true;
-            }
             if(arr[i].ty == 'fl' || arr[i].ty == 'st'){
                 if(arr[i].o instanceof Array){
                     convertNumericValue(arr[i].o,1/100);
@@ -119,7 +115,6 @@ function dataFunctionManager(){
                     arr[i].o *= 1/100;
                 }
             }else if(arr[i].ty == 'sh'){
-                arr[i].trimmed = isTrimmed;
                 if(arr[i].ks.i){
                     convertPathsToAbsoluteValues(arr[i].ks);
                 }else{
@@ -565,48 +560,18 @@ function dataFunctionManager(){
         return propertyArray;
     }
 
-    function getSegmentsLength(keyframes,closed){
-        if(keyframes.__lengths){
-            return;
-        }
-        keyframes.__lengths = [];
-        keyframes.__totalLength = 0;
-        var pathV = keyframes.v;
-        var pathO = keyframes.o;
-        var pathI = keyframes.i;
-        var i, len = pathV.length;
-        for(i=0;i<len-1;i+=1){
-            keyframes.__lengths.push(bez.getBezierLength(pathV[i],pathV[i+1],pathO[i],pathI[i+1]));
-            keyframes.__totalLength += keyframes.__lengths[i].addedLength;
-        }
-        if(closed){
-            keyframes.__lengths.push(bez.getBezierLength(pathV[i],pathV[0],pathO[i],pathI[0]));
-            keyframes.__totalLength += keyframes.__lengths[i].addedLength;
-        }
-    }
-
-    function interpolateShape(shapeData, frameNum, offsetTime, renderType, isMask, trimData){
-        var isTrimmed = trimData.length > 0;
+    function interpolateShape(shapeData, frameNum, offsetTime, renderType, isMask){
         var pathData = {};
         pathData.closed = isMask ? shapeData.cl : shapeData.closed;
         var keyframes = isMask ? shapeData.pt : shapeData.ks;
         if(keyframes.v){
-
-            if(!isTrimmed){
-                if(renderType == 'svg'){
-                    if(!keyframes.__pathString){
-                        keyframes.__pathString = createPathString(keyframes,pathData.closed);
-                    }
-                    pathData.pathString = keyframes.__pathString;
-                }else{
-                    pathData.pathNodes = keyframes;
+            if(renderType == 'svg'){
+                if(!keyframes.__pathString){
+                    keyframes.__pathString = createPathString(keyframes,pathData.closed);
                 }
+                pathData.pathString = keyframes.__pathString;
             }else{
-                if(renderType == 'svg'){
-                    pathData.pathString = trimPath(keyframes,pathData.closed, trimData, true);
-                }else{
-                    pathData.pathNodes = trimPath(keyframes,pathData.closed, trimData, false);
-                }
+                pathData.pathNodes = keyframes;
             }
             return pathData;
         }else{
@@ -636,24 +601,16 @@ function dataFunctionManager(){
                         shapeData.v.push(coordsVData);
                     }
                     propertyArray.push(shapeData);
-                    if(renderType == 'svg' && !isTrimmed){
+                    if(renderType == 'svg'){
                         keyframes.__minValue = createPathString(propertyArray,pathData.closed);
                     }else{
                         keyframes.__minValue = propertyArray[0];
                     }
                 }
-                if(!isTrimmed){
-                    if(renderType == 'svg'){
-                        pathData.pathString = keyframes.__minValue;
-                    }else{
-                        pathData.pathNodes = keyframes.__minValue;
-                    }
+                if(renderType == 'svg'){
+                    pathData.pathString = keyframes.__minValue;
                 }else{
-                    if(renderType == 'svg'){
-                        pathData.pathString = trimPath(keyframes.__minValue,pathData.closed, trimData, true);
-                    }else{
-                        pathData.pathNodes = trimPath(keyframes.__minValue,pathData.closed, trimData, false);
-                    }
+                    pathData.pathNodes = keyframes.__minValue;
                 }
                 return pathData;
             }else if(frameNum > keyframes[keyframes.length - 1].t-offsetTime){
@@ -675,24 +632,16 @@ function dataFunctionManager(){
                         shapeData.v.push(coordsVData);
                     }
                     propertyArray.push(shapeData);
-                    if(renderType == 'svg' && !isTrimmed){
+                    if(renderType == 'svg'){
                         keyframes.__maxValue = createPathString(propertyArray,pathData.closed);
                     }else{
                         keyframes.__maxValue = propertyArray[0];
                     }
                 }
-                if(!isTrimmed){
-                    if(renderType == 'svg'){
-                        pathData.pathString = keyframes.__maxValue;
-                    }else{
-                        pathData.pathNodes = keyframes.__maxValue;
-                    }
+                if(renderType == 'svg'){
+                    pathData.pathString = keyframes.__maxValue;
                 }else{
-                    if(renderType == 'svg'){
-                        pathData.pathString = trimPath(keyframes.__maxValue,pathData.closed, trimData, true);
-                    }else{
-                        pathData.pathNodes = trimPath(keyframes.__maxValue,pathData.closed, trimData, false);
-                    }
+                    pathData.pathNodes = keyframes.__maxValue;
                 }
                 return pathData;
             }else{
@@ -769,187 +718,16 @@ function dataFunctionManager(){
                         propertyArray.push(shapeData);
                     }
                 }
-                if(!isTrimmed){
-                    if(renderType == 'svg'){
-                        pathData.pathString = createPathString(propertyArray[0],pathData.closed);
-                    }else{
-                        pathData.pathNodes = propertyArray[0];
-                    }
+                if(renderType == 'svg'){
+                    pathData.pathString = createPathString(propertyArray[0],pathData.closed);
+                    //pathData.pathNodes = propertyArray[0];
                 }else{
-                    if(renderType == 'svg'){
-                        pathData.pathString = trimPath(propertyArray[0],pathData.closed, trimData, true);
-                    }else{
-                        pathData.pathNodes = trimPath(propertyArray[0],pathData.closed, trimData, false);
-                    }
+                    pathData.pathNodes = propertyArray[0];
                 }
                 return pathData;
             }
         }
     }
-
-    var trimPath = (function(){
-
-        var pathStarted = false;
-        var pathString = '';
-        var nextI,nextV,nextO;
-        var nextLengths;
-        var nextTotalLength;
-        var segmentCount;
-        function addSegment(pt1,pt2,pt3,pt4, lengthData){
-            nextO[segmentCount] = pt2;
-            nextI[segmentCount+1] = pt3;
-            nextV[segmentCount+1] = pt4;
-            if(!pathStarted){
-                pathString += " M"+pt1.join(',');
-                pathStarted = true;
-                if(!nextV[segmentCount]){
-                    nextV[segmentCount] = {};
-                }
-                nextV[segmentCount].__newSegment = pt1;
-            }else{
-                nextV[segmentCount] = pt1;
-            }
-            pathString += " C"+pt2.join(',') + " "+pt3.join(',') + " "+pt4.join(',');
-            nextLengths[segmentCount] = lengthData;
-            segmentCount+=1;
-            nextTotalLength += lengthData.addedLength;
-        }
-
-        return function (paths,closed, trimData, stringifyFlag){
-            getSegmentsLength(paths,closed);
-            var j, jLen = trimData.length;
-            var finalPaths = paths;
-            nextV = nextI = nextO = null;
-            for(j=jLen-1;j>=0;j-=1){
-                var segments = [];
-                var o = (trimData[j].o%360)/360;
-                if(o == 0 && trimData[j].s == 0 && trimData[j].e == 100){
-                    continue;
-                }
-                pathString = '';
-                pathStarted = false;
-                nextI = [];
-                nextO = [];
-                nextV = [];
-                nextLengths = [];
-                nextTotalLength = 0;
-                if(o < 0){
-                    o += 1;
-                }
-                var s = trimData[j].s/100 + o;
-                var e = (trimData[j].e/100) + o;
-                if(s == e){
-                    if(stringifyFlag){
-                        return '';
-                    }else{
-                        return {}
-                    }
-                }
-                if(s>e){
-                    var _s = s;
-                    s = e;
-                    e = _s;
-                }
-                if(e <= 1){
-                    segments.push({s:finalPaths.__totalLength*s,e:finalPaths.__totalLength*e});
-                }else{
-                    segments.push({s:finalPaths.__totalLength*s,e:finalPaths.__totalLength});
-                    segments.push({s:0,e:finalPaths.__totalLength*(e-1)});
-                }
-
-                var pathV,pathO,pathI, lengths;
-                var k, kLen;
-                pathV = finalPaths.v;
-                pathO = finalPaths.o;
-                pathI = finalPaths.i;
-                lengths = finalPaths.__lengths;
-                kLen = pathV.length;
-                var addedLength = 0, segmentLength = 0;
-                var i, len = segments.length;
-                var segment;
-                segmentCount = 0;
-                for(i=0;i<len;i+=1){
-                    addedLength = 0;
-                    for(k=1;k<kLen;k++){
-                        segmentLength = lengths[k-1].addedLength;
-                        if(addedLength + segmentLength < segments[i].s){
-                            addedLength += segmentLength;
-                            continue;
-                        }else if(addedLength > segments[i].e){
-                            break;
-                        }
-                        if(segments[i].s <= addedLength && segments[i].e >= addedLength + segmentLength){
-                            addSegment(pathV[k-1],pathO[k-1],pathI[k],pathV[k],lengths[k-1]);
-                        }else{
-                            segment = bez.getNewSegment(pathV[k-1],pathV[k],pathO[k-1],pathI[k], (segments[i].s - addedLength)/segmentLength,(segments[i].e - addedLength)/segmentLength, lengths[k-1]);
-                            addSegment(segment.pt1,segment.pt3,segment.pt4,segment.pt2,bez.getBezierLength(segment.pt1,segment.pt4,segment.pt2,segment.pt3));
-                        }
-                        addedLength += segmentLength;
-                    }
-                    if(closed !== false){
-                        if(!(addedLength > segments[i].e)){
-                            segmentLength = lengths[k-1].addedLength;
-                            if(segments[i].s <= addedLength && segments[i].e >= addedLength + segmentLength){
-                                addSegment(pathV[k-1],pathO[k-1],pathI[0],pathV[0],lengths[k-1]);
-                            }else{
-                                segment = bez.getNewSegment(pathV[k-1],pathV[0],pathO[k-1],pathI[0], (segments[i].s - addedLength)/segmentLength,(segments[i].e - addedLength)/segmentLength, lengths[k-1]);
-                                addSegment(segment.pt1,segment.pt3,segment.pt4,segment.pt2,bez.getBezierLength(segment.pt1,segment.pt4,segment.pt2,segment.pt3));
-                            }
-                        }
-                    }else{
-                        pathStarted = false;
-                    }
-                }
-                //console.log('pathString: ',pathString);
-                finalPaths = {
-                    v : nextV,
-                    o : nextO,
-                    i : nextI,
-                    __totalLength : nextTotalLength,
-                    __lengths : nextLengths
-                }
-                if(trimData[j].o != 0 || trimData[j].s != 0 || trimData[j].e != 100){
-                    closed = false;
-                }
-            }
-            if(!nextV){
-                pathV = finalPaths.v;
-                pathO = finalPaths.o;
-                pathI = finalPaths.i;
-            }else{
-                pathV = nextV;
-                pathO = nextO;
-                pathI = nextI;
-            }
-            kLen = pathV.length;
-            if(stringifyFlag){
-                pathString = '';
-                //pathString += "M"+pathV[0].join(',');
-                for(k=1;k<kLen;k++){
-                    if(pathV[k-1].__newSegment){
-                        pathString += "M"+pathV[k-1].__newSegment.join(',');
-                    }else if(k == 1){
-                        pathString += "M"+pathV[0].join(',');
-                    }else if(pathV[k-1].__newSegment){
-                        pathString += "M"+pathV[k-1].__newSegment.join(',');
-                    }
-                    pathString += " C"+pathO[k-1].join(',') + " "+pathI[k].join(',') + " "+pathV[k].join(',');
-                }
-                if(closed !== false){
-                    //pathString += " C"+pathO[k-1].join(',') + " "+pathI[0].join(',') + " "+pathV[0].join(',');
-                }
-                return pathString;
-            }else{
-                return {
-                    i: pathI,
-                    o: pathO,
-                    v: pathV
-                }
-            }
-        }
-    }());
-
-
 
     function createPathString(paths,closed){
         var pathV,pathO,pathI;
@@ -1069,21 +847,18 @@ function dataFunctionManager(){
         }
     }
 
-    function iterateShape(arr,offsettedFrameNum,startTime,renderType,addedTrim){
+    function iterateShape(arr,offsettedFrameNum,startTime,renderType){
         var i, len = arr.length;
         var shapeItem;
         var fillColor, fillOpacity;
         var elmPos,elmSize,elmRound;
         var strokeColor,strokeOpacity,strokeWidth;
-        if(!addedTrim){
-            addedTrim = [];
-        }
         var trimS,trimE,trimO;
-        for(i=len-1;i>=0;i-=1){
+        for(i=0;i<len;i+=1){
             shapeItem = arr[i];
             if(shapeItem.ty == 'sh'){
                 shapeItem.renderedData[offsettedFrameNum] = {
-                    path: interpolateShape(shapeItem,offsettedFrameNum, startTime,renderType,false,addedTrim)
+                    path: interpolateShape(shapeItem,offsettedFrameNum, startTime,renderType)
                 };
             }else if(shapeItem.ty == 'fl'){
                 fillColor = getInterpolatedValue(shapeItem.c,offsettedFrameNum, startTime,interpolatedParams);
@@ -1156,20 +931,13 @@ function dataFunctionManager(){
                 trimS = getInterpolatedValue(shapeItem.s,offsettedFrameNum, startTime,interpolatedParams);
                 trimE = getInterpolatedValue(shapeItem.e,offsettedFrameNum, startTime,interpolatedParams);
                 trimO = getInterpolatedValue(shapeItem.o,offsettedFrameNum, startTime,interpolatedParams);
-                var trimData = {
+                shapeItem.renderedData[offsettedFrameNum] = {
                     s: trimS,
                     e: trimE,
                     o: trimO
                 };
-                addedTrim.push(trimData);
-                shapeItem.renderedData[offsettedFrameNum] = trimData;
-                /*var currentStrimS = addedTrim.s;
-                var currentStrimE = addedTrim.e;
-                addedTrim.o += trimData.o;
-                addedTrim.s = currentStrimS + (currentStrimE - currentStrimS)*(trimData.s/100);
-                addedTrim.e = currentStrimE - (currentStrimE - currentStrimS)*(trimData.e/100);*/
             }else if(shapeItem.ty == 'gr'){
-                iterateShape(shapeItem.it,offsettedFrameNum,startTime,renderType,addedTrim);
+                iterateShape(shapeItem.it,offsettedFrameNum,startTime,renderType);
             }
         }
     }

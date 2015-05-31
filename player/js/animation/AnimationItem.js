@@ -140,9 +140,9 @@ AnimationItem.prototype.checkLoaded = function () {
     this.renderer.buildStage(this.container, this.layers);
     if (this.pendingElements === 0) {
         if(this.prerenderFramesFlag){
-            this.prerenderFrames(this.firstFrame);
-            dataManager.renderFrame(this.animationID,this.currentFrame);
-            this.renderer.renderFrame(this.currentFrame);
+            this.prerenderFrames(0);
+            dataManager.renderFrame(this.animationID,this.currentFrame + this.firstFrame);
+            this.renderer.renderFrame(this.currentFrame + this.firstFrame);
         }else{
             this.isLoaded = true;
             this.gotoFrame();
@@ -165,7 +165,7 @@ AnimationItem.prototype.prerenderFrames = function(count){
             this.play();
         }
     }else{
-        dataManager.renderFrame(this.animationID,this.renderedFrameCount);
+        dataManager.renderFrame(this.animationID,this.renderedFrameCount + this.firstFrame);
         this.renderedFrameCount+=1;
         if(count > 5){
             setTimeout(this.prerenderFrames.bind(this),0);
@@ -193,8 +193,8 @@ AnimationItem.prototype.renderFrame = function () {
     if(this.isLoaded === false){
         return;
     }
-    dataManager.renderFrame(this.animationID,this.currentFrame + this.firstFrame);
-    this.renderer.renderFrame(this.currentFrame + this.firstFrame);
+    dataManager.renderFrame(this.animationID,this.currentFrame);
+    this.renderer.renderFrame(this.currentFrame);
 };
 
 AnimationItem.prototype.play = function (name) {
