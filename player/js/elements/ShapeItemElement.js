@@ -6,18 +6,11 @@ function ShapeItemElement(data,parentElement,globalData){
     this.globalData = globalData;
     this.searchShapes(this.data);
     styleUnselectableDiv(this.shape);
-    this.currentTrim = {
-        s:0,
-        e:100,
-        o:0,
-        active : false
-    }
 }
 
 ShapeItemElement.prototype.searchShapes = function(arr){
     var i, len = arr.length - 1;
     var j, jLen;
-    var k, kLen;
     var pathNode;
     var ownArrays = [];
     for(i=len;i>=0;i-=1){
@@ -51,20 +44,9 @@ ShapeItemElement.prototype.searchShapes = function(arr){
                 tr:''
             };
             jLen = this.stylesList.length;
-            kLen = arr[i].ks.v ? arr[i].ks.v.length :  arr[i].ks[0].s[0].v.length;
             for(j=0;j<jLen;j+=1){
                 if(!this.stylesList[j].closed){
                     pathNode = document.createElementNS(svgNS, "path");
-                    /*pathNode.__items = [];
-                    pathNode.__items.push(pathNode.createSVGPathSegMovetoAbs(0,0));
-                    pathNode.pathSegList.appendItem(pathNode.__items[0]);
-                    if(arr[i].closed){
-                        kLen += 1;
-                    }
-                    for(k=1;k<kLen;k+=1){
-                        pathNode.__items.push(pathNode.createSVGPathSegCurvetoCubicAbs(0,0,0,0,0,0));
-                        pathNode.pathSegList.appendItem(pathNode.__items[k]);
-                    }*/
                     arr[i].elements.push(pathNode);
                     this.shape.appendChild(pathNode);
                     this.stylesList[j].elements.push(pathNode);
@@ -92,20 +74,12 @@ ShapeItemElement.prototype.searchShapes = function(arr){
             jLen = this.stylesList.length;
             for(j=0;j<jLen;j+=1){
                 if(!this.stylesList[j].closed){
-                    if(arr[i].trimmed){
-                        pathNode = document.createElementNS(svgNS, "path");
-                    }else{
-                        pathNode = document.createElementNS(svgNS, "rect");
-                    }
+                    pathNode = document.createElementNS(svgNS, "rect");
                     arr[i].elements.push(pathNode);
                     this.shape.appendChild(pathNode);
                     this.stylesList[j].elements.push(pathNode);
                     if(this.stylesList[j].type == 'st'){
                         pathNode.setAttribute('fill-opacity',0);
-                        if(arr[i].trimmed){
-                            pathNode.setAttribute('stroke-linejoin','round');
-                            pathNode.setAttribute('stroke-linecap','round');
-                        }
                     }
                 }
             }
@@ -175,9 +149,6 @@ ShapeItemElement.prototype.renderShape = function(num,parentTransform,items){
     if(!items){
         items = this.data;
     }
-    if(this.currentTrim.active){
-        this.currentTrim.active = false;
-    }
     this.posCount = 0;
     this.frameNum = num;
     var i, len;
@@ -204,19 +175,13 @@ ShapeItemElement.prototype.renderShape = function(num,parentTransform,items){
         }else if(items[i].ty == 'el'){
             this.renderEllipse(items[i],num,groupTransform);
         }else if(items[i].ty == 'rc'){
-            if(items[i].trimmed){
-                this.renderPath(items[i],num,groupTransform);
-            }else{
-                this.renderRect(items[i],num,groupTransform);
-            }
+            this.renderRect(items[i],num,groupTransform);
         }else if(items[i].ty == 'fl'){
             this.renderFill(items[i],num);
         }else if(items[i].ty == 'st'){
             this.renderStroke(items[i],num);
         }else if(items[i].ty == 'gr'){
             this.renderShape(num,groupTransform,items[i].it);
-        }else if(items[i].ty == 'tm'){
-            //
         }
     }
 };
@@ -235,60 +200,7 @@ ShapeItemElement.prototype.renderPath = function(pathData,num,transform){
     var opacity = renderedFrameData.o;
     var elements = pathData.elements;
     var i, len = elements.length;
-    var pathNodes = pathData.renderedData[num].path.pathNodes;
-    //var j, jLen = pathNodes.v.length;
-    var elem, item;
     for(i=0;i<len;i+=1){
-        elem = elements[i];
-        /*item = elem.__items[0];
-        if(item.x != pathNodes.v[0][0]){
-            item.x = pathNodes.v[0][0];
-        }
-        if(item.y != pathNodes.v[0][1]){
-            item.y = pathNodes.v[0][1];
-        }
-        for(j = 1; j < jLen ; j +=1){
-            item = elem.__items[j];
-            if(item.x != pathNodes.v[j][0]){
-                item.x = pathNodes.v[j][0];
-            }
-            if(item.y != pathNodes.v[j][1]){
-                item.y = pathNodes.v[j][1];
-            }
-            if(item.x1 != pathNodes.o[j-1][0]){
-                item.x1 = pathNodes.o[j-1][0];
-            }
-            if(item.y1 != pathNodes.o[j-1][1]){
-                item.y1 = pathNodes.o[j-1][1];
-            }
-            if(item.x2 != pathNodes.i[j][0]){
-                item.x2 = pathNodes.i[j][0];
-            }
-            if(item.y2 != pathNodes.i[j][1]){
-                item.y2 = pathNodes.i[j][1];
-            }
-        }
-        if(pathData.closed){
-            item = elem.__items[j];
-            if(item.x != pathNodes.v[0][0]){
-                item.x = pathNodes.v[0][0];
-            }
-            if(item.y != pathNodes.v[0][1]){
-                item.y = pathNodes.v[0][1];
-            }
-            if(item.x1 != pathNodes.o[j-1][0]){
-                item.x1 = pathNodes.o[j-1][0];
-            }
-            if(item.y1 != pathNodes.o[j-1][1]){
-                item.y1 = pathNodes.o[j-1][1];
-            }
-            if(item.x2 != pathNodes.i[0][0]){
-                item.x2 = pathNodes.i[0][0];
-            }
-            if(item.y2 != pathNodes.i[0][1]){
-                item.y2 = pathNodes.i[0][1];
-            }
-        }*/
         if(pathData.lastData.d != pathString){
             elements[i].setAttribute('d',pathString);
         }
@@ -448,8 +360,6 @@ ShapeItemElement.prototype.renderFill = function(styleData,num){
 };
 
 ShapeItemElement.prototype.renderStroke = function(styleData,num){
-    /*stroke-dasharray: 10 10 20;
-     stroke-dashoffset: 276;*/
     var fillData = styleData.renderedData[num];
     var styleElem = styleData.style;
     if(!styleData.renderedFrames[this.globalData.frameNum]){
@@ -457,9 +367,6 @@ ShapeItemElement.prototype.renderStroke = function(styleData,num){
             c: fillData.color,
             o: fillData.opacity,
             w: fillData.width
-        };
-        if(fillData.dashes){
-            styleData.renderedFrames[this.globalData.frameNum].d = fillData.dashes;
         }
     }
 
@@ -477,7 +384,7 @@ ShapeItemElement.prototype.renderStroke = function(styleData,num){
         if(styleData.lastData.o != o){
             elements[i].setAttribute('stroke-opacity',o);
         }
-        if(styleData.lastData.o != o){
+        if(styleData.lastData.w != w){
             elements[i].setAttribute('stroke-width',w);
         }
     }

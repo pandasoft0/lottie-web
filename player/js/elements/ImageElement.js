@@ -18,7 +18,6 @@ IImageElement.prototype.createElements = function(){
 
     var img = new Image();
     img.addEventListener('load', imageLoaded, false);
-    img.addEventListener('error', imageLoaded, false);
     img.src = this.path+this.assets[this.data.assetId].path;
 
     this.parent.createElements.call(this);
