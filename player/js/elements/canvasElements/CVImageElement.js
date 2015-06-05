@@ -14,15 +14,9 @@ CVImageElement.prototype.createElements = function(){
     var imageLoaded = function(){
         self.animationItem.elementLoaded();
     };
-    var imageFailed = function(){
-        console.log('imageFailed');
-        self.failed = true;
-        self.animationItem.elementLoaded();
-    };
 
     this.img = new Image();
     this.img.addEventListener('load', imageLoaded, false);
-    this.img.addEventListener('error', imageFailed, false);
     this.img.src = this.path+this.assets[this.data.assetId].path;
 
     this.parent.createElements.call(this);
@@ -30,9 +24,6 @@ CVImageElement.prototype.createElements = function(){
 };
 
 CVImageElement.prototype.draw = function(){
-    if(this.failed){
-        return;
-    }
     this.renderer.canvasContext.save();
     if(this.parent.draw.call(this,false)===false){
         this.renderer.canvasContext.restore();

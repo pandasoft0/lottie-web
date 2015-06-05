@@ -3,6 +3,7 @@ function CVShapeItemElement(data,renderer,mainFlag,globalData){
     this.globalData = globalData;
     this.renderer = renderer;
     this.frameNum = -1;
+    this.trims = [];
     this.dataLength = this.data.length;
     this.mainFlag = mainFlag;
     this.stylesList = [];
@@ -33,6 +34,8 @@ function CVShapeItemElement(data,renderer,mainFlag,globalData){
                 styleData.width = 0;
             }
             this.stylesPool.push(styleData);
+        }else if(this.data[i].ty == 'sh' || this.data[i].ty == 'el' || this.data[i].ty == 'rc'){
+            //this.data[i].pth = new Path2D();
         }
     }
 }
@@ -46,24 +49,14 @@ CVShapeItemElement.prototype.drawPaths = function(cacheFlag){
         stylesList = this.renderedPaths[this.globalData.frameNum];
     }
     var i, len = stylesList.length;
-    var ctx = this.renderer.canvasContext;
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    this.renderer.canvasContext.save();
     for(i=0;i<len;i+=1){
         if(stylesList[i].type == 'stroke'){
             //this.renderer.canvasContext.save();
-            ctx.globalAlpha *= stylesList[i].opacity;
-            ctx.strokeStyle = stylesList[i].value;
-            ctx.lineWidth = stylesList[i].width;
-            if(stylesList[i].dasharray){
-                ctx.setLineDash(stylesList[i].dasharray);
-                ctx.lineDashOffset = stylesList[i].dashoffset;
-            }else{
-                ctx.setLineDash([]);
-                ctx.lineDashOffset = 0;
-            }
-            ctx.stroke(stylesList[i].path);
+            this.renderer.canvasContext.globalAlpha *= stylesList[i].opacity;
+            this.renderer.canvasContext.strokeStyle = stylesList[i].value;
+            this.renderer.canvasContext.lineWidth = stylesList[i].width;
+            this.renderer.canvasContext.stroke(stylesList[i].path);
             //this.renderer.canvasContext.restore();
             if(cacheFlag){
                 cache.push({
@@ -72,17 +65,13 @@ CVShapeItemElement.prototype.drawPaths = function(cacheFlag){
                     value: stylesList[i].value,
                     width: stylesList[i].width,
                     path: stylesList[i].path
-                });
-                if(stylesList[i].dasharray){
-                    cache[cache.length-1].dasharray = stylesList[i].dasharray;
-                    cache[cache.length-1].dashoffset = stylesList[i].dashoffset;
-                }
+                })
             }
         }else if(stylesList[i].type == 'fill'){
             //this.renderer.canvasContext.save();
-            ctx.globalAlpha *= stylesList[i].opacity;
-            ctx.fillStyle = stylesList[i].value;
-            ctx.fill(stylesList[i].path);
+            this.renderer.canvasContext.globalAlpha *= stylesList[i].opacity;
+            this.renderer.canvasContext.fillStyle = stylesList[i].value;
+            this.renderer.canvasContext.fill(stylesList[i].path);
             //this.renderer.canvasContext.restore();
             if(cacheFlag){
                 cache.push({
@@ -94,7 +83,7 @@ CVShapeItemElement.prototype.drawPaths = function(cacheFlag){
             }
         }
     }
-    ctx.restore();
+    this.renderer.canvasContext.restore();
     if(cacheFlag){
         this.renderedPaths[this.globalData.frameNum] = cache;
     }
@@ -131,6 +120,9 @@ CVShapeItemElement.prototype.renderShape = function(parentStylesList, parentMatr
         this.currentMatrix.b = this.currentMatrix.c = this.currentMatrix.e = this.currentMatrix.f = 0;
     }
     len = this.dataLength - 1;
+    var ctx = this.renderer.canvasContext;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     for(i=len;i>=0;i-=1){
         if(this.data[i].ty == 'gr'){
             this.data[i].item.renderShape(this.stylesList,this.currentMatrix);
@@ -141,11 +133,7 @@ CVShapeItemElement.prototype.renderShape = function(parentStylesList, parentMatr
         }else if(this.data[i].ty == 'el'){
             this.renderEllipse(this.data[i]);
         }else if(this.data[i].ty == 'rc'){
-            if(this.data[i].trimmed){
-                this.renderPath(this.data[i]);
-            }else{
-                this.renderRect(this.data[i]);
-            }
+            this.renderRect(this.data[i]);
         }else if(this.data[i].ty == 'fl'){
             this.renderFill(this.data[i]);
         }else if(this.data[i].ty == 'st'){
@@ -179,31 +167,19 @@ CVShapeItemElement.prototype.renderTransform = function(animData){
 };
 
 CVShapeItemElement.prototype.renderPath = function(data){
-    if(data.trimmed){
-        var ctx = this.renderer.canvasContext;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-    }
     var path = data.renderedData[this.frameNum].path;
     var path2d = new Path2D();
+
     var pathNodes = path.pathNodes;
     if(pathNodes instanceof Array){
         pathNodes = pathNodes[0];
     }
-    if(!pathNodes.v){
-        return;
-    }
-    var i,len = pathNodes.v.length;
-    var stops = pathNodes.s ? pathNodes.s : [];
+    var i,len = pathNodes.i.length;
+    path2d.moveTo(pathNodes.v[0][0],pathNodes.v[0][1]);
     for(i=1;i<len;i+=1){
-        if(stops[i-1]){
-            path2d.moveTo(stops[i-1][0],stops[i-1][1]);
-        }else if(i==1){
-            path2d.moveTo(pathNodes.v[0][0],pathNodes.v[0][1]);
-        }
         path2d.bezierCurveTo(pathNodes.o[i-1][0],pathNodes.o[i-1][1],pathNodes.i[i][0],pathNodes.i[i][1],pathNodes.v[i][0],pathNodes.v[i][1]);
     }
-    if(path.closed && !(data.trimmed && !pathNodes.c)){
+    if(path.closed){
         path2d.bezierCurveTo(pathNodes.o[i-1][0],pathNodes.o[i-1][1],pathNodes.i[0][0],pathNodes.i[0][1],pathNodes.v[0][0],pathNodes.v[0][1]);
     }
     this.addPathToStyles(path2d);
@@ -299,22 +275,6 @@ CVShapeItemElement.prototype.renderStroke = function(animData){
         this.stylesPool[this.currentStylePoolPos].width = stroke.width;
         this.stylesPool[this.currentStylePoolPos].opacity = this.opacityMultiplier;
         this.stylesPool[this.currentStylePoolPos].value = stroke.opacity < 1 ? fillColorToString(stroke.color, stroke.opacity) : fillColorToString(stroke.color);
-
-        if(stroke.dashes){
-            var d = stroke.dashes;
-            var j, jLen = d.length;
-            var dasharray = [];
-            var dashoffset = '';
-            for(j=0;j<jLen;j+=1){
-                if(d[j].n != 'o'){
-                    dasharray.push(d[j].v);
-                }else{
-                    dashoffset = d[j].v;
-                }
-            }
-            this.stylesPool[this.currentStylePoolPos].dasharray = dasharray;
-            this.stylesPool[this.currentStylePoolPos].dashoffset = dashoffset;
-        }
         this.stylesList.push(this.stylesPool[this.currentStylePoolPos]);
         this.ownStylesList.push(this.stylesList[this.stylesList.length -1]);
         this.currentStylePoolPos += 1;
