@@ -9,10 +9,11 @@ CVCompElement.prototype.prepareFrame = function(num){
     if(renderParent===false){
         return;
     }
-    var i,len = this.elements.length;
+
+    var i,len = this.layers.length;
     var timeRemapped = this.data.tm ? this.data.tm[num] < 0 ? 0 : num >= this.data.tm.length ? this.data.tm[this.data.tm.length - 1] : this.data.tm[num] : num;
     for( i = 0; i < len; i+=1 ){
-        this.elements[i].prepareFrame(timeRemapped - this.layers[i].startTime);
+        this.layers[i].element.prepareFrame(timeRemapped - this.layers[i].startTime);
     }
 };
 
@@ -24,15 +25,7 @@ CVCompElement.prototype.draw = function(){
     }
     var i,len = this.layers.length;
     for( i = len - 1; i >= 0; i -= 1 ){
-        this.elements[i].draw();
+        this.layers[i].element.draw();
     }
     this.renderer.canvasContext.restore();
-};
-
-CVCompElement.prototype.setElements = function(elems){
-    this.elements = elems;
-};
-
-CVCompElement.prototype.getElements = function(){
-    return this.elements;
 };

@@ -423,10 +423,8 @@ var UI;
     var callback;
     var pendingLayers = [];
     var totalLayers = 0;
-    var exportedComps = [];
 
     function getCompositionAnimationData(compo, compositionData,fDirectory){
-        exportedComps = [];
         mainComp = compo;
         frameRate = mainComp.frameRate;
         currentRenderFrame = 0;
@@ -520,7 +518,7 @@ var UI;
                     delete shapes[j].lastData;
                 }
             }
-            if(layerOb.type == 'PreCompLayer' && layerOb.layers){
+            if(layerOb.type == 'PreCompLayer'){
                 removeExtraData(layerOb.layers);
             }
             EffectsParser.saveEffectData(layerOb);
@@ -535,7 +533,7 @@ var UI;
                 layerOb.rectData.w = extrasInstance.roundNumber(layerOb.rectData.r - layerOb.rectData.l,3);
                 layerOb.rectData.h = extrasInstance.roundNumber(layerOb.rectData.b - layerOb.rectData.t,3);
             }
-            if(layerOb.type == 'PreCompLayer' && layerOb.layers){
+            if(layerOb.type == 'PreCompLayer'){
                 processFinalData(layerOb.layers);
             }
         }
@@ -585,7 +583,7 @@ var UI;
             if(lType == 'AudioLayer' || lType == 'CameraLayer' || layerInfo.enabled == false){
                 //TODO add audios
                 layerOb.enabled = false;
-                analyzeNextLayer();
+                extrasInstance.setTimeout(analyzeNextLayer,100);
                 return;
             }else if(lType == 'TextLayer'){
                 var textProp = layerInfo.property("Source Text");
@@ -837,27 +835,8 @@ var UI;
             }
             pendingLayers.push({lInfo:layerInfo,lOb:layerOb,frameRate:frameRate});
             if(lType=='PreCompLayer'){
-                var j = 0, jLen = exportedComps.length, isRendered = false;
-                while(j<jLen){
-                    if(exportedComps[j].lInfo.source == layerInfo.source){
-                        isRendered = true;
-                        break;
-                    }
-                    j+=1;
-                }
-                if(isRendered){
-                    if(!exportedComps[j].lOb.compId){
-                        exportedComps[j].lOb.compId = extrasInstance.getRandomName(7);
-                    }
-                    layerOb.refId = exportedComps[j].lOb.compId;
-                }else{
-                    layerOb.layers = [];
-                    createLayers(layerInfo.source,layerOb.layers,layerInfo.source.frameRate);
-                    exportedComps.push({
-                        lInfo: layerInfo,
-                        lOb: layerOb
-                    })
-                }
+                layerOb.layers = [];
+                createLayers(layerInfo.source,layerOb.layers,layerInfo.source.frameRate);
             }
 
         }
@@ -956,7 +935,7 @@ var UI;
          callback.apply();*/
         // END TO TRAVERSE LAYER BY LAYER. NEEDED FOR TIME REMAP?
         totalLayers = pendingLayers.length;
-        analyzeNextLayer();
+        extrasInstance.setTimeout(analyzeNextLayer,100);
     }
 
     function iterateLayer(layerInfo, layerOb,frameRate){
@@ -2022,7 +2001,7 @@ var UI;
         duplicatedSources = [];
         pendingComps.push(duplicateMainComp);
         if(pendingComps.length == 1){
-            iterateNextComposition();
+            extrasInstance.setTimeout(iterateNextComposition,100);
         }
     };
 
@@ -2036,7 +2015,7 @@ var UI;
         currentComposition = pendingComps[currentCompositionNum];
         currentLayerNum = 0;
         totalLayers = currentComposition.layers.length;
-        verifyNextItem();
+        extrasInstance.setTimeout(verifyNextItem,100);
     }
 
     function verifyNextItem(){
@@ -2056,7 +2035,7 @@ var UI;
                     AssetsManager.associateLayerToSource(layerInfo,currentSource);
                     //replaceCurrentLayerSource(convertedSource); //NOT REPLACING FOOTAGE. NOT SURE IF NEEDED.
                     currentLayerNum++;
-                    verifyNextItem();
+                    extrasInstance.setTimeout(verifyNextItem,100);
                 }
             }else{
                 if(lType=='PreCompLayer'){
@@ -2066,11 +2045,11 @@ var UI;
                     copy.parentFolder = helperFolder;
                 }
                 currentLayerNum++;
-                verifyNextItem();
+                extrasInstance.setTimeout(verifyNextItem,100);
             }
         }else{
             currentCompositionNum++;
-            iterateNextComposition();
+            extrasInstance.setTimeout(iterateNextComposition,100);
         }
     }
 
@@ -2103,7 +2082,7 @@ var UI;
         if(checkRender()){
             replaceCurrentLayer();
             currentLayerNum++;
-            verifyNextItem();
+            extrasInstance.setTimeout(verifyNextItem,100);
         }else{
             extrasInstance.setTimeout(waitForRenderDone,100);
         }
