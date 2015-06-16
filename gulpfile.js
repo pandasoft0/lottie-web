@@ -13,7 +13,7 @@ var watch = require('gulp-watch');
 
 gulp.task('gzipFile', function(){
   //gulp.src('demo/dalek/data.js')
-  gulp.src('build/player/bodymovin2.js')
+  gulp.src('build/player/bodymovin.js')
     .pipe(gzip({ append: false }))
     .pipe(gulp.dest('demo/'));
 });
