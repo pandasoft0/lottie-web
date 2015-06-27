@@ -7,11 +7,9 @@ var BaseElement = function (data, animationItem,parentContainer,globalData){
         mat: new Matrix(),
         op: 1
     };
-    this.matteElement = null;
     this.renderedFrames = [];
     this.lastData = {};
     this.parentContainer = parentContainer;
-    this.layerId = randomString(10);
     this.init();
 };
 
@@ -28,23 +26,8 @@ BaseElement.prototype.init = function(){
 BaseElement.prototype.createElements = function(){
     if(this.data.hasMask){
         this.layerElement = document.createElementNS(svgNS,'g');
-        if(this.data.tt){
-            this.matteElement = document.createElementNS(svgNS,'g');
-            this.matteElement.appendChild(this.layerElement);
-            this.parentContainer.appendChild(this.matteElement);
-        }else{
-            this.parentContainer.appendChild(this.layerElement);
-        }
+        this.parentContainer.appendChild(this.layerElement);
         this.maskedElement = this.layerElement;
-    }else if(this.data.td){
-        this.layerElement = document.createElementNS(svgNS,'clipPath');
-        this.layerElement.setAttribute('id',this.layerId);
-        this.globalData.defs.appendChild(this.layerElement);
-    }else if(this.data.tt){
-        this.matteElement = document.createElementNS(svgNS,'g');
-        this.matteElement.setAttribute('id',this.layerId);
-        this.parentContainer.appendChild(this.matteElement);
-        this.layerElement = this.matteElement;
     }else{
         this.layerElement = this.parentContainer;
     }
@@ -52,8 +35,11 @@ BaseElement.prototype.createElements = function(){
 
 BaseElement.prototype.prepareFrame = function(num){
     this.currentAnimData = this.data.renderedData[num].an;
+    this.data.renderedFrame.tr = this.currentAnimData.matrixValue;
     var mat = this.currentAnimData.matrixArray;
-    this.ownMatrix.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]).translate(-this.currentAnimData.tr.a[0],-this.currentAnimData.tr.a[1])
+    this.ownMatrix.reset();
+    this.ownMatrix.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+    this.ownMatrix.translate(-this.currentAnimData.tr.a[0],-this.currentAnimData.tr.a[1]);
 };
 
 BaseElement.prototype.renderFrame = function(num,parentTransform){
@@ -86,40 +72,39 @@ BaseElement.prototype.renderFrame = function(num,parentTransform){
     }
     this.finalTransform.opacity *= this.currentAnimData.tr.o;
 
-    var mat;
-    var finalMat = this.finalTransform.mat;
-
     if(parentTransform){
+        this.finalTransform.mat.reset();
         mat = parentTransform.mat.props;
-        finalMat.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+        this.finalTransform.mat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         this.finalTransform.opacity *= parentTransform.opacity;
     }
 
     if(this.hierarchy){
-        var i, len = this.hierarchy.length;
+        var i, len = this.hierarchy.length,mat;
         if(!parentTransform){
-            finalMat.reset();
+            this.finalTransform.mat.reset();
         }
         for(i=len-1;i>=0;i-=1){
+            //mat = this.data.parents[i].elem.element.ownMatrix.props;
             mat = this.hierarchy[i].ownMatrix.props;
-            finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+            this.finalTransform.mat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         }
         mat = this.ownMatrix.props;
-        finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+        this.finalTransform.mat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
     }else{
         if(this.isVisible){
             if(!parentTransform){
                 this.finalTransform.mat = this.ownMatrix;
             }else{
                 mat = this.ownMatrix.props;
-                finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+                this.finalTransform.mat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
             }
         }
     }
     if(this.data.hasMask){
         if(!this.renderedFrames[this.globalData.frameNum]){
             this.renderedFrames[this.globalData.frameNum] = {
-                tr:'matrix('+finalMat.props.join(',')+')',
+                tr:'matrix('+this.finalTransform.mat.props.join(',')+')',
                 o:this.finalTransform.opacity
             }
         }
@@ -179,10 +164,6 @@ BaseElement.prototype.getHierarchy = function(){
     }
     return this.hierarchy;
 };
-
-BaseElement.prototype.setMatte = function(id){
-    this.matteElement.setAttribute("clip-path", "url(#" + id + ")");
-}
 
 BaseElement.prototype.hide = function(){
 
