@@ -28,16 +28,20 @@ CVImageElement.prototype.createElements = function(){
 
 };
 
-CVImageElement.prototype.draw = function(){
+CVImageElement.prototype.draw = function(parentMatrix){
     if(this.failed){
         return;
     }
-    this.canvasContext.save();
-    if(this.parent.draw.call(this,false)===false){
-        this.canvasContext.restore();
+    if(this.parent.draw.call(this,parentMatrix)===false){
         return;
     }
     var ctx = this.canvasContext;
+    if(!this.data.hasMask){
+        ctx.save();
+        var finalMat = this.finalTransform.mat.props;
+        ctx.transform(finalMat[0], finalMat[1], finalMat[2], finalMat[3], finalMat[4], finalMat[5]);
+    }
+    ctx.globalAlpha = ctx.globalAlpha*this.finalTransform.opacity;
     ctx.drawImage(this.img,0,0);
-    this.canvasContext.restore();
+    ctx.restore();
 };
