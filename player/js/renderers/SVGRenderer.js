@@ -88,11 +88,10 @@ SVGRenderer.prototype.configAnimation = function(animData){
     rect.setAttribute('height',animData.animation.compHeight);
     rect.setAttribute('x',0);
     rect.setAttribute('y',0);
-    var maskId = 'animationMask_'+randomString(10);
-    maskElement.setAttribute('id', maskId);
+    maskElement.setAttribute('id', 'animationMask');
     maskElement.appendChild(rect);
     var maskedElement = document.createElementNS(svgNS,'g');
-    maskedElement.setAttribute("clip-path", "url(#"+maskId+")");
+    maskedElement.setAttribute("clip-path", "url(#animationMask)");
     this.animationItem.container.appendChild(maskedElement);
     defs.appendChild(maskElement);
     this.animationItem.container = maskedElement;
@@ -109,7 +108,6 @@ SVGRenderer.prototype.buildStage = function (container, layers,elements) {
         if (layerData.parent !== undefined) {
             this.buildItemParenting(layerData,elements[i],layers,layerData.parent,elements);
         }
-        elements[i].setMainElement();
         if (layerData.type == 'PreCompLayer') {
             this.buildStage(elements[i].getComposingElement(), layerData.layers, elements[i].getElements());
         }
