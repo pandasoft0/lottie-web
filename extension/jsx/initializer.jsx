@@ -2,7 +2,6 @@
 /*global $*/
 
 var extensionPath = $.fileName.split('/').slice(0, -1).join('/') + '/';
-$.evalFile(extensionPath + 'JSON.jsx');
 $.evalFile(extensionPath + 'eventManager.jsx');
 $.evalFile(extensionPath + 'projectManager.jsx');
 $.evalFile(extensionPath + 'compsManager.jsx');
