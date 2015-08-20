@@ -34,10 +34,6 @@ body::-webkit-scrollbar-thumb {
     border-radius: .4em;
 }
 
-.rightFloat{
-    float: right;
-}
-
 #content {
     margin-right:auto;
     margin-left:auto;
@@ -93,7 +89,6 @@ button.disabled, button.disabled:hover{
 
 .buttonSeparator{
     width: 10px;
-    height: 1px;
     display: inline-block;
 }
 
