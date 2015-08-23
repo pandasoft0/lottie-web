@@ -753,8 +753,44 @@ function dataFunctionManager(){
                 iterateLayers(item.layers,timeRemapped,renderType);
             }else if(item.ty == 'ShapeLayer'){
                 iterateShape(item.shapes,offsettedFrameNum,item.startTime,renderType);
+            }else if(item.ty == 'TextLayer'){
+                iterateText(item,offsettedFrameNum);
             }
         }
+    }
+
+    function iterateText(item,offsettedFrameNum){
+        var renderedData = item.renderedData[offsettedFrameNum];
+        renderedData.t = {};
+        if(item.t.p && item.t.p.m) {
+            renderedData.t.p = [];
+            getInterpolatedValue(item.t.p.f,offsettedFrameNum, item.startTime,renderedData.t.p,0,1);
+        }
+        renderedData.t.m = {
+            a: getInterpolatedValue(item.t.m.a,offsettedFrameNum, item.startTime)
+        };
+
+        var animators = item.t.a;
+        var i, len = animators.length, animatorProps;
+        renderedData.t.a = new Array(len);
+        for(i = 0; i < len; i += 1) {
+            animatorProps = animators[i];
+            renderedData.t.a[i] = {
+                a: {},
+                r: {}
+            };
+            if(animatorProps.a.r) {
+                renderedData.t.a[i].a.r = getInterpolatedValue(animatorProps.a.r,offsettedFrameNum, item.startTime);
+            }
+            if(animatorProps.a.s) {
+                renderedData.t.a[i].a.s = getInterpolatedValue(animatorProps.a.s,offsettedFrameNum, item.startTime);
+            }
+            if(animatorProps.a.a) {
+                renderedData.t.a[i].a.a = getInterpolatedValue(animatorProps.a.a,offsettedFrameNum, item.startTime);
+            }
+        }
+
+        //console.log(item.t);
     }
 
     function convertRectToPath(pos,size,round){
