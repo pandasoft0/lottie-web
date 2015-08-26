@@ -752,8 +752,63 @@ function dataFunctionManager(){
                 iterateLayers(item.layers,timeRemapped,renderType);
             }else if(item.ty == 'ShapeLayer'){
                 iterateShape(item.shapes,offsettedFrameNum,item.startTime,renderType);
+            }else if(item.ty == 'TextLayer'){
+                iterateText(item,offsettedFrameNum);
             }
         }
+    }
+
+    function iterateText(item,offsettedFrameNum){
+        var renderedData = item.renderedData[offsettedFrameNum];
+        renderedData.t = {};
+        if(item.t.p && item.t.p.m) {
+            renderedData.t.p = [];
+            getInterpolatedValue(item.t.p.f,offsettedFrameNum, item.startTime,renderedData.t.p,0,1);
+        }
+        renderedData.t.m = {
+            a: getInterpolatedValue(item.t.m.a,offsettedFrameNum, item.startTime)
+        };
+
+        var animators = item.t.a;
+        var i, len = animators.length, animatorProps;
+        renderedData.t.a = new Array(len);
+        for(i = 0; i < len; i += 1) {
+            animatorProps = animators[i];
+            renderedData.t.a[i] = {
+                a: {},
+                s: {}
+            };
+            if('r' in animatorProps.a) {
+                renderedData.t.a[i].a.r = getInterpolatedValue(animatorProps.a.r,offsettedFrameNum, item.startTime);
+            }
+            if('s' in animatorProps.a) {
+                renderedData.t.a[i].a.s = getInterpolatedValue(animatorProps.a.s,offsettedFrameNum, item.startTime);
+            }
+            if('a' in animatorProps.a) {
+                renderedData.t.a[i].a.a = getInterpolatedValue(animatorProps.a.a,offsettedFrameNum, item.startTime);
+            }
+            if('o' in animatorProps.a) {
+                renderedData.t.a[i].a.o = getInterpolatedValue(animatorProps.a.o,offsettedFrameNum, item.startTime);
+            }
+            if('p' in animatorProps.a) {
+                renderedData.t.a[i].a.p = getInterpolatedValue(animatorProps.a.p,offsettedFrameNum, item.startTime);
+            }
+            if('s' in animatorProps.s) {
+                renderedData.t.a[i].s.s = getInterpolatedValue(animatorProps.s.s,offsettedFrameNum, item.startTime);
+            }else{
+                renderedData.t.a[i].s.s = 0;
+            }
+            if('e' in animatorProps.s) {
+                renderedData.t.a[i].s.e = getInterpolatedValue(animatorProps.s.e,offsettedFrameNum, item.startTime);
+            }
+            if('o' in animatorProps.s) {
+                renderedData.t.a[i].s.o = getInterpolatedValue(animatorProps.s.o,offsettedFrameNum, item.startTime);
+            }else{
+                renderedData.t.a[i].s.o = 0;
+            }
+        }
+
+        //console.log(item.t);
     }
 
     function convertRectToPath(pos,size,round, d){
