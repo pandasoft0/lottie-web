@@ -105,8 +105,6 @@ SVGRenderer.prototype.configAnimation = function(animData){
     defs.appendChild(maskElement);
     this.animationItem.container = maskedElement;
     this.layers = animData.animation.layers;
-    this.globalData.fontManager = new FontManager();
-    this.globalData.fontManager.addFonts(animData.fonts,defs);
 };
 
 SVGRenderer.prototype.buildStage = function (container, layers,elements) {
