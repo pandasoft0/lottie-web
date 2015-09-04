@@ -87,9 +87,10 @@ AnimationItem.prototype.setParams = function(params) {
     }
 };
 
-AnimationItem.prototype.setData = function (wrapper) {
+AnimationItem.prototype.setData = function (wrapper, animationData) {
     var params = {
-        wrapper: wrapper
+        wrapper: wrapper,
+        animationData: JSON.parse(animationData)
     };
     var wrapperAttributes = wrapper.attributes;
 
@@ -129,10 +130,24 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.totalFrames = 1;*/
     this.frameMult = this.animationData.animation.frameRate / 1000;
     dataManager.completeData(this.animationData);
-    this.renderer.buildItems(this.animationData.animation.layers);
     this.updaFrameModifier();
-    this.checkLoaded();
+    this.waitForFontsLoaded();
 };
+
+AnimationItem.prototype.waitForFontsLoaded = (function(){
+    function checkFontsLoaded(){
+        if(this.renderer.globalData.fontManager.loaded){
+            this.renderer.buildItems(this.animationData.animation.layers);
+            this.checkLoaded();
+        }else{
+            setTimeout(checkFontsLoaded.bind(this),20);
+        }
+    }
+
+    return function(){
+        checkFontsLoaded.bind(this)();
+    }
+}());
 
 AnimationItem.prototype.elementLoaded = function () {
     this.pendingElements--;
