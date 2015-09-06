@@ -87,10 +87,9 @@ AnimationItem.prototype.setParams = function(params) {
     }
 };
 
-AnimationItem.prototype.setData = function (wrapper, animationData) {
+AnimationItem.prototype.setData = function (wrapper) {
     var params = {
-        wrapper: wrapper,
-        animationData: animationData ? JSON.parse(animationData) : null
+        wrapper: wrapper
     };
     var wrapperAttributes = wrapper.attributes;
 
@@ -106,6 +105,7 @@ AnimationItem.prototype.setData = function (wrapper, animationData) {
     }else{
         params.loop = parseInt(loop);
     }
+
     params.name = wrapperAttributes.getNamedItem('data-name') ? wrapperAttributes.getNamedItem('data-name').value :  wrapperAttributes.getNamedItem('data-bm-name') ? wrapperAttributes.getNamedItem('data-bm-name').value : wrapperAttributes.getNamedItem('bm-name') ? wrapperAttributes.getNamedItem('bm-name').value :  '';
     var prerender = wrapperAttributes.getNamedItem('data-anim-prerender') ? wrapperAttributes.getNamedItem('data-anim-prerender').value :  wrapperAttributes.getNamedItem('data-bm-prerender') ? wrapperAttributes.getNamedItem('data-bm-prerender').value :  wrapperAttributes.getNamedItem('bm-prerender') ? wrapperAttributes.getNamedItem('bm-prerender').value : '';
 
@@ -130,28 +130,10 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.totalFrames = 1;*/
     this.frameMult = this.animationData.animation.frameRate / 1000;
     dataManager.completeData(this.animationData);
+    this.renderer.buildItems(this.animationData.animation.layers);
     this.updaFrameModifier();
-    if(this.renderer.globalData.fontManager){
-        this.waitForFontsLoaded();
-    }else{
-        this.checkLoaded();
-    }
+    this.checkLoaded();
 };
-
-AnimationItem.prototype.waitForFontsLoaded = (function(){
-    function checkFontsLoaded(){
-        if(this.renderer.globalData.fontManager.loaded){
-            this.renderer.buildItems(this.animationData.animation.layers);
-            this.checkLoaded();
-        }else{
-            setTimeout(checkFontsLoaded.bind(this),20);
-        }
-    }
-
-    return function(){
-        checkFontsLoaded.bind(this)();
-    }
-}());
 
 AnimationItem.prototype.elementLoaded = function () {
     this.pendingElements--;
