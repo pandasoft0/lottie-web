@@ -18,8 +18,7 @@ ISolidElement.prototype.createElements = function(){
 
 ISolidElement.prototype.hide = function(){
     if(!this.hidden){
-        //this.rectElement.setAttribute('opacity','0');
-        this.rectElement.setAttribute('visibility','hidden');
+        this.rectElement.setAttribute('opacity','0');
         this.hidden = true;
     }
 };
@@ -33,8 +32,9 @@ ISolidElement.prototype.renderFrame = function(num,parentMatrix){
     if(this.hidden){
         this.lastData.o = -1;
         this.hidden = false;
-        //this.rectElement.setAttribute('opacity', '1');
-        this.rectElement.setAttribute('visibility','visible');
+        if(this.data.hasMask) {
+            this.rectElement.setAttribute('opacity', '1');
+        }
     }
     if(!this.data.hasMask){
         if(!this.renderedFrames[this.globalData.frameNum]){
