@@ -44,8 +44,7 @@ ShapeItemElement.prototype.searchShapes = function(arr,data){
             this.stylesList.push({
                 pathElement: pathElement,
                 type: arr[i].ty,
-                d: '',
-                ld: 'a'
+                d: ''
             });
             data[i].style = this.stylesList[this.stylesList.length - 1];
             ownArrays.push(data[i].style);
@@ -97,7 +96,6 @@ ShapeItemElement.prototype.hideShape = function(){
     var i, len = this.stylesList.length;
     for(i=len-1;i>=0;i-=1){
         this.stylesList[i].pathElement.setAttribute('d','M 0,0');
-        this.stylesList[i].ld = 'M 0,0';
     }
 };
 
@@ -157,12 +155,10 @@ ShapeItemElement.prototype.renderShape = function(num,parentTransform,items,data
     }
     len = this.stylesList.length;
     for(i=0;i<len;i+=1){
-        if(this.stylesList[i].d == '' && this.stylesList[i].ld !== ''){
+        if(this.stylesList[i].d == ''){
             this.stylesList[i].pathElement.setAttribute('d','M 0,0');
-            this.stylesList[i].ld = this.stylesList[i].d;
-        }else if(this.stylesList[i].ld !== this.stylesList[i].d){
+        }else{
             this.stylesList[i].pathElement.setAttribute('d',this.stylesList[i].d);
-            this.stylesList[i].ld = this.stylesList[i].d;
         }
     }
 
@@ -228,18 +224,21 @@ ShapeItemElement.prototype.renderFill = function(styleData,viewData,num,groupTra
     }
 
     var renderedFrameData = viewData.renderedFrames[this.globalData.frameNum];
-    if(viewData.lastData.c != renderedFrameData.c){
-        styleElem.pathElement.setAttribute('fill',renderedFrameData.c);
-        viewData.lastData.c = renderedFrameData.c;
+    var c = renderedFrameData.c;
+    var o = renderedFrameData.o;
+    var t = renderedFrameData.t;
+    if(viewData.lastData.c != c){
+        styleElem.pathElement.setAttribute('fill',c);
     }
-    if(viewData.lastData.o != renderedFrameData.o){
-        styleElem.pathElement.setAttribute('fill-opacity',renderedFrameData.o);
-        viewData.lastData.o = renderedFrameData.o;
+    if(viewData.lastData.o != o){
+        styleElem.pathElement.setAttribute('fill-opacity',o);
     }
-    if(viewData.lastData.t != renderedFrameData.t){
-        styleElem.pathElement.setAttribute('transform',renderedFrameData.t);
-        viewData.lastData.t = renderedFrameData.t;
+    if(viewData.lastData.t != t){
+        styleElem.pathElement.setAttribute('transform',t);
     }
+    viewData.lastData.c = c;
+    viewData.lastData.o = o;
+    viewData.lastData.t = t;
 };
 
 ShapeItemElement.prototype.renderStroke = function(styleData,viewData,num,groupTransform){
@@ -275,30 +274,34 @@ ShapeItemElement.prototype.renderStroke = function(styleData,viewData,num,groupT
                 dashoffset += d[j].v;
             }
         }
-        if(viewData.lastData.da != dasharray){
-            styleElem.pathElement.setAttribute('stroke-dasharray',dasharray);
-            viewData.lastData.da = dasharray;
-        }
-        if(viewData.lastData.do != dashoffset){
-            styleElem.pathElement.setAttribute('stroke-dashoffset',dashoffset);
-            viewData.lastData.do = dashoffset;
-        }
     }
     if(viewData.lastData.c != c){
         styleElem.pathElement.setAttribute('stroke',c);
-        viewData.lastData.c = c;
     }
     if(viewData.lastData.o != o){
         styleElem.pathElement.setAttribute('stroke-opacity',o);
-        viewData.lastData.o = o;
     }
     if(viewData.lastData.w !== w){
         styleElem.pathElement.setAttribute('stroke-width',w);
-        viewData.lastData.w = w;
     }
     if(viewData.lastData.t !== t){
         styleElem.pathElement.setAttribute('transform',t);
-        viewData.lastData.t = t;
+    }
+    if(d){
+        if(viewData.lastData.da != dasharray){
+            styleElem.pathElement.setAttribute('stroke-dasharray',dasharray);
+        }
+        if(viewData.lastData.do != dashoffset){
+            styleElem.pathElement.setAttribute('stroke-dashoffset',dashoffset);
+        }
+    }
+    viewData.lastData.c = c;
+    viewData.lastData.o = o;
+    viewData.lastData.w = w;
+    viewData.lastData.t = t;
+    if(d){
+        viewData.lastData.da = dasharray;
+        viewData.lastData.do = dashoffset;
     }
 };
 
