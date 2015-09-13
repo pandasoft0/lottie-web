@@ -24,11 +24,7 @@
         animationManager.moveFrame(value);
     }
     function searchAnimations(){
-        if(standalone === true){
-            animationManager.searchAnimations(animationData);
-        }else{
-            animationManager.searchAnimations();
-        }
+        animationManager.searchAnimations();
     }
     function registerAnimation(elem){
         return animationManager.registerAnimation(elem);
@@ -46,9 +42,6 @@
         subframeEnabled = flag;
     }
     function loadAnimation(params){
-        if(standalone === true){
-            params.animationData = JSON.parse(animationData);
-        }
         return animationManager.loadAnimation(params);
     }
     function destroy(animation){
@@ -81,9 +74,6 @@
     bodymovinjs.checkReady = checkReady;
 
     window.bodymovin = bodymovinjs;
-
-    var standalone = '__[STANDALONE]__';
-    var animationData = '__[ANIMATIONDATA]__';
 
     var readyStateCheckInterval = setInterval(checkReady, 100);
 
