@@ -28,6 +28,7 @@
             <thead>
                 <tr>
                     <th class='th state'>Selected</th>
+                    <th class='th standalone'><span>Standalone</span><span class='question'>?</span></th>
                     <th class='th name'>Name</th>
                     <th class='th destination'>Destination Folder</th>
                 </tr>
@@ -40,8 +41,8 @@
             <div class='renders'>
             </div>
             <div class='buttons'>
-                <button class='generalButton cancel'>Cancel</button>
-                <button class='generalButton return'>Return</button>
+                <button class='generalButton highlightButton cancel'>Cancel</button>
+                <button class='generalButton highlightButton return'>Return</button>
             </div>
         </div>
         <div id='info'>
@@ -78,6 +79,10 @@
         </div>
     </div>
     
+    <svg width='100' height='100' style='position:absolute;top:0;left:-200px'>
+        <text id='textHelper' x='0' y='0' font-size='1' font-family='Times New Roman' fill='#00ff00' visibility='hidden'>h</text>
+    </svg>
+    
     <script src="js/libs/CSInterface.js"></script>
     <script src="js/libs/jquery-2.0.2.min.js"></script>
     <script src="js/libs/bodymovin.js"></script>
@@ -88,12 +93,14 @@
     <script src="js/animations/rendering.js"></script>
     <script src="js/animations/sucess.js"></script>
     <script src="js/animations/folder.js"></script>
+    <script src="js/animations/check.js"></script>
 
     <script src="js/themeManager.js"></script>
     <script src="js/controllers/CompSelectionController.js"></script>
     <script src="js/controllers/CompRenderController.js"></script>
     <script src="js/controllers/messageController.js"></script>
     <script src="js/controllers/InfoController.js"></script>
+    <script src="js/utils/storage.js"></script>
     <script src="js/main.js"></script>
 
         
