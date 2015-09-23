@@ -2,7 +2,7 @@
 /*global layerElement, bm_generalUtils, bm_eventDispatcher, bm_renderManager, bm_compsManager, File, app*/
 var bm_sourceHelper = (function () {
     'use strict';
-    var compSources = [], imageSources = [], fonts = [], currentExportingImage, destinationPath, assetsArray, folder, helperComp, currentCompID;
+    var compSources = [], imageSources = [], currentExportingImage, destinationPath, assetsArray, folder, helperComp, currentCompID;
     
     function checkCompSource(item) {
         var arr = compSources;
@@ -99,32 +99,13 @@ var bm_sourceHelper = (function () {
         } else {
             saveNextImage();
         }
+        
     }
     
-    function addFont(fontName, fontFamily, fontStyle) {
-        var i = 0, len = fonts.length;
-        while (i < len) {
-            if (fonts[i].name === fontName && fonts[i].family === fontFamily && fonts[i].style === fontStyle) {
-                return;
-            }
-            i += 1;
-        }
-        fonts.push({
-            name: fontName,
-            family: fontFamily,
-            style: fontStyle
-        }
-                  );
-    }
-    
-    function getFonts() {
-        return fonts;
-    }
     
     function reset() {
         compSources.length = 0;
         imageSources.length = 0;
-        fonts.length = 0;
     }
     
     return {
@@ -132,8 +113,6 @@ var bm_sourceHelper = (function () {
         checkImageSource: checkImageSource,
         setCompSourceId: setCompSourceId,
         exportImages : exportImages,
-        addFont : addFont,
-        getFonts : getFonts,
         reset: reset
     };
     

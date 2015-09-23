@@ -1,10 +1,9 @@
 /*jslint vars: true , plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global bm_layerElement, bm_eventDispatcher, bm_sourceHelper, bm_generalUtils, bm_compsManager, bm_downloadManager, bm_textShapeHelper, app, File*/
+/*global bm_layerElement, bm_eventDispatcher, bm_sourceHelper, bm_generalUtils, bm_compsManager, bm_dataManager, app, File*/
 var bm_renderManager = (function () {
     'use strict';
     
     var ob = {}, pendingLayers = [], pendingComps = [], destinationPath, currentCompID, totalLayers, currentLayer;
-    var settings;
     
     function verifyTrackLayer(layerData, comp, pos) {
         var nextLayerInfo = comp.layers[pos + 2];
@@ -71,19 +70,16 @@ var bm_renderManager = (function () {
         }
     }
     
-    function render(comp, destination, compSettings) {
+    function render(comp, destination) {
         currentCompID = comp.id;
-        settings = compSettings;
         bm_eventDispatcher.sendEvent('bm:render:update', {type: 'update', message: 'Starting Render', compId: currentCompID, progress: 0});
         destinationPath = destination;
         bm_sourceHelper.reset();
-        bm_textShapeHelper.reset();
         pendingLayers.length = 0;
         pendingComps.length = 0;
         var exportData = ob.renderData.exportData;
         exportData.animation = {};
         exportData.assets = [];
-        exportData.fonts = [];
         exportData.v = '2.1.2';
         exportData.animation.layers = [];
         exportData.animation.totalFrames = comp.workAreaDuration * comp.frameRate;
@@ -100,34 +96,11 @@ var bm_renderManager = (function () {
     
     function saveData() {
         bm_eventDispatcher.sendEvent('bm:render:update', {type: 'update', message: 'Saving data ', compId: currentCompID, progress: 1});
-        var dataFile = new File(destinationPath);
-        dataFile.open('w', 'TEXT', '????');
-        if (ob.renderData.exportData.assets.length === 0) {
-            delete ob.renderData.exportData.assets;
-        }
-        if (ob.renderData.exportData.fonts.length === 0) {
-            delete ob.renderData.exportData.fonts;
-            delete ob.renderData.exportData.chars;
-        } else {
-            if (!settings.glyphs) {
-                delete ob.renderData.exportData.chars;
-            }
-        }
-        var string = JSON.stringify(ob.renderData.exportData);
-        string = string.replace(/\n/g, '');
-        if (settings.standalone) {
-            var bodymovinJsStr = bm_downloadManager.getStandaloneData();
-            string = bodymovinJsStr.replace('"__[ANIMATIONDATA]__"', "'" + string + "'");
-            string = string.replace('"__[STANDALONE]__"', 'true');
-        }
-        //__[STANDALONE]__
-        try {
-            dataFile.write(string); //DO NOT ERASE, JSON UNFORMATTED
-            //dataFile.write(JSON.stringify(ob.renderData.exportData, null, '  ')); //DO NOT ERASE, JSON FORMATTED
-            dataFile.close();
-        } catch (err) {
-            bm_eventDispatcher.sendEvent('bm:alert', {message: 'Could not write file.<br /> Make sure you have enabled scripts to write files. <br /> Edit > Preferences > General > Allow Scripts to Write Files and Access Network '});
-        }
+        var config = {
+            split: true,
+            time: 1
+        };
+        bm_dataManager.saveData(ob.renderData.exportData, destinationPath, config);
         bm_eventDispatcher.sendEvent('bm:render:update', {type: 'update', message: 'Render finished ', compId: currentCompID, progress: 1, isFinished: true});
         bm_compsManager.renderComplete();
     }
@@ -164,34 +137,12 @@ var bm_renderManager = (function () {
         }
     }
     
-    function checkFonts() {
-        var fonts = bm_sourceHelper.getFonts();
-        if (fonts.length === 0) {
-            saveData();
-        } else {
-            var exportData = ob.renderData.exportData;
-            bm_eventDispatcher.sendEvent('bm:render:fonts', {type: 'save', compId: currentCompID, fonts: fonts});
-        }
-    }
-    
-    function setChars(chars) {
-        bm_eventDispatcher.sendEvent('bm:render:chars', {type: 'save', compId: currentCompID, chars: chars});
-    }
-    
-    function setFontData(fontData) {
-        var exportData = ob.renderData.exportData;
-        exportData.fonts = fontData;
-        bm_textShapeHelper.exportChars(fontData);
-    }
-    
-    function setCharsData(charData) {
-        var exportData = ob.renderData.exportData;
-        exportData.chars = charData;
+    function imagesReady() {
         saveData();
     }
     
-    function imagesReady() {
-        checkFonts();
+    function imagesSaved() {
+        saveData();
     }
     
     function renderLayerComplete() {
@@ -207,10 +158,7 @@ var bm_renderManager = (function () {
     ob.render = render;
     ob.renderLayerComplete = renderLayerComplete;
     ob.renderNextLayer = renderNextLayer;
-    ob.setChars = setChars;
     ob.imagesReady = imagesReady;
-    ob.setFontData = setFontData;
-    ob.setCharsData = setCharsData;
     
     return ob;
 }());

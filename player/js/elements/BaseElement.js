@@ -98,12 +98,18 @@ BaseElement.prototype.createElements = function(){
 };
 
 BaseElement.prototype.prepareFrame = function(num){
+    if(!this.data.renderedData[num]){
+        return;
+    }
     this.currentAnimData = this.data.renderedData[num].an;
     var mat = this.currentAnimData.matrixArray;
     this.ownMatrix.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]).translate(-this.currentAnimData.tr.a[0],-this.currentAnimData.tr.a[1]);
 };
 
 BaseElement.prototype.renderFrame = function(num,parentTransform){
+    if(!this.data.renderedData[num]){
+        return;
+    }
     if(this.data.ty == 'NullLayer'){
         return;
     }
@@ -223,7 +229,11 @@ BaseElement.prototype.getType = function(){
 };
 
 BaseElement.prototype.getLayerSize = function(){
-    return {w:this.data.width,h:this.data.height};
+    if(this.data.ty == 'TextLayer'){
+        return {w:this.data.textData.width,h:this.data.textData.height};
+    }else{
+        return {w:this.data.width,h:this.data.height};
+    }
 };
 
 BaseElement.prototype.getHierarchy = function(){
@@ -243,6 +253,3 @@ BaseElement.prototype.setMatte = function(id){
 BaseElement.prototype.hide = function(){
 
 };
-
-
-BaseElement.prototype.mHelper = new Matrix();

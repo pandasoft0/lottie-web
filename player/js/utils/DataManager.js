@@ -38,6 +38,10 @@ function dataFunctionManager(){
         var j, jLen, k, kLen;
         for(i=0;i<len;i+=1){
             layerData = layers[i];
+            if(layerData.loadId || layerData.completed){
+                continue;
+            }
+            layerData.completed = true;
             layerFrames = layerData.outPoint - layerData.startTime;
             offsetFrame = layerData.startTime;
             //layerData.layerName = convertLayerNameToID(layerData.layerName);
@@ -197,6 +201,7 @@ function dataFunctionManager(){
         animationData.__renderedFrames = new Array(Math.floor(animationData.animation.totalFrames));
         animationData.__renderFinished = false;
         frameRate = animationData.animation.frameRate;
+
         completeLayers(animationData.animation.layers);
     }
 
@@ -437,7 +442,7 @@ function dataFunctionManager(){
                     key = '__maxValue';
                     pos = keyframes.length - 2;
                     stored = keyframes.__maxValue;
-                    ob = keyframes[pos].h ? keyframes[pos].s : keyframes[pos].e;
+                    ob = keyframes[pos].e;
                 }
                 if(!stored){
                     jLen = keyframes[pos].s[0].i.length;
@@ -708,6 +713,9 @@ function dataFunctionManager(){
         var j, jLen = layers.length, item;
         for(j=0;j<jLen;j+=1){
             item = layers[j];
+            if(layers[j].loadId) {
+                return;
+            }
             offsettedFrameNum = frameNum - item.startTime;
             dataOb = {};
             dataOb.a = getInterpolatedValue(item.ks.a,offsettedFrameNum, item.startTime);
@@ -752,85 +760,8 @@ function dataFunctionManager(){
                 iterateLayers(item.layers,timeRemapped,renderType);
             }else if(item.ty == 'ShapeLayer'){
                 iterateShape(item.shapes,offsettedFrameNum,item.startTime,renderType);
-            }else if(item.ty == 'TextLayer'){
-                iterateText(item,offsettedFrameNum);
             }
         }
-    }
-
-    function iterateText(item,offsettedFrameNum){
-        var renderedData = item.renderedData[offsettedFrameNum];
-        renderedData.t = {};
-        if(item.t.p && 'm' in item.t.p) {
-            renderedData.t.p = [];
-            getInterpolatedValue(item.t.p.f,offsettedFrameNum, item.startTime,renderedData.t.p,0,1);
-        }
-        renderedData.t.m = {
-            a: getInterpolatedValue(item.t.m.a,offsettedFrameNum, item.startTime)
-        };
-
-        var animators = item.t.a;
-        var i, len = animators.length, animatorProps;
-        renderedData.t.a = new Array(len);
-        for(i = 0; i < len; i += 1) {
-            animatorProps = animators[i];
-            renderedData.t.a[i] = {
-                a: {},
-                s: {}
-            };
-            if('r' in animatorProps.a) {
-                renderedData.t.a[i].a.r = getInterpolatedValue(animatorProps.a.r,offsettedFrameNum, item.startTime);
-            }
-            if('s' in animatorProps.a) {
-                renderedData.t.a[i].a.s = getInterpolatedValue(animatorProps.a.s,offsettedFrameNum, item.startTime);
-            }
-            if('a' in animatorProps.a) {
-                renderedData.t.a[i].a.a = getInterpolatedValue(animatorProps.a.a,offsettedFrameNum, item.startTime);
-            }
-            if('o' in animatorProps.a) {
-                renderedData.t.a[i].a.o = getInterpolatedValue(animatorProps.a.o,offsettedFrameNum, item.startTime);
-            }
-            if('p' in animatorProps.a) {
-                renderedData.t.a[i].a.p = getInterpolatedValue(animatorProps.a.p,offsettedFrameNum, item.startTime);
-            }
-            if('sw' in animatorProps.a) {
-                renderedData.t.a[i].a.sw = getInterpolatedValue(animatorProps.a.sw,offsettedFrameNum, item.startTime);
-            }
-            if('sc' in animatorProps.a) {
-                renderedData.t.a[i].a.sc = getInterpolatedValue(animatorProps.a.sc,offsettedFrameNum, item.startTime);
-            }
-            if('fc' in animatorProps.a) {
-                renderedData.t.a[i].a.fc = getInterpolatedValue(animatorProps.a.fc,offsettedFrameNum, item.startTime);
-            }
-            if('t' in animatorProps.a) {
-                renderedData.t.a[i].a.t = getInterpolatedValue(animatorProps.a.t,offsettedFrameNum, item.startTime);
-            }
-            if('s' in animatorProps.s) {
-                renderedData.t.a[i].s.s = getInterpolatedValue(animatorProps.s.s,offsettedFrameNum, item.startTime);
-            }else{
-                renderedData.t.a[i].s.s = 0;
-            }
-            if('e' in animatorProps.s) {
-                renderedData.t.a[i].s.e = getInterpolatedValue(animatorProps.s.e,offsettedFrameNum, item.startTime);
-            }
-            if('o' in animatorProps.s) {
-                renderedData.t.a[i].s.o = getInterpolatedValue(animatorProps.s.o,offsettedFrameNum, item.startTime);
-            }else{
-                renderedData.t.a[i].s.o = 0;
-            }
-            if('xe' in animatorProps.s) {
-                renderedData.t.a[i].s.xe = getInterpolatedValue(animatorProps.s.xe,offsettedFrameNum, item.startTime);
-            }else{
-                renderedData.t.a[i].s.xe = 0;
-            }
-            if('ne' in animatorProps.s) {
-                renderedData.t.a[i].s.ne = getInterpolatedValue(animatorProps.s.ne,offsettedFrameNum, item.startTime);
-            }else{
-                renderedData.t.a[i].s.ne = 0;
-            }
-        }
-
-        //console.log(item.t);
     }
 
     function convertRectToPath(pos,size,round, d){
