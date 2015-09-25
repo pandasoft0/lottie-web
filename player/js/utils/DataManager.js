@@ -28,17 +28,16 @@ function dataFunctionManager(){
         }
     }
 
-    function completeLayers(layers, comps){
+    function completeLayers(layers, mainLayers){
+        if(!mainLayers){
+            mainLayers = layers;
+        }
         var layerFrames, offsetFrame, layerData;
         var animArray, lastFrame;
         var i, len = layers.length;
         var j, jLen, k, kLen;
         for(i=0;i<len;i+=1){
             layerData = layers[i];
-            if(layerData.loadId || layerData.completed){
-                continue;
-            }
-            layerData.completed = true;
             layerFrames = layerData.outPoint - layerData.startTime;
             offsetFrame = layerData.startTime;
             //layerData.layerName = convertLayerNameToID(layerData.layerName);
@@ -95,22 +94,37 @@ function dataFunctionManager(){
                 }
             }
             if(layerData.ty=='PreCompLayer'){
-                layerData.layers = findCompLayers(layerData.refId, comps);
-                completeLayers(layerData.layers, comps);
+                if(layerData.refId && !layerData.layers){
+                    layerData.layers = findCompLayers(layerData.refId,mainLayers);
+                }else{
+                    completeLayers(layerData.layers,mainLayers);
+                }
             }else if(layerData.ty == 'ShapeLayer'){
                 completeShapes(layerData.shapes);
             }
         }
     }
 
-    function findCompLayers(id,comps){
-        var i = 0, len = comps.length;
-        while(i<len){
-            if(comps[i].id === id){
-                return comps[i].layers;
-            }
-            i += 1;
+    function findCompLayers(id,layers,mainLayers){
+        if(!mainLayers){
+            mainLayers = layers;
         }
+        var i, len = layers.length;
+        for(i=0;i<len;i+=1){
+            if(layers[i].compId == id){
+                if(!layers[i].layers){
+                    layers[i].layers = findCompLayers(layers[i].refId,mainLayers);
+                }
+                return layers[i].layers;
+            }
+            if(layers[i].ty == 'PreCompLayer'){
+                var elem = findCompLayers(id,layers[i].layers,mainLayers);
+                if(elem){
+                    return elem;
+                }
+            }
+        }
+        return null;
     }
 
     function completeShapes(arr,trimmedFlag){
@@ -183,8 +197,7 @@ function dataFunctionManager(){
         animationData.__renderedFrames = new Array(Math.floor(animationData.animation.totalFrames));
         animationData.__renderFinished = false;
         frameRate = animationData.animation.frameRate;
-
-        completeLayers(animationData.animation.layers, animationData.comps);
+        completeLayers(animationData.animation.layers);
     }
 
     function convertLayerNameToID(string){
@@ -695,9 +708,6 @@ function dataFunctionManager(){
         var j, jLen = layers.length, item;
         for(j=0;j<jLen;j+=1){
             item = layers[j];
-            if(layers[j].loadId) {
-                return;
-            }
             offsettedFrameNum = frameNum - item.startTime;
             dataOb = {};
             dataOb.a = getInterpolatedValue(item.ks.a,offsettedFrameNum, item.startTime);
@@ -866,6 +876,7 @@ function dataFunctionManager(){
                         roundness : elmRound
                     };
                 }else{
+                    shapeItem.closed = true;
                     shapeItem.renderedData[offsettedFrameNum] = {
                         path: {
                             closed: true

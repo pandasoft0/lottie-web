@@ -1,4 +1,4 @@
-var BaseElement = function (data,parentContainer,globalData, placeholder){
+var BaseElement = function (data,parentContainer,globalData){
     this.globalData = globalData;
     this.data = data;
     this.ownMatrix = new Matrix();
@@ -12,7 +12,6 @@ var BaseElement = function (data,parentContainer,globalData, placeholder){
     this.parentContainer = parentContainer;
     this.layerId = randomString(10);
     this.hidden = false;
-    this.placeholder = placeholder;
     this.init();
 };
 
@@ -25,16 +24,6 @@ BaseElement.prototype.init = function(){
         //this.createEffectsManager(this.data);
     }
 };
-
-BaseElement.prototype.appendNodeToParent = function(node) {
-    if(this.placeholder){
-        var g = this.placeholder.phElement;
-        g.parentNode.insertBefore(node, g);
-        //g.parentNode.removeChild(g);
-    }else{
-        this.parentContainer.appendChild(node);
-    }
-}
 
 BaseElement.prototype.createElements = function(){
     if(this.data.td){
@@ -93,15 +82,15 @@ BaseElement.prototype.createElements = function(){
         if(this.data.tt){
             this.matteElement = document.createElementNS(svgNS,'g');
             this.matteElement.appendChild(this.layerElement);
-            this.appendNodeToParent(this.matteElement);
+            this.parentContainer.appendChild(this.matteElement);
         }else{
-            this.appendNodeToParent(this.layerElement);
+            this.parentContainer.appendChild(this.layerElement);
         }
         this.maskedElement = this.layerElement;
     }else if(this.data.tt){
         this.matteElement = document.createElementNS(svgNS,'g');
         this.matteElement.setAttribute('id',this.layerId);
-        this.appendNodeToParent(this.matteElement);
+        this.parentContainer.appendChild(this.matteElement);
         this.layerElement = this.matteElement;
     }else{
         this.layerElement = this.parentContainer;
@@ -109,18 +98,12 @@ BaseElement.prototype.createElements = function(){
 };
 
 BaseElement.prototype.prepareFrame = function(num){
-    if(!this.data.renderedData[num]){
-        return;
-    }
     this.currentAnimData = this.data.renderedData[num].an;
     var mat = this.currentAnimData.matrixArray;
     this.ownMatrix.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]).translate(-this.currentAnimData.tr.a[0],-this.currentAnimData.tr.a[1]);
 };
 
 BaseElement.prototype.renderFrame = function(num,parentTransform){
-    if(!this.data.renderedData[num]){
-        return false;
-    }
     if(this.data.ty == 'NullLayer'){
         return;
     }
@@ -244,14 +227,6 @@ BaseElement.prototype.getLayerSize = function(){
         return {w:this.data.textData.width,h:this.data.textData.height};
     }else{
         return {w:this.data.width,h:this.data.height};
-    }
-};
-
-BaseElement.prototype.resetHierarchy = function(){
-    if(!this.hierarchy){
-        this.hierarchy = [];
-    }else{
-        this.hierarchy.length = 0;
     }
 };
 
