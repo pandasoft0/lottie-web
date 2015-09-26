@@ -1,5 +1,5 @@
 /*jslint vars: true , plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global bm_eventDispatcher, bm_renderManager, bm_timeremapHelper, bm_shapeHelper, bm_generalUtils, CompItem, PlaceholderSource, AVLayer, CameraLayer, LightLayer, ShapeLayer, TextLayer, TrackMatteType, bm_sourceHelper, bm_transformHelper, bm_maskHelper, bm_textHelper*/
+/*global bm_eventDispatcher, bm_renderManager, bm_timeremapHelper, bm_shapeHelper, bm_generalUtils, CompItem, PlaceholderSource, AVLayer, CameraLayer, LightLayer, ShapeLayer, TextLayer, TrackMatteType, bm_sourceHelper, bm_transformHelper, bm_maskHelper, bm_textHelper, bm_effectsHelper*/
 
 var bm_layerElement = (function () {
     'use strict';
@@ -129,8 +129,6 @@ var bm_layerElement = (function () {
         return layerData;
     }
     
-    var compCount = 0;
-    
     function checkLayerSource(layerInfo, layerData) {
         if (layerData.render === false) {
             return;
@@ -142,10 +140,7 @@ var bm_layerElement = (function () {
             if (sourceId !== false) {
                 layerData.refId = sourceId;
             } else {
-                //layerData.compId = bm_generalUtils.random(7);
-                layerData.compId = 'comp_'+compCount;
-                compCount += 1;
-                layerData.refId = layerData.compId;
+                layerData.compId = bm_generalUtils.random(7);
                 bm_sourceHelper.setCompSourceId(layerInfo.source, layerData.compId);
             }
         } else if (layerType === ob.layerTypes.still) {
@@ -161,9 +156,11 @@ var bm_layerElement = (function () {
             bm_renderManager.renderLayerComplete();
             return;
         }
+        
         var lType = layerData.ty;
         bm_transformHelper.exportTransform(layerInfo, layerData, frameRate);
         bm_maskHelper.exportMasks(layerInfo, layerData, frameRate);
+        bm_effectsHelper.exportEffects(layerInfo, layerData, frameRate);
         bm_timeremapHelper.exportTimeremap(layerInfo, layerData, frameRate);
         
         if (lType === ob.layerTypes.shape) {
