@@ -1,5 +1,5 @@
 /*jslint vars: true , plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global PropertyValueType, KeyframeInterpolationType, bm_generalUtils, bm_eventDispatcher, bm_expressionHelper*/
+/*global PropertyValueType, KeyframeInterpolationType, bm_generalUtils, bm_eventDispatcher*/
 var bm_keyframeHelper = (function () {
     'use strict';
     var ob = {}, property, j = 1, jLen, beziersArray, averageSpeed, duration, bezierIn, bezierOut, frameRate;
@@ -83,9 +83,8 @@ var bm_keyframeHelper = (function () {
         }
     }
     
-    function exportKeys(prop, frRate) {
+    function exportKeyframes(prop, frRate) {
         property = prop;
-        
         frameRate = frRate;
         beziersArray = [];
         if (property.numKeys <= 1) {
@@ -238,14 +237,6 @@ var bm_keyframeHelper = (function () {
         }
         beziersArray.push({t: property.keyTime(j) * frameRate});
         return beziersArray;
-    }
-    
-    function exportKeyframes(prop, frRate) {
-        var returnOb = {
-            k: exportKeys(prop, frRate)
-        };
-        bm_expressionHelper.checkExpression(prop, returnOb);
-        return returnOb;
     }
     
     ob.exportKeyframes = exportKeyframes;
