@@ -88,10 +88,9 @@ AnimationItem.prototype.setParams = function(params) {
     }
 };
 
-AnimationItem.prototype.setData = function (wrapper, animationData) {
+AnimationItem.prototype.setData = function (wrapper) {
     var params = {
-        wrapper: wrapper,
-        animationData: animationData ? JSON.parse(animationData) : null
+        wrapper: wrapper
     };
     var wrapperAttributes = wrapper.attributes;
 
@@ -128,32 +127,14 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.totalFrames = Math.floor(this.animationData.animation.totalFrames);
     this.frameRate = this.animationData.animation.frameRate;
     this.firstFrame = Math.round(this.animationData.animation.ff*this.frameRate);
-    /*this.firstFrame = 18;
+    /*this.firstFrame = 211;
     this.totalFrames = 1;*/
     this.frameMult = this.animationData.animation.frameRate / 1000;
-    dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
+    dataManager.completeData(this.animationData);
+    this.renderer.buildItems(this.animationData.animation.layers);
     this.updaFrameModifier();
-    if(this.renderer.globalData.fontManager){
-        this.waitForFontsLoaded();
-    }else{
-        this.checkLoaded();
-    }
+    this.checkLoaded();
 };
-
-AnimationItem.prototype.waitForFontsLoaded = (function(){
-    function checkFontsLoaded(){
-        if(this.renderer.globalData.fontManager.loaded){
-            this.renderer.buildItems(this.animationData.animation.layers);
-            this.checkLoaded();
-        }else{
-            setTimeout(checkFontsLoaded.bind(this),20);
-        }
-    }
-
-    return function(){
-        checkFontsLoaded.bind(this)();
-    }
-}());
 
 AnimationItem.prototype.elementLoaded = function () {
     this.pendingElements--;
