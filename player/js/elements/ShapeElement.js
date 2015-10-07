@@ -4,8 +4,6 @@ function IShapeElement(data,parentContainer,globalData){
 }
 createElement(BaseElement, IShapeElement);
 
-IShapeElement.prototype.transformHelper = {opacity:1,mat:new Matrix()};
-
 IShapeElement.prototype.createElements = function(){
     //TODO check if I can use symbol so i can set its viewBox
     this.parent.createElements.call(this);
@@ -32,9 +30,9 @@ IShapeElement.prototype.hide = function(){
 IShapeElement.prototype.renderShapes = function(num){
     this.hidden = false;
     if(this.data.hasMask){
-        this.mainShape.renderShape(num,this.transformHelper,null,null,true);
+        this.mainShape.renderShape(num,{opacity:1,mat:new Matrix()});
     }else{
-        this.mainShape.renderShape(num,this.finalTransform,null,null,true);
+        this.mainShape.renderShape(num,this.finalTransform);
     }
 };
 

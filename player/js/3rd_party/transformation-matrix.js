@@ -161,9 +161,6 @@ Matrix.prototype = {
      * @param {number} sx - scale factor x (1 does nothing)
      */
     scaleX: function(sx) {
-        if(sx == 1){
-            return this;
-        }
         return this._t(sx, 0, 0, 1, 0, 0);
     },
 
@@ -172,9 +169,6 @@ Matrix.prototype = {
      * @param {number} sy - scale factor y (1 does nothing)
      */
     scaleY: function(sy) {
-        if(sy == 1){
-            return this;
-        }
         return this._t(1, 0, 0, sy, 0, 0);
     },
 
@@ -253,9 +247,6 @@ Matrix.prototype = {
      * @param {number} ty - translation for y
      */
     translate: function(tx, ty) {
-        if(tx === 0 && ty === 0){
-            return this;
-        }
         return this._t(1, 0, 0, 1, tx, ty);
     },
 
@@ -305,7 +296,7 @@ Matrix.prototype = {
         this.props[4] = this.a1 * e2 + this.c1 * f2 + this.e1;
         this.props[5] = this.b1 * e2 + this.d1 * f2 + this.f1;
 
-        return this;
+        return this._x();
     },
 
     /**

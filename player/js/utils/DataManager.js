@@ -28,10 +28,11 @@ function dataFunctionManager(){
         }
     }
 
-    function completeLayers(layers, mainLayers){
+    function completeLayers(compData, layers, mainLayers){
         if(!mainLayers){
             mainLayers = layers;
         }
+        ExpressionManager.searchExpressions(compData);
         var layerFrames, offsetFrame, layerData;
         var animArray, lastFrame;
         var i, len = layers.length;
@@ -53,41 +54,41 @@ function dataFunctionManager(){
             lastFrame = -1;
             if(layerData.tm){
                 layerData.trmp = layerData.tm;
-                var timeValues = new Array(Math.round(layerFrames));
+                var timeValues = new Array(layerFrames);
                 for(j=0 ; j<layerFrames; j+=1){
-                    timeValues[j] = Math.floor(getInterpolatedValue(layerData.tm,j,offsetFrame)*frameRate);
+                    timeValues.push(Math.floor(getInterpolatedValue(layerData.tm,j,offsetFrame)*frameRate));
                 }
                 layerData.tm = timeValues;
             }
-            if(layerData.ks.o instanceof Array){
-                convertNumericValue(layerData.ks.o,1/100);
+            if(layerData.ks.o.k instanceof Array){
+                convertNumericValue(layerData.ks.o.k,1/100);
             }else{
-                layerData.ks.o /= 100;
+                layerData.ks.o.k /= 100;
             }
-            if(layerData.ks.s instanceof Array){
-                convertNumericValue(layerData.ks.s,1/100);
+            if(layerData.ks.s.k instanceof Array){
+                convertNumericValue(layerData.ks.s.k,1/100);
             }else{
-                layerData.ks.s /= 100;
+                layerData.ks.s.k /= 100;
             }
-            if(layerData.ks.r instanceof Array){
-                convertNumericValue(layerData.ks.r,degToRads);
+            if(layerData.ks.r.k instanceof Array){
+                convertNumericValue(layerData.ks.r.k,degToRads);
             }else{
-                layerData.ks.r *= degToRads;
+                layerData.ks.r.k *= degToRads;
             }
             if(layerData.hasMask){
                 var maskProps = layerData.masksProperties;
                 jLen = maskProps.length;
                 for(j=0;j<jLen;j+=1){
-                    if(maskProps[j].pt.i){
-                        convertPathsToAbsoluteValues(maskProps[j].pt);
+                    if(maskProps[j].pt.k.i){
+                        convertPathsToAbsoluteValues(maskProps[j].pt.k);
                     }else{
-                        kLen = maskProps[j].pt.length;
+                        kLen = maskProps[j].pt.k.length;
                         for(k=0;k<kLen;k+=1){
-                            if(maskProps[j].pt[k].s){
-                                convertPathsToAbsoluteValues(maskProps[j].pt[k].s[0]);
+                            if(maskProps[j].pt.k[k].s){
+                                convertPathsToAbsoluteValues(maskProps[j].pt.k[k].s[0]);
                             }
-                            if(maskProps[j].pt[k].e){
-                                convertPathsToAbsoluteValues(maskProps[j].pt[k].e[0]);
+                            if(maskProps[j].pt.k[k].e){
+                                convertPathsToAbsoluteValues(maskProps[j].pt.k[k].e[0]);
                             }
                         }
                     }
@@ -97,7 +98,7 @@ function dataFunctionManager(){
                 if(layerData.refId && !layerData.layers){
                     layerData.layers = findCompLayers(layerData.refId,mainLayers);
                 }else{
-                    completeLayers(layerData.layers,mainLayers);
+                    completeLayers(layerData, layerData.layers,mainLayers);
                 }
             }else if(layerData.ty == 'ShapeLayer'){
                 completeShapes(layerData.shapes);
@@ -138,21 +139,22 @@ function dataFunctionManager(){
                 isTrimmed = true;
             }
             if(arr[i].ty == 'fl' || arr[i].ty == 'st'){
-                if(arr[i].o instanceof Array){
-                    convertNumericValue(arr[i].o,1/100);
+                if(arr[i].o.k instanceof Array){
+                    convertNumericValue(arr[i].o.k,1/100);
                 }else{
-                    arr[i].o *= 1/100;
+                    arr[i].o.k *= 1/100;
                 }
             }else if(arr[i].ty == 'sh'){
                 arr[i].trimmed = isTrimmed;
-                if(arr[i].ks.i){
-                    convertPathsToAbsoluteValues(arr[i].ks);
+                console.log(arr[i].ks);
+                if(arr[i].ks.k.i){
+                    convertPathsToAbsoluteValues(arr[i].ks.k);
                 }else{
                     jLen = arr[i].ks.length;
                     for(j=0;j<jLen;j+=1){
                         if(arr[i].ks[j].s){
-                            convertPathsToAbsoluteValues(arr[i].ks[j].s[0]);
-                            convertPathsToAbsoluteValues(arr[i].ks[j].e[0]);
+                            convertPathsToAbsoluteValues(arr[i].ks.k[j].s[0]);
+                            convertPathsToAbsoluteValues(arr[i].ks.k[j].e[0]);
                         }
                     }
                 }
@@ -161,20 +163,20 @@ function dataFunctionManager(){
             }else if(arr[i].ty == 'tr'){
                 transformData = arr[i];
                 transformData.renderedData = [];
-                if(transformData.o instanceof Array){
-                    convertNumericValue(transformData.o,1/100);
+                if(transformData.o.k instanceof Array){
+                    convertNumericValue(transformData.o.k,1/100);
                 }else{
-                    transformData.o /= 100;
+                    transformData.o.k /= 100;
                 }
-                if(transformData.s instanceof Array){
-                    convertNumericValue(transformData.s,1/100);
+                if(transformData.s.k instanceof Array){
+                    convertNumericValue(transformData.s.k,1/100);
                 }else{
-                    transformData.s /= 100;
+                    transformData.s.k /= 100;
                 }
-                if(transformData.r instanceof Array){
-                    convertNumericValue(transformData.r,degToRads);
+                if(transformData.r.k instanceof Array){
+                    convertNumericValue(transformData.r.k,degToRads);
                 }else{
-                    transformData.r *= degToRads;
+                    transformData.r.k *= degToRads;
                 }
             }else if(arr[i].ty == 'rc' || arr[i].ty == 'el'){
                 arr[i].trimmed = isTrimmed;
@@ -197,7 +199,7 @@ function dataFunctionManager(){
         animationData.__renderedFrames = new Array(Math.floor(animationData.animation.totalFrames));
         animationData.__renderFinished = false;
         frameRate = animationData.animation.frameRate;
-        completeLayers(animationData.animation.layers);
+        completeLayers(animationData.animation,animationData.animation.layers);
     }
 
     function convertLayerNameToID(string){
@@ -208,7 +210,8 @@ function dataFunctionManager(){
         return string;
     }
 
-    function getInterpolatedValue(keyframes, frameNum, offsetTime,paramArr,arrPos,arrLen){
+    function getInterpolatedValue( keys, frameNum, offsetTime,paramArr,arrPos,arrLen){
+        var keyframes = keys.k;
         var keyData, nextKeyData,propertyArray,bezierData;
         var i;
         var len,paramCnt = 0;
@@ -384,11 +387,7 @@ function dataFunctionManager(){
                         arrLen -= 1;
                     }
                 }else{
-                    if(len === 1){
-                        propertyArray = keyValue;
-                    }else{
-                        propertyArray.push(keyValue);
-                    }
+                    propertyArray.push(keyValue);
                 }
             }
         }
@@ -419,7 +418,7 @@ function dataFunctionManager(){
         var isTrimmed = trimData && trimData.length > 0;
         var pathData = {};
         pathData.closed = isMask ? shapeData.cl : shapeData.closed;
-        var keyframes = isMask ? shapeData.pt : shapeData.ks;
+        var keyframes = isMask ? shapeData.pt.k : shapeData.ks.k;
         if(keyframes.v){
             if(!isTrimmed){
                 pathData.pathNodes = keyframes;
@@ -470,13 +469,6 @@ function dataFunctionManager(){
                 pathData.pathNodes = isTrimmed ? trimPath(stored,pathData.closed, trimData, false) : stored;
                 return pathData;
             }else{
-                var lastNodes;
-                var newNodes = false;
-                if(keyframes.__lastData){
-                    lastNodes = keyframes.__lastData.pathNodes;
-                }else{
-                    newNodes = true;
-                }
                 var i = 0;
                 var len = keyframes.length- 1;
                 var dir = 1;
@@ -537,11 +529,6 @@ function dataFunctionManager(){
                                 coordsOData[k] = keyData.s[0].o[j][k]+(keyData.e[0].o[j][k]-keyData.s[0].o[j][k])*perc;
                                 coordsVData[k] = keyData.s[0].v[j][k]+(keyData.e[0].v[j][k]-keyData.s[0].v[j][k])*perc;
                             }
-                            if(lastNodes){
-                                if(!lastNodes.i[j] || !lastNodes.o[j] || !lastNodes.v[j] || (lastNodes.i[j][k] !== coordsIData[k] || lastNodes.o[j][k] !== coordsOData[k] || lastNodes.v[j][k] !== coordsVData[k])){
-                                    newNodes = true;
-                                }
-                            }
                         }
                         shapeData.i[j] = coordsIData;
                         shapeData.o[j] = coordsOData;
@@ -551,17 +538,7 @@ function dataFunctionManager(){
                         }
                     }
                 }
-                if(isTrimmed){
-                    pathData.pathNodes = trimPath(shapeData,pathData.closed, trimData, false);
-                }else{
-                    if(!newNodes){
-                        pathData.pathNodes = keyframes.__lastData;
-                    }else{
-                        pathData.pathNodes = shapeData;
-                        keyframes.__lastData = pathData;
-                    }
-                    pathData.pathNodes = shapeData;
-                }
+                pathData.pathNodes = isTrimmed ? trimPath(shapeData,pathData.closed, trimData, false) : shapeData;
                 return pathData;
             }
         }
@@ -731,7 +708,7 @@ function dataFunctionManager(){
         var timeRemapped;
 
         var offsettedFrameNum, i, len, renderedData;
-        var j, jLen = layers.length, item, matArr, newData;
+        var j, jLen = layers.length, item;
         for(j=0;j<jLen;j+=1){
             item = layers[j];
             offsettedFrameNum = frameNum - item.startTime;
@@ -747,18 +724,13 @@ function dataFunctionManager(){
             getInterpolatedValue(item.ks.r,offsettedFrameNum, item.startTime,mtParams,0,1);
             getInterpolatedValue(item.ks.s,offsettedFrameNum, item.startTime,mtParams,1,2);
             renderedData = {};
-            matArr = matrixInstance.getMatrixArrayFromParams(mtParams[0],mtParams[1],mtParams[2],mtParams[3],mtParams[4]);
-            newData = false;
-
-            if(!item.__lastRenderAn || dataOb.o !== item.__lastRenderAn.tr.o || dataOb.a[0] !== item.__lastRenderAn.tr.a[0] || dataOb.a[1] !== item.__lastRenderAn.tr.a[1] || matArr[1] !== item.__lastRenderAn.matrixArray[1] || matArr[2] !== item.__lastRenderAn.matrixArray[2] || matArr[3] !== item.__lastRenderAn.matrixArray[3] || matArr[4] !== item.__lastRenderAn.matrixArray[4] || matArr[5] !== item.__lastRenderAn.matrixArray[5]){
-                renderedData.an = {
-                    tr: dataOb
-                };
-                renderedData.an.matrixArray = matArr;
-                item.__lastRenderAn = renderedData.an;
-            }else{
-                renderedData.an = item.__lastRenderAn;
-            }
+            renderedData.an = {
+                tr: dataOb
+            };
+            renderedData.mt = [mtParams[0],mtParams[1],mtParams[2],mtParams[3],mtParams[4]];
+            //if(!((item.ks.p.s && (item.ks.p.x.x || item.ks.p.y.x)) || item.ks.p.x || item.ks.r.x || item.ks.s.x)){
+                renderedData.an.matrixArray = matrixInstance.getMatrixArrayFromParams(mtParams[0],mtParams[1],mtParams[2],mtParams[3],mtParams[4]);
+            //}
             item.renderedData[offsettedFrameNum] = renderedData;
             if(item.hasMask){
                 maskProps = item.masksProperties;
@@ -774,6 +746,19 @@ function dataFunctionManager(){
                     maskProps[i].opacity[offsettedFrameNum] = maskProps[i].opacity[offsettedFrameNum] instanceof Array ? maskProps[i].opacity[offsettedFrameNum][0]/100 : maskProps[i].opacity[offsettedFrameNum]/100;
                 }
             }
+            if(item.ef){
+                len = item.ef.length;
+                var efData = new Array(len);
+                for(i = 0; i < len; i += 1){
+                    if(!item.ef[i].renderedData){
+                        item.ef[i].renderedData = [];
+                    }
+                    if(item.ef[i].ty === 0){
+                        efData[i] = getInterpolatedValue(item.ef[i].v,offsettedFrameNum, item.startTime);
+                    }
+                    item.ef[i].renderedData[offsettedFrameNum] = efData[i];
+                }
+            }
             if((frameNum < item.inPoint || frameNum > item.outPoint)){
                continue;
             }
@@ -785,7 +770,7 @@ function dataFunctionManager(){
                 }
                 iterateLayers(item.layers,timeRemapped,renderType);
             }else if(item.ty == 'ShapeLayer'){
-                iterateShape(item.shapes,offsettedFrameNum,item.startTime,renderType);
+                iterateShape(item.shapes,offsettedFrameNum,item.startTime,renderType, null);
             }
         }
     }
@@ -1063,6 +1048,7 @@ function dataFunctionManager(){
         frameRate = animationData.animation.frameRate;
         animationData.__renderedFrames[num] = 2;
         iterateLayers(animationData.animation.layers, num, animationData._animType);
+        ExpressionManager.iterateExpressions(animationData.animation.layers, num, animationData._animType);
     }
 
     function populateLayers(layers, num, rendered){

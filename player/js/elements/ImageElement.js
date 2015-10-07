@@ -31,7 +31,7 @@ IImageElement.prototype.createElements = function(){
 
 IImageElement.prototype.hide = function(){
     if(!this.hidden){
-        this.image.setAttribute('visibility','hidden');
+        this.image.setAttribute('opacity','0');
         this.hidden = true;
     }
 };
@@ -45,25 +45,24 @@ IImageElement.prototype.renderFrame = function(num,parentMatrix){
     if(this.hidden){
         this.lastData.o = -1;
         this.hidden = false;
-        this.image.setAttribute('visibility', 'visible');
+        this.image.setAttribute('opacity', '1');
     }
     if(!this.data.hasMask){
         if(!this.renderedFrames[this.globalData.frameNum]){
-            var tr = 'matrix('+this.finalTransform.mat.props.join(',')+')';
-            if(this.lastData && this.lastData.tr === tr && this.lastData.o === this.finalTransform.opacity){
-                this.renderedFrames[this.globalData.frameNum] = this.lastData;
-            }else{
-                this.renderedFrames[this.globalData.frameNum] = new RenderedFrame(tr,this.finalTransform.opacity);
-            }
+            this.renderedFrames[this.globalData.frameNum] = {
+                tr: 'matrix('+this.finalTransform.mat.props.join(',')+')',
+                o: this.finalTransform.opacity
+            };
         }
         var renderedFrameData = this.renderedFrames[this.globalData.frameNum];
         if(this.lastData.tr != renderedFrameData.tr){
-            this.rectElement.setAttribute('transform',renderedFrameData.tr);
+            this.lastData.tr = renderedFrameData.tr;
+            this.image.setAttribute('transform',renderedFrameData.tr);
         }
         if(this.lastData.o !== renderedFrameData.o){
-            this.rectElement.setAttribute('opacity',renderedFrameData.o);
+            this.lastData.o = renderedFrameData.o;
+            this.image.setAttribute('opacity',renderedFrameData.o);
         }
-        this.lastData = renderedFrameData;
     }
 };
 

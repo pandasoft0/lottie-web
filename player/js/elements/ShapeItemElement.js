@@ -45,7 +45,7 @@ ShapeItemElement.prototype.searchShapes = function(arr,data){
                 pathElement: pathElement,
                 type: arr[i].ty,
                 d: '',
-                ld: ''
+                ld: 'a'
             });
             data[i].style = this.stylesList[this.stylesList.length - 1];
             ownArrays.push(data[i].style);
@@ -101,7 +101,7 @@ ShapeItemElement.prototype.hideShape = function(){
     }
 };
 
-ShapeItemElement.prototype.renderShape = function(num,parentTransform,items,data,isMain){
+ShapeItemElement.prototype.renderShape = function(num,parentTransform,items,data){
     var i, len;
     if(!items){
         items = this.data;
@@ -155,9 +155,6 @@ ShapeItemElement.prototype.renderShape = function(num,parentTransform,items,data
             //
         }
     }
-    if(!isMain){
-        return;
-    }
     len = this.stylesList.length;
     for(i=0;i<len;i+=1){
         if(this.stylesList[i].d == '' && this.stylesList[i].ld !== ''){
@@ -184,27 +181,27 @@ ShapeItemElement.prototype.renderPath = function(pathData,viewData,num,transform
         var pathStringTransformed = '';
         for(i=1;i<len;i+=1){
             if(stops[i-1]){
-                pathStringTransformed += " M"+bm_rnd(stops[i-1][0])+','+bm_rnd(stops[i-1][1]);
-                //pathStringTransformed += " M"+stops[i-1][0]+','+stops[i-1][1];
+                //pathStringTransformed += " M"+transform.mat.applyToPointStringified(stops[i-1][0],stops[i-1][1]);
+                pathStringTransformed += " M"+stops[i-1][0]+','+stops[i-1][1];
             }else if(i==1){
-                pathStringTransformed += " M"+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
-                //pathStringTransformed += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
+                //pathStringTransformed += " M"+transform.mat.applyToPointStringified(pathNodes.v[0][0],pathNodes.v[0][1]);
+                pathStringTransformed += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
             }
-            pathStringTransformed += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[i][0])+','+bm_rnd(pathNodes.i[i][1]) + " "+bm_rnd(pathNodes.v[i][0])+','+bm_rnd(pathNodes.v[i][1]);
-            //pathStringTransformed += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
+            //pathStringTransformed += " C"+transform.mat.applyToPointStringified(pathNodes.o[i-1][0],pathNodes.o[i-1][1]) + " "+transform.mat.applyToPointStringified(pathNodes.i[i][0],pathNodes.i[i][1]) + " "+transform.mat.applyToPointStringified(pathNodes.v[i][0],pathNodes.v[i][1]);
+            pathStringTransformed += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
         }
         if(len == 1){
             if(stops[0]){
-                pathStringTransformed += " M"+bm_rnd(stops[0][0])+','+bm_rnd(stops[0][1]);
-                //pathStringTransformed += " M"+stops[0][0]+','+stops[0][1];
+                //pathStringTransformed += " M"+transform.mat.applyToPointStringified(stops[i-1][0],stops[0][1]);
+                pathStringTransformed += " M"+stops[0][0]+','+stops[0][1];
             }else{
-                pathStringTransformed += " M"+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
-                //pathStringTransformed += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
+                //pathStringTransformed += " M"+transform.mat.applyToPointStringified(pathNodes.v[0][0],pathNodes.v[0][1]);
+                pathStringTransformed += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
             }
         }
         if(pathData.closed && !(pathData.trimmed && !pathNodes.c)){
-            pathStringTransformed += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[0][0])+','+bm_rnd(pathNodes.i[0][1]) + " "+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
-            //pathStringTransformed += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
+            //pathStringTransformed += " C"+transform.mat.applyToPointStringified(pathNodes.o[i-1][0],pathNodes.o[i-1][1]) + " "+transform.mat.applyToPointStringified(pathNodes.i[0][0],pathNodes.i[0][1]) + " "+transform.mat.applyToPointStringified(pathNodes.v[0][0],pathNodes.v[0][1]);
+            pathStringTransformed += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
         }
 
         viewData.renderedFrames[this.globalData.frameNum] = {
@@ -223,18 +220,11 @@ ShapeItemElement.prototype.renderFill = function(styleData,viewData,num,groupTra
     var fillData = styleData.renderedData[num];
     var styleElem = viewData.style;
     if(!viewData.renderedFrames[this.globalData.frameNum]){
-        var t = 'matrix('+groupTransform.mat.props.join(',')+')';
-        if(viewData._ld && viewData._ld.c === fillData.color && viewData._ld.o === fillData.opacity*groupTransform.opacity && viewData._ld.t === t){
-            viewData.renderedFrames[this.globalData.frameNum] = viewData._ld;
-            return;
-        }else{
-            viewData._ld = {
-                c: fillData.color,
-                o: fillData.opacity*groupTransform.opacity,
-                t: t
-            };
-            viewData.renderedFrames[this.globalData.frameNum] = viewData._ld;
-        }
+        viewData.renderedFrames[this.globalData.frameNum] = {
+            c: fillData.color,
+            o: fillData.opacity*groupTransform.opacity,
+            t: 'matrix('+groupTransform.mat.props.join(',')+')'
+        };
     }
 
     var renderedFrameData = viewData.renderedFrames[this.globalData.frameNum];
@@ -256,19 +246,12 @@ ShapeItemElement.prototype.renderStroke = function(styleData,viewData,num,groupT
     var fillData = styleData.renderedData[num];
     var styleElem = viewData.style;
     if(!viewData.renderedFrames[this.globalData.frameNum]){
-        var t = 'matrix('+groupTransform.mat.props.join(',')+')';
-        if(viewData._ld && viewData._ld.c === fillData.color && viewData._ld.o === fillData.opacity*groupTransform.opacity && viewData._ld.w === fillData.width && viewData._ld.t === t){
-            viewData.renderedFrames[this.globalData.frameNum] = viewData._ld;
-            return;
-        }else{
-            viewData._ld = {
-                c: fillData.color,
-                o: fillData.opacity*groupTransform.opacity,
-                w: fillData.width,
-                t: t
-            };
-            viewData.renderedFrames[this.globalData.frameNum] = viewData._ld;
-        }
+        viewData.renderedFrames[this.globalData.frameNum] = {
+            c: fillData.color,
+            o: fillData.opacity*groupTransform.opacity,
+            w: fillData.width,
+            t: 'matrix('+groupTransform.mat.props.join(',')+')'
+        };
         if(fillData.dashes){
             viewData.renderedFrames[this.globalData.frameNum].d = fillData.dashes;
         }
