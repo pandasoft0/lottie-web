@@ -13,7 +13,7 @@ CVSolidElement.prototype.draw = function(parentMatrix){
     this.globalData.renderer.ctxTransform(finalMat);
     this.globalData.renderer.ctxOpacity(this.finalTransform.opacity);
 
-    ctx.fillStyle=this.data.sc;
-    ctx.fillRect(0,0,this.data.sw,this.data.sh);
+    ctx.fillStyle=this.data.color;
+    ctx.fillRect(0,0,this.data.width,this.data.height);
     this.globalData.renderer.restore(this.data.hasMask);
 };
