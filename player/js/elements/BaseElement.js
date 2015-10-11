@@ -10,7 +10,7 @@ var BaseElement = function (data,parentContainer,globalData, placeholder){
     this.lastData = {};
     this.renderedFrames = [];
     this.parentContainer = parentContainer;
-    this.layerId = randomString(10);
+    this.layerId = placeholder ? placeholder.layerId : randomString(10);
     this.hidden = false;
     this.placeholder = placeholder;
     this.init();
@@ -105,6 +105,72 @@ BaseElement.prototype.createElements = function(){
         this.layerElement = this.matteElement;
     }else{
         this.layerElement = this.parentContainer;
+    }
+    this.layerElement.setAttribute('data-nombre',this.data.nm);
+    //return;
+    if(this.data.sy){
+        var filterID = 'st_'+randomString(10);
+        var c = this.data.sy[0].c.k;
+        var r = this.data.sy[0].s.k;
+        var expansor = document.createElementNS(svgNS,'filter');
+        expansor.setAttribute('id',filterID);
+        var feFlood = document.createElementNS(svgNS,'feFlood');
+        this.feFlood = feFlood;
+        if(!c[0].e){
+            feFlood.setAttribute('flood-color','rgb('+c[0]+','+c[1]+','+c[2]+')');
+        }
+        feFlood.setAttribute('result','base');
+        expansor.appendChild(feFlood);
+        var feMorph = document.createElementNS(svgNS,'feMorphology');
+        feMorph.setAttribute('operator','dilate');
+        feMorph.setAttribute('in','SourceGraphic');
+        feMorph.setAttribute('result','bigger');
+        this.feMorph = feMorph;
+        if(!r.length){
+            feMorph.setAttribute('radius',this.data.sy[0].s.k);
+        }
+        expansor.appendChild(feMorph);
+        var feColorMatrix = document.createElementNS(svgNS,'feColorMatrix');
+        feColorMatrix.setAttribute('result','mask');
+        feColorMatrix.setAttribute('in','bigger');
+        feColorMatrix.setAttribute('type','matrix');
+        feColorMatrix.setAttribute('values','0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0');
+        expansor.appendChild(feColorMatrix);
+        var feComposite = document.createElementNS(svgNS,'feComposite');
+        feComposite.setAttribute('result','drop');
+        feComposite.setAttribute('in','base');
+        feComposite.setAttribute('in2','mask');
+        feComposite.setAttribute('operator','in');
+        expansor.appendChild(feComposite);
+        var feBlend = document.createElementNS(svgNS,'feBlend');
+        feBlend.setAttribute('in','SourceGraphic');
+        feBlend.setAttribute('in2','drop');
+        feBlend.setAttribute('mode','normal');
+        expansor.appendChild(feBlend);
+        this.globalData.defs.appendChild(expansor);
+        var cont = document.createElementNS(svgNS,'g');
+        if(this.layerElement === this.parentContainer){
+            this.layerElement = cont;
+        }else{
+            cont.appendChild(this.layerElement);
+        }
+        cont.setAttribute('filter','url(#'+filterID+')');
+        if(this.data.td){
+            cont.setAttribute('data-td',this.data.td);
+        }
+        if(this.data.td == 3){
+            this.globalData.defs.appendChild(cont);
+        }else if(this.data.td == 2){
+            maskGrouper.appendChild(cont);
+        }else if(this.data.td == 1){
+            masker.appendChild(cont);
+        }else{
+            if(this.data.hasMask && this.data.tt){
+                this.matteElement.appendChild(cont);
+            }else{
+                this.appendNodeToParent(cont);
+            }
+        }
     }
 };
 
@@ -202,6 +268,19 @@ BaseElement.prototype.renderFrame = function(num,parentTransform){
             this.layerElement.setAttribute('opacity',renderedFrameData.o);
         }
         this.lastData = renderedFrameData;
+    }
+    if(this.data.sy){
+        if(this.data.nm == 'caparazon'){
+            console.log(this.data.sy);
+        }
+        if(this.data.sy[0].renderedData[num]){
+            if(this.data.sy[0].renderedData[num].c){
+                this.feFlood.setAttribute('flood-color','rgb('+Math.round(this.data.sy[0].renderedData[num].c[0])+','+Math.round(this.data.sy[0].renderedData[num].c[1])+','+Math.round(this.data.sy[0].renderedData[num].c[2])+')');
+            }
+            if(this.data.sy[0].renderedData[num].s){
+                this.feMorph.setAttribute('radius',this.data.sy[0].renderedData[num].s);
+            }
+        }
     }
 
     return this.isVisible;
