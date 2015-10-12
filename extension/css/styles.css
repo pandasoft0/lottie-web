@@ -34,10 +34,6 @@ body::-webkit-scrollbar-thumb {
     border-radius: .4em;
 }
 
-.rightFloat{
-    float: right;
-}
-
 #content {
     margin-right:auto;
     margin-left:auto;
@@ -125,7 +121,6 @@ div.checkboxCombo div.checkboxLabel{
 
 .buttonSeparator{
     width: 10px;
-    height: 1px;
     display: inline-block;
 }
 

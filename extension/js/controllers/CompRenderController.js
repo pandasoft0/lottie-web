@@ -90,7 +90,6 @@ var compRenderController = (function () {
         }
         if (messageData.isFinished) {
             elem.addClass('rendered');
-            compData.renderData = messageData.data.substr(7);
         }
     }
     
@@ -135,14 +134,9 @@ var compRenderController = (function () {
         view.hide();
     }
     
-    function getCompositions() {
-        return compositions;
-    }
-    
     ob.init = init;
     ob.show = show;
     ob.hide = hide;
-    ob.getCompositions = getCompositions;
     
     return ob;
 }());
