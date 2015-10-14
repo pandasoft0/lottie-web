@@ -67,15 +67,8 @@ ShapeItemElement.prototype.searchShapes = function(arr,data){
                 transform : {
                     mat: new Matrix(),
                     opacity: 1
-                },
-                styles: []
-            };
-            jLen = this.stylesList.length;
-            for(j=0;j<jLen;j+=1){
-                if(!this.stylesList[j].closed){
-                    data[i].styles.push(this.stylesList[j]);
                 }
-            }
+            };
         }else if(arr[i].ty == 'sh' || arr[i].ty == 'rc' || arr[i].ty == 'el'){
             data[i] = {
                 elements : [],
