@@ -37,21 +37,16 @@ var bm_shapeHelper = (function () {
         }
     }
     
-    function reverseShape(ks, isClosed) {
+    function reverseShape(ks) {
         var newI = [], newO = [], newV = [];
         var i, len;
         if (ks.i) {
-            var init = 0;
-            if (isClosed) {
-                newI[0] = ks.o[0];
-                newO[0] = ks.i[0];
-                newV[0] = ks.v[0];
-                init = 1;
-            }
+            newI[0] = ks.o[0];
+            newO[0] = ks.i[0];
+            newV[0] = ks.v[0];
             len = ks.i.length;
             var cnt = len - 1;
-            
-            for (i = init; i < len; i += 1) {
+            for (i = 1; i < len; i += 1) {
                 newI.push(ks.o[cnt]);
                 newO.push(ks.i[cnt]);
                 newV.push(ks.v[cnt]);
@@ -64,8 +59,8 @@ var bm_shapeHelper = (function () {
         } else {
             len = ks.length;
             for (i = 0; i < len - 1; i += 1) {
-                reverseShape(ks[i].s[0], isClosed);
-                reverseShape(ks[i].e[0], isClosed);
+                reverseShape(ks[i].s[0]);
+                reverseShape(ks[i].e[0]);
             }
         }
     }
@@ -82,7 +77,7 @@ var bm_shapeHelper = (function () {
                     ob.closed = prop.property('Path').value.closed;
                     ob.ks = bm_keyframeHelper.exportKeyframes(prop.property('Path'), frameRate);
                     if (prop.property("Shape Direction").value === 3) {
-                        reverseShape(ob.ks, ob.closed);
+                        reverseShape(ob.ks);
                     }
                     array.push(ob);
                 } else if (itemType === shapeItemTypes.rect) {
