@@ -31,24 +31,18 @@ After Effects plugin for exporting animations to svg + js or canvas + js
 
 ### Option 1:
 
-- Close After Effects<br/>
-- Extract the zipped file on build/extension/bodymovin.zip to the adobe CEP folder:<br/>
-WINDOWS:<br/>
-C:\Program Files (x86)\Common Files\Adobe\CEP\extensions or<br/>
-C:\<username>\AppData\Roaming\Adobe\CEP\extensions<br/>
-MAC:<br/>
-/Library/Application\ Support/Adobe/CEP/extensions/bodymovin<br/>
-(you can open the terminal and type:<br/>
-cp -R YOURUNZIPEDFOLDERPATH/extension /Library/Application\ Support/Adobe/CEP/extensions/bodymovin<br/>
-then type:<br/>
-ls /Library/Application\ Support/Adobe/CEP/extensions/bodymovin<br/>
-to make sure it was copied correctly type)<br/>
+- Close After Effects
+- Extract the zipped file on build/extension/bodymovin.zip to the adobe CEP folder:
+WINDOWS:
+C:\Program Files (x86)\Common Files\Adobe\CEP\extensions
+C:\<username>\AppData\Roaming\Adobe\CEP\extensions
+MAC:
+/Library~/Library/Application Support/Adobe/CEP/extensions
+/Application Support/Adobe/CEP/extensions
 
-- Edit the registry key:<br/>
-WINDOWS:<br/>
-open the registry key HKEY_CURRENT_USER/Software/Adobe/CSXS.6 and add a key named PlayerDebugMode, of type String, and value 1.<br/>
-MAC:<br/>
-open the file ~/Library/Preferences/com.adobe.CSXS.6.plist and add a row with key PlayerDebugMode, of type String, and value 1.<br/>
+- Edit the registry key:
+On Mac, open the file ~/Library/Preferences/com.adobe.CSXS.4.plist and add a row with key PlayerDebugMode, of type String, and value 1.  
+On Windows, open the registry key HKEY_CURRENT_USER/Software/Adobe/CSXS.6 and add a key named PlayerDebugMode, of type String, and value 1.
 
 ### Option 2:
 
