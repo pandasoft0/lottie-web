@@ -74,7 +74,7 @@ AnimationItem.prototype.setParams = function(params) {
         if(params.path.lastIndexOf('\\') != -1){
             this.path = params.path.substr(0,params.path.lastIndexOf('\\')+1);
         }else{
-            this.path = params.path.substr(0,params.path.lastIndexOf('/')+1);
+        this.path = params.path.substr(0,params.path.lastIndexOf('/')+1);
         }
         this.fileName = params.path.substr(params.path.lastIndexOf('/')+1);
         this.fileName = this.fileName.substr(0,this.fileName.lastIndexOf('.json'));
@@ -96,9 +96,10 @@ AnimationItem.prototype.setParams = function(params) {
     }
 };
 
-AnimationItem.prototype.setData = function (wrapper) {
+AnimationItem.prototype.setData = function (wrapper, animationData) {
     var params = {
-        wrapper: wrapper
+        wrapper: wrapper,
+        animationData: animationData ? JSON.parse(animationData) : null
     };
     var wrapperAttributes = wrapper.attributes;
 
@@ -205,16 +206,35 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.assets = this.animationData.assets;
     this.frameRate = this.animationData.fr;
     this.firstFrame = Math.round(this.animationData.ip*this.frameRate);
-    /*this.firstFrame = 25;
-    this.totalFrames = 1;*/
+    /*this.firstFrame = 30;
+    this.totalFrames = 20;*/
     this.frameMult = this.animationData.fr / 1000;
     this.trigger('bm:config_ready');
     this.loadSegments();
-    dataManager.completeData(this.animationData);
+    dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
     this.renderer.buildItems(this.animationData.layers);
     this.updaFrameModifier();
-    this.checkLoaded();
+    if(this.renderer.globalData.fontManager){
+        this.waitForFontsLoaded();
+    }else{
+        this.checkLoaded();
+    }
 };
+
+AnimationItem.prototype.waitForFontsLoaded = (function(){
+    function checkFontsLoaded(){
+        if(this.renderer.globalData.fontManager.loaded){
+            this.renderer.buildItems(this.animationData.layers);
+            this.checkLoaded();
+        }else{
+            setTimeout(checkFontsLoaded.bind(this),20);
+        }
+    }
+
+    return function(){
+        checkFontsLoaded.bind(this)();
+    }
+}());
 
 AnimationItem.prototype.elementLoaded = function () {
     this.pendingElements--;
@@ -378,7 +398,7 @@ AnimationItem.prototype.playSegments = function (arr,forceFlag) {
 };
 
 AnimationItem.prototype.resetSegments = function (forceFlag) {
-    this.segments.push([Math.round(this.animationData.animation.ff*this.frameRate),Math.floor(this.animationData.animation.totalFrames+this.animationData.animation.ff*this.frameRate)]);
+    this.segments.push([Math.round(this.firstFrame),Math.floor(this.totalFrames+this.firstFrame)]);
     if(forceFlag){
         this.adjustSegment(this.segments.shift());
     }
@@ -472,6 +492,5 @@ AnimationItem.prototype.getAssetData = function (id) {
 AnimationItem.prototype.getAssets = function () {
     return this.assets;
 };
-
 AnimationItem.prototype.addEventListener = addEventListener;
 AnimationItem.prototype.trigger = triggerEvent;
