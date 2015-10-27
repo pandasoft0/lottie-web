@@ -238,7 +238,11 @@ BaseElement.prototype.getType = function(){
 };
 
 BaseElement.prototype.getLayerSize = function(){
-    return {w:this.data.width,h:this.data.height};
+    if(this.data.ty === 5){
+        return {w:this.data.textData.width,h:this.data.textData.height};
+    }else{
+        return {w:this.data.width,h:this.data.height};
+    }
 };
 
 BaseElement.prototype.resetHierarchy = function(){
@@ -266,6 +270,3 @@ BaseElement.prototype.setMatte = function(id){
 BaseElement.prototype.hide = function(){
 
 };
-
-
-BaseElement.prototype.mHelper = new Matrix();
