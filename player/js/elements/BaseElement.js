@@ -1,15 +1,10 @@
 var BaseElement = function (data,parentContainer,globalData, placeholder){
     this.globalData = globalData;
     this.data = data;
-    this.dynamicProperties = [];
-
+    this.ownMatrix = new Matrix();
     this.finalTransform = {
-        op: PropertyFactory.getProp(this.data,this.data.ks.o,0,0.01,this.dynamicProperties),
-        mProp: PropertyFactory.getProp(this.data,this.data.ks,2,null,this.dynamicProperties),
-        matMdf: false,
-        opMdf: false,
         mat: new Matrix(),
-        opacity: 1
+        op: 1
     };
     this.matteElement = null;
     this.lastData = {};
@@ -17,7 +12,6 @@ var BaseElement = function (data,parentContainer,globalData, placeholder){
     this.parentContainer = parentContainer;
     this.layerId = placeholder ? placeholder.layerId : 'ly_'+randomString(10);
     this.hidden = false;
-    this.firstFrame = true;
     this.placeholder = placeholder;
     this.init();
 };
@@ -118,30 +112,26 @@ BaseElement.prototype.prepareFrame = function(num){
     if(!this.data.renderedData[num]){
         return;
     }
-    if(this.data.ip - this.data.st <= num && this.data.op - this.data.st > num)
-    {
-        if(this.isVisible !== true){
-            this.isVisible = true;
-        }
-    }else{
-        if(this.isVisible !== false){
-            this.isVisible = false;
-        }
-        return;
-    }
-    var i, len = this.dynamicProperties.length;
-    for(i=0;i<len;i+=1){
-        this.dynamicProperties[i].getInterpolatedValue(num);
-    }
     this.currentAnimData = this.data.renderedData[num].an;
-    if(this.data.hasMask){
-        this.maskManager.prepareFrame(num);
-    }
+    var mat = this.currentAnimData.m;
+    this.ownMatrix.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]).translate(-this.currentAnimData.a[0],-this.currentAnimData.a[1]);
 };
 
 BaseElement.prototype.renderFrame = function(num,parentTransform){
     if(!this.data.renderedData[num] || this.data.ty === 3){
         return false;
+    }
+    if(this.data.ip - this.data.st <= num && this.data.op - this.data.st > num)
+    {
+        if(this.isVisible !== true){
+            this.isVisible = true;
+        }
+        this.finalTransform.opacity = 1;
+    }else{
+        if(this.isVisible !== false){
+            this.isVisible = false;
+        }
+        this.finalTransform.opacity = 0;
     }
 
     if(this.data.eff){
@@ -155,14 +145,7 @@ BaseElement.prototype.renderFrame = function(num,parentTransform){
     if(this.data.hasMask){
         this.maskManager.renderFrame(num);
     }
-    this.finalTransform.opMdf = this.finalTransform.op.mdf;
-    this.finalTransform.matMdf = this.finalTransform.mProp.mdf;
-    this.finalTransform.opacity = this.finalTransform.op.v;
-    if(this.firstFrame && this.isVisible){
-        this.finalTransform.opMdf = true;
-        this.finalTransform.matMdf = true;
-        this.firstFrame = false;
-    }
+    this.finalTransform.opacity *= this.currentAnimData.o;
 
     var mat;
     var finalMat = this.finalTransform.mat;
@@ -171,8 +154,6 @@ BaseElement.prototype.renderFrame = function(num,parentTransform){
         mat = parentTransform.mat.props;
         finalMat.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         this.finalTransform.opacity *= parentTransform.opacity;
-        this.finalTransform.opMdf = parentTransform.opMdf ? true : this.finalTransform.opMdf;
-        this.finalTransform.matMdf = parentTransform.matMdf ? true : this.finalTransform.matMdf
     }
 
     if(this.hierarchy){
@@ -181,34 +162,43 @@ BaseElement.prototype.renderFrame = function(num,parentTransform){
             finalMat.reset();
         }
         for(i=len-1;i>=0;i-=1){
-            this.finalTransform.matMdf = this.hierarchy[i].finalTransform.mProp.mdf ? true : this.finalTransform.matMdf;
-            mat = this.hierarchy[i].finalTransform.mProp.v.props;
+            mat = this.hierarchy[i].ownMatrix.props;
             finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         }
-        mat = this.finalTransform.mProp.v.props;
+        mat = this.ownMatrix.props;
         finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
     }else{
         if(this.isVisible){
             if(!parentTransform){
-                finalMat.props[0] = this.finalTransform.mProp.v.props[0];
-                finalMat.props[1] = this.finalTransform.mProp.v.props[1];
-                finalMat.props[2] = this.finalTransform.mProp.v.props[2];
-                finalMat.props[3] = this.finalTransform.mProp.v.props[3];
-                finalMat.props[4] = this.finalTransform.mProp.v.props[4];
-                finalMat.props[5] = this.finalTransform.mProp.v.props[5];
+                finalMat.props[0] = this.ownMatrix.props[0];
+                finalMat.props[1] = this.ownMatrix.props[1];
+                finalMat.props[2] = this.ownMatrix.props[2];
+                finalMat.props[3] = this.ownMatrix.props[3];
+                finalMat.props[4] = this.ownMatrix.props[4];
+                finalMat.props[5] = this.ownMatrix.props[5];
             }else{
-                mat = this.finalTransform.mProp.v.props;
+                mat = this.ownMatrix.props;
                 finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
             }
         }
     }
     if(this.data.hasMask){
-        if(this.finalTransform.matMdf){
-            this.layerElement.setAttribute('transform','matrix('+finalMat.props.join(',')+')');
+        if(!this.renderedFrames[this.globalData.frameNum]){
+            var tr = 'matrix('+finalMat.props.join(',')+')';
+            if(this.lastData && this.lastData.tr === tr && this.lastData.o === this.finalTransform.opacity){
+                this.renderedFrames[this.globalData.frameNum] = this.lastData;
+            }else{
+                this.renderedFrames[this.globalData.frameNum] = new RenderedFrame(tr,this.finalTransform.opacity);
+            }
         }
-        if(this.finalTransform.opMdf){
-            this.layerElement.setAttribute('opacity',this.finalTransform.opacity);
+        var renderedFrameData = this.renderedFrames[this.globalData.frameNum];
+        if(this.lastData.tr != renderedFrameData.tr){
+            this.layerElement.setAttribute('transform',renderedFrameData.tr);
         }
+        if(this.lastData.o !== renderedFrameData.o){
+            this.layerElement.setAttribute('opacity',renderedFrameData.o);
+        }
+        this.lastData = renderedFrameData;
     }
 
     return this.isVisible;
@@ -248,11 +238,7 @@ BaseElement.prototype.getType = function(){
 };
 
 BaseElement.prototype.getLayerSize = function(){
-    if(this.data.ty === 5){
-        return {w:this.data.textData.width,h:this.data.textData.height};
-    }else{
-        return {w:this.data.width,h:this.data.height};
-    }
+    return {w:this.data.width,h:this.data.height};
 };
 
 BaseElement.prototype.resetHierarchy = function(){
@@ -280,3 +266,6 @@ BaseElement.prototype.setMatte = function(id){
 BaseElement.prototype.hide = function(){
 
 };
+
+
+BaseElement.prototype.mHelper = new Matrix();

@@ -20,17 +20,17 @@
         }
     </style>
     <!-- build:js bodymovin.js -->
-    <script src="js/main.js"></script>
+     <script src="js/main.js"></script>
     <script src="js/3rd_party/transformation-matrix.js"></script>
     <script src="js/3rd_party/canvasPoly.js"></script>
     <script src="js/utils/MatrixManager.js"></script>
     <script src="js/utils/animationFramePolyFill.js"></script>
     <script src="js/utils/common.js"></script>
-    <script src="js/utils/canvasPolyFill.js"></script>
     <script src="js/utils/functionExtensions.js"></script>
     <script src="js/utils/bez.js"></script>
     <script src="js/utils/DataManager.js"></script>
-    <script src="js/utils/PropertyFactory.js"></script>
+    <script src="js/utils/text_helper.js"></script>
+    <script src="js/utils/FontManager.js"></script>
     <script src="js/renderers/SVGRenderer.js"></script>
     <script src="js/renderers/CanvasRenderer.js"></script>
     <script src="js/mask.js"></script>
@@ -45,14 +45,14 @@
     <script src="js/elements/canvasElements/CVBaseElement.js"></script>
     <script src="js/elements/canvasElements/CVCompElement.js"></script>
     <script src="js/elements/canvasElements/CVImageElement.js"></script>
+    <script src="js/elements/canvasElements/CVMaskElement.js"></script>
     <script src="js/elements/canvasElements/CVShapeElement.js"></script>
     <script src="js/elements/canvasElements/CVShapeItemElement.js"></script>
     <script src="js/elements/canvasElements/CVSolidElement.js"></script>
     <script src="js/elements/canvasElements/CVTextElement.js"></script>
-    <script src="js/elements/canvasElements/CVMaskElement.js"></script>
     <script src="js/animation/AnimationManager.js"></script>
     <script src="js/animation/AnimationItem.js"></script>
-    <script src="js/module.js"></script>
+     <script src="js/module.js"></script>
     <!-- endbuild -->
     <!-- <script src="bodymovin.js"></script> -->
 </head>
@@ -77,7 +77,8 @@
         loop: false,
         prerender: false,
         autoplay: true,
-        path: 'exports/catrim/data.json'
+        //animationData: bmsmd
+        path: 'exports/blue/data.json'
     };
     bodymovin.setQuality(50);
     var anim = bodymovin.loadAnimation(animData);
