@@ -1,16 +1,17 @@
 function MaskElement(data,element,globalData) {
+    this.dynamicProperties = [];
     this.data = data;
     this.storedData = [];
     this.element = element;
     this.globalData = globalData;
     this.paths = [];
     this.registeredEffects = [];
-    this.masksProperties = [];
+    this.masksProperties = this.data.masksProperties;
+    this.masksProps = new Array(this.masksProperties.length);
     this.maskElement = null;
 }
 
 MaskElement.prototype.init = function () {
-    this.masksProperties = this.data.masksProperties;
     var maskedElement = this.element.maskedElement;
     var defs = this.globalData.defs;
     var i, len = this.masksProperties.length;
@@ -83,6 +84,10 @@ MaskElement.prototype.init = function () {
         if(properties[i].inv && !this.solidPath){
             this.solidPath = this.createLayerSolidPath();
         }
+        this.masksProps[i] = PropertyFactory.getShapeProp(this.data,properties[i],3,this.dynamicProperties);
+        if(!this.masksProps[i].k){
+            this.drawPath(properties[i],this.masksProps[i].v,this.storedData[i]);
+        }
     }
 
     len = currentMasks.length;
@@ -98,15 +103,20 @@ MaskElement.prototype.init = function () {
     defs.appendChild(this.maskElement);
 };
 
+MaskElement.prototype.prepareFrame = function(num){
+    var i, len = this.dynamicProperties.length;
+    for(i=0;i<len;i+=1){
+        this.dynamicProperties[i].getInterpolatedValue(num);
+    }
+}
+
 MaskElement.prototype.renderFrame = function (num) {
     var i, len = this.data.masksProperties.length;
-    var count = 0;
     for (i = 0; i < len; i++) {
-        if(this.data.masksProperties[i].mode == 'n'){
+        if(this.data.masksProperties[i].mode == 'n' || !this.masksProps[i].mdf){
             continue;
         }
-        count += 1;
-        this.drawPath(this.data.masksProperties[i],this.data.masksProperties[i].paths[num].pathNodes,this.storedData[i]);
+        this.drawPath(this.data.masksProperties[i],this.masksProps[i].v,this.storedData[i]);
     }
 };
 
@@ -137,24 +147,20 @@ MaskElement.prototype.createLayerSolidPath = function(){
 MaskElement.prototype.drawPath = function(pathData,pathNodes,storedData){
     var pathString = '';
     var i, len;
-    if(!pathNodes.__renderedString){
-        len = pathNodes.v.length;
-            for(i=1;i<len;i+=1){
-                if(i==1){
-                    //pathString += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
-                    pathString += " M"+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
-                }
-                //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
-                pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[i][0])+','+bm_rnd(pathNodes.i[i][1]) + " "+bm_rnd(pathNodes.v[i][0])+','+bm_rnd(pathNodes.v[i][1]);
-            }
-            if(pathData.cl){
-                //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
-                pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[0][0])+','+bm_rnd(pathNodes.i[0][1]) + " "+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
-            }
-        pathNodes.__renderedString = pathString;
-    }else{
-        pathString = pathNodes.__renderedString;
+    len = pathNodes.v.length;
+    for(i=1;i<len;i+=1){
+        if(i==1){
+            //pathString += " M"+pathNodes.v[0][0]+','+pathNodes.v[0][1];
+            pathString += " M"+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
+        }
+        //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
+        pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[i][0])+','+bm_rnd(pathNodes.i[i][1]) + " "+bm_rnd(pathNodes.v[i][0])+','+bm_rnd(pathNodes.v[i][1]);
     }
+    if(pathData.cl){
+        //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
+        pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[0][0])+','+bm_rnd(pathNodes.i[0][1]) + " "+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
+    }
+    //pathNodes.__renderedString = pathString;
 
 
 
