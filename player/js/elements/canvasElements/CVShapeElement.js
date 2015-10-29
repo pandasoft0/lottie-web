@@ -7,7 +7,7 @@ createElement(CVBaseElement, CVShapeElement);
 CVShapeElement.prototype.createElements = function(){
 
     this.parent.createElements.call(this);
-    this.mainShape = new CVShapeItemElement(this.data.shapes,true,this.dynamicProperties,this.globalData);
+    this.mainShape = new CVShapeItemElement(this.data.shapes,true,this.globalData);
 };
 
 CVShapeElement.prototype.prepareFrame = function(num){
@@ -18,8 +18,8 @@ CVShapeElement.prototype.prepareFrame = function(num){
     this.mainShape.prepareFrame(num);
 };
 
-CVShapeElement.prototype.renderFrame = function(parentMatrix){
-    if(this.parent.renderFrame.call(this, parentMatrix)===false){
+CVShapeElement.prototype.draw = function(parentMatrix){
+    if(this.parent.draw.call(this, parentMatrix)===false){
         return;
     }
     this.drawShapes(this.finalTransform);

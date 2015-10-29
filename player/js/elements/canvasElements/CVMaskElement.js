@@ -1,7 +1,6 @@
-function CVMaskElement(data,element,globalData){
-    this.data = data;
-    this.element = element;
-    this.globalData = globalData;
+function CVMaskElement(){}
+
+CVMaskElement.prototype.init = function () {
     this.registeredEffects = [];
     this.masksProperties = this.data.masksProperties;
     this.totalMasks = this.masksProperties.length;
@@ -14,7 +13,7 @@ CVMaskElement.prototype.prepareFrame = function (num) {
     this.frameNum = num;
 };
 
-CVMaskElement.prototype.renderFrame = function (transform) {
+CVMaskElement.prototype.draw = function (transform) {
     var path;
     if(this.renderedFrames[this.globalData.frameNum]){
         path = this.renderedFrames[this.globalData.frameNum];

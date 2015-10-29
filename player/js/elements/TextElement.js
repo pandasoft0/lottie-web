@@ -1,7 +1,7 @@
 function ITextElement(data, animationItem,parentContainer,globalData){
     this.parent.constructor.call(this,data, animationItem,parentContainer,globalData);
 }
-createElement(SVGBaseElement, ITextElement);
+createElement(BaseElement, ITextElement);
 
 ITextElement.prototype.createElements = function(){
 
