@@ -280,6 +280,23 @@ CanvasRenderer.prototype.buildItemHierarchy = function (data,element, layers, pa
     }
 };
 
+CanvasRenderer.prototype.prepareFrame = function(num){
+    if(this.destroyed) {
+        return;
+    }
+    var i, len = this.elements.length;
+    for (i = 0; i < len; i++) {
+        this.elements[i].prepareFrame(num - this.layers[i].st);
+    }
+};
+
+CanvasRenderer.prototype.draw = function(){
+    var i, len = this.layers.length;
+    for (i = len - 1; i >= 0; i-=1) {
+        this.elements[i].draw();
+    }
+};
+
 CanvasRenderer.prototype.destroy = function () {
     if(this.renderConfig.clearCanvas) {
         this.animationItem.wrapper.innerHTML = '';
@@ -310,14 +327,8 @@ CanvasRenderer.prototype.renderFrame = function(num){
     }
     this.ctxTransform(this.transformCanvas.props);
     this.globalData.bmCtx.clip(this.clipper);
-
-    var i, len = this.layers.length;
-    for (i = 0; i < len; i++) {
-        this.elements[i].prepareFrame(num - this.layers[i].st);
-    }
-    for (i = len - 1; i >= 0; i-=1) {
-        this.elements[i].renderFrame();
-    }
+    this.prepareFrame(num);
+    this.draw();
     if(this.renderConfig.clearCanvas !== true){
         this.restore();
     }

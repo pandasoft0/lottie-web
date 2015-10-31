@@ -28,11 +28,11 @@ CVImageElement.prototype.createElements = function(){
 
 };
 
-CVImageElement.prototype.renderFrame = function(parentMatrix){
+CVImageElement.prototype.draw = function(parentMatrix){
     if(this.failed){
         return;
     }
-    if(this.parent.renderFrame.call(this,parentMatrix)===false){
+    if(this.parent.draw.call(this,parentMatrix)===false){
         return;
     }
     var ctx = this.canvasContext;

@@ -3,7 +3,7 @@ function IImageElement(data,parentContainer,globalData,placeholder){
     this.path = globalData.getPath();
     this.parent.constructor.call(this,data,parentContainer,globalData,placeholder);
 }
-createElement(SVGBaseElement, IImageElement);
+createElement(BaseElement, IImageElement);
 
 IImageElement.prototype.createElements = function(){
 
@@ -22,45 +22,56 @@ IImageElement.prototype.createElements = function(){
 
     this.parent.createElements.call(this);
 
-    this.innerElem = document.createElementNS(svgNS,'image');
-    this.innerElem.setAttribute('width',this.assetData.w+"px");
-    this.innerElem.setAttribute('height',this.assetData.h+"px");
+    this.image = document.createElementNS(svgNS,'image');
+    this.image.setAttribute('width',this.assetData.w+"px");
+    this.image.setAttribute('height',this.assetData.h+"px");
     if(this.layerElement === this.parentContainer){
-        this.appendNodeToParent(this.innerElem);
+        this.appendNodeToParent(this.image);
     }else{
-        this.layerElement.appendChild(this.innerElem);
+        this.layerElement.appendChild(this.image);
     }
 
 };
 
 IImageElement.prototype.hide = function(){
     if(!this.hidden){
-        this.innerElem.setAttribute('visibility','hidden');
+        this.image.setAttribute('visibility','hidden');
         this.hidden = true;
     }
 };
 
-IImageElement.prototype.renderFrame = function(parentMatrix){
-    var renderParent = this.parent.renderFrame.call(this,parentMatrix);
+IImageElement.prototype.renderFrame = function(num,parentMatrix){
+    var renderParent = this.parent.renderFrame.call(this,num,parentMatrix);
     if(renderParent===false){
         this.hide();
         return;
     }
     if(this.hidden){
+        this.lastData.o = -1;
         this.hidden = false;
-        this.innerElem.setAttribute('visibility', 'visible');
+        this.image.setAttribute('visibility', 'visible');
     }
     if(!this.data.hasMask){
-        if(this.finalTransform.matMdf){
-            this.layerElement.setAttribute('transform','matrix('+this.finalTransform.mat.props.join(',')+')');
+        if(!this.renderedFrames[this.globalData.frameNum]){
+            var tr = 'matrix('+this.finalTransform.mat.props.join(',')+')';
+            if(this.lastData && this.lastData.tr === tr && this.lastData.o === this.finalTransform.opacity){
+                this.renderedFrames[this.globalData.frameNum] = this.lastData;
+            }else{
+                this.renderedFrames[this.globalData.frameNum] = new RenderedFrame(tr,this.finalTransform.opacity);
+            }
         }
-        if(this.finalTransform.opMdf){
-            this.layerElement.setAttribute('opacity',this.finalTransform.opacity);
+        var renderedFrameData = this.renderedFrames[this.globalData.frameNum];
+        if(this.lastData.tr != renderedFrameData.tr){
+            this.image.setAttribute('transform',renderedFrameData.tr);
         }
+        if(this.lastData.o !== renderedFrameData.o){
+            this.image.setAttribute('opacity',renderedFrameData.o);
+        }
+        this.lastData = renderedFrameData;
     }
 };
 
 IImageElement.prototype.destroy = function(){
     this.parent.destroy.call();
-    this.innerElem =  null;
+    this.image =  null;
 };
