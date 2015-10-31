@@ -1,36 +1,31 @@
-function CVMaskElement(){}
-
-CVMaskElement.prototype.init = function () {
-    this.registeredEffects = [];
+function CVMaskElement(data,element,globalData){
+    this.data = data;
+    this.element = element;
+    this.globalData = globalData;
     this.masksProperties = this.data.masksProperties;
     this.totalMasks = this.masksProperties.length;
     this.ctx = this.element.canvasContext;
-    this.layerSize = this.element.getLayerSize();
-    this.renderedFrames = new Array(this.globalData.totalFrames+1);
+    this.viewData = [];
 };
 
 CVMaskElement.prototype.prepareFrame = function (num) {
     this.frameNum = num;
 };
 
-CVMaskElement.prototype.draw = function (transform) {
+CVMaskElement.prototype.renderFrame = function (transform) {
     var path;
-    if(this.renderedFrames[this.globalData.frameNum]){
-        path = this.renderedFrames[this.globalData.frameNum];
-    }else{
-        var tmpPath = new BM_Path2D();
-        var i, len = this.data.masksProperties.length;
-        path = new BM_Path2D();
-        for (i = 0; i < len; i++) {
-            if (this.masksProperties[i].inv) {
-                this.createInvertedMask(tmpPath, this.data.masksProperties[i].paths[this.frameNum].pathNodes);
-            }
-            this.drawShape(tmpPath, this.data.masksProperties[i].paths[this.frameNum].pathNodes);
+    var tmpPath = new BM_Path2D();
+    var i, len = this.data.masksProperties.length;
+    path = new BM_Path2D();
+    for (i = 0; i < len; i++) {
+        if (this.masksProperties[i].inv) {
+            this.createInvertedMask(tmpPath, this.data.masksProperties[i].paths[this.frameNum].pathNodes);
         }
-        path.addPath(tmpPath,transform.mat.props);
-        this.renderedFrames[this.globalData.frameNum] = path;
+        this.drawShape(tmpPath, this.data.masksProperties[i].paths[this.frameNum].pathNodes);
     }
-    this.globalData.bmCtx.clip(path);
+    path.addPath(tmpPath,transform.mat.props);
+    this.renderedFrames[this.globalData.frameNum] = path;
+    this.ctx.clip(path);
 };
 
 CVMaskElement.prototype.drawShape = function (path, data) {
