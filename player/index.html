@@ -31,12 +31,10 @@
     <script src="js/utils/functionExtensions.js"></script>
     <script src="js/utils/bez.js"></script>
     <script src="js/utils/DataManager.js"></script>
-    <script src="js/utils/PropertyFactory.js"></script>
     <script src="js/renderers/SVGRenderer.js"></script>
     <script src="js/renderers/CanvasRenderer.js"></script>
     <script src="js/mask.js"></script>
     <script src="js/elements/BaseElement.js"></script>
-    <script src="js/elements/svgElements/SVGBaseElement.js"></script>
     <script src="js/elements/PlaceHolderElement.js"></script>
     <script src="js/elements/CompElement.js"></script>
     <script src="js/elements/ImageElement.js"></script>
@@ -66,20 +64,20 @@
 <script>
 
     function configReady(){
-        //console.log('config ready');
+        console.log('config ready');
     }
 
     function dataReady(){
-        //console.log('data ready');
+        console.log('data ready');
     }
 
     var animData = {
         wrapper: document.getElementById('bodymovin'),
-        animType: 'canvas',
+        animType: 'svg',
         loop: true,
         prerender: false,
         autoplay: true,
-        path: 'exports/bm/data.json'
+        path: 'exports/bm'
     };
     bodymovin.setQuality(50);
     var anim = bodymovin.loadAnimation(animData);

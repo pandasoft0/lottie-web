@@ -27,7 +27,7 @@
  * @constructor
  */
 
-function Matrix() {
+function Matrix(context) {
 
     var me = this;
     me._t = me.transform;
@@ -41,9 +41,13 @@ function Matrix() {
 
     me.a1 = me.b1 = me.c1 = me.d1 = me.e1 = me.f1 = 0;
 
+    me.context = context;
+
     me.cos = me.sin = 0;
 
 
+    // reset canvas transformations (if any) to enable 100% sync.
+    if (context) context.setTransform(1, 0, 0, 1, 0, 0);
 }
 Matrix.prototype = {
 
@@ -392,7 +396,7 @@ Matrix.prototype = {
     interpolate: function(m2, t, context) {
 
         var me = this,
-            m = new Matrix();
+            m = context ? new Matrix(context) : new Matrix();
 
         m.a = me.a + (m2.a - me.a) * t;
         m.b = me.b + (m2.b - me.b) * t;
@@ -420,10 +424,10 @@ Matrix.prototype = {
      * @param {CanvasRenderingContext2D} [context] - optional context to affect
      * @returns {Matrix} - new instance with the interpolated result
      */
-    interpolateAnim: function(m2, t) {
+    interpolateAnim: function(m2, t, context) {
 
         var me = this,
-            m = new Matrix(),
+            m = context ? new Matrix(context) : new Matrix(),
             d1 = me.decompose(),
             d2 = m2.decompose(),
             rotation = d1.rotation + (d2.rotation - d1.rotation) * t,
@@ -531,18 +535,12 @@ Matrix.prototype = {
      */
     applyToPoint: function(x, y) {
 
+        var me = this;
+
         return {
             x: x * this.props[0] + y * this.props[2] + this.props[4],
             y: x * this.props[1] + y * this.props[3] + this.props[5]
         };
-        /*return {
-         x: x * me.a + y * me.c + me.e,
-         y: x * me.b + y * me.d + me.f
-         };*/
-    },
-    applyToPointArray: function(x, y) {
-
-        return [x * this.props[0] + y * this.props[2] + this.props[4],x * this.props[1] + y * this.props[3] + this.props[5]];
         /*return {
          x: x * me.a + y * me.c + me.e,
          y: x * me.b + y * me.d + me.f
@@ -627,6 +625,7 @@ Matrix.prototype = {
      */
     applyToContext: function(context) {
         var me = this;
+        context.setTransform(me.a, me.b, me.c, me.d, me.e, me.f);
         return me;
     },
 
@@ -748,6 +747,8 @@ Matrix.prototype = {
      * @private
      */
     _x: function() {
+        if (this.context)
+            this.context.setTransform(this.a, this.b, this.c, this.d, this.e, this.f);
         return this;
     }
 };

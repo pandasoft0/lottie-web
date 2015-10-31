@@ -1,17 +1,32 @@
 function CVBaseElement(data,globalData){
-    this.globalData = globalData;
     this.data = data;
+    this.globalData = globalData;
     this.canvasContext = globalData.canvasContext;
+    this.currentAnimData = null;
+    this.renderFrame = false;
+    this.ownMatrix = new Matrix();
+    this.finalTransform = {
+        mat: new Matrix(),
+        opacity: 1
+    };
     this.init();
 }
 
-createElement(BaseElement, CVBaseElement);
+CVBaseElement.prototype.init = function(){
+    this.createElements();
+    if(this.data.hasMask){
+        this.addMasks(this.data);
+    }
+    if(this.data.eff){
+        //this.createEffectsManager(this.data);
+    }
+};
 
 CVBaseElement.prototype.createElements = function(){
 
 };
 
-/*CVBaseElement.prototype.prepareFrame = function(num){
+CVBaseElement.prototype.prepareFrame = function(num){
     if(!this.data.renderedData[num]){
         return false;
     }
@@ -31,34 +46,26 @@ CVBaseElement.prototype.createElements = function(){
     if(this.data.hasMask){
         this.maskManager.prepareFrame(num);
     }
-};*/
+};
 
-CVBaseElement.prototype.renderFrame = function(parentTransform){
+CVBaseElement.prototype.draw = function(parentTransform){
     if(this.data.ty === 3){
+        return;
+    }
+    if(!this.renderFrame){
         return false;
     }
+    var ctx = this.canvasContext;
+    ////
 
-    if(!this.isVisible){
-        return this.isVisible;
-    }
-    this.finalTransform.opMdf = this.finalTransform.op.mdf;
-    this.finalTransform.matMdf = this.finalTransform.mProp.mdf;
-    this.finalTransform.opacity = this.finalTransform.op.v;
-    if(this.firstFrame && this.isVisible){
-        this.finalTransform.opMdf = true;
-        this.finalTransform.matMdf = true;
-        this.firstFrame = false;
-    }
+    var mat, finalMat = this.finalTransform.mat;
 
-    var mat;
-    var finalMat = this.finalTransform.mat;
+    this.finalTransform.opacity *= this.currentAnimData.o;
 
     if(parentTransform){
         mat = parentTransform.mat.props;
         finalMat.reset().transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         this.finalTransform.opacity *= parentTransform.opacity;
-        this.finalTransform.opMdf = parentTransform.opMdf ? true : this.finalTransform.opMdf;
-        this.finalTransform.matMdf = parentTransform.matMdf ? true : this.finalTransform.matMdf
     }
 
     if(this.hierarchy){
@@ -67,30 +74,27 @@ CVBaseElement.prototype.renderFrame = function(parentTransform){
             finalMat.reset();
         }
         for(i=len-1;i>=0;i-=1){
-            this.finalTransform.matMdf = this.hierarchy[i].finalTransform.mProp.mdf ? true : this.finalTransform.matMdf;
-            mat = this.hierarchy[i].finalTransform.mProp.v.props;
+            mat = this.hierarchy[i].ownMatrix.props;
             finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
         }
-        mat = this.finalTransform.mProp.v.props;
+        mat = this.ownMatrix.props;
         finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
     }else{
-        if(!parentTransform){
-            finalMat.props[0] = this.finalTransform.mProp.v.props[0];
-            finalMat.props[1] = this.finalTransform.mProp.v.props[1];
-            finalMat.props[2] = this.finalTransform.mProp.v.props[2];
-            finalMat.props[3] = this.finalTransform.mProp.v.props[3];
-            finalMat.props[4] = this.finalTransform.mProp.v.props[4];
-            finalMat.props[5] = this.finalTransform.mProp.v.props[5];
-        }else{
-            mat = this.finalTransform.mProp.v.props;
-            finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+        if(this.renderFrame){
+            if(!parentTransform){
+                this.finalTransform.mat = this.ownMatrix;
+            }else{
+                mat = this.ownMatrix.props;
+                finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]);
+            }
         }
-    }
+        }
+
+    ////
     if(this.data.hasMask){
         this.globalData.renderer.save(true);
-        this.maskManager.renderFrame(finalMat);
+        this.maskManager.draw(this.finalTransform);
     }
-    return this.isVisible;
 
 };
 
@@ -98,7 +102,45 @@ CVBaseElement.prototype.getCurrentAnimData = function(){
     return this.currentAnimData;
 };
 CVBaseElement.prototype.addMasks = function(data){
-    this.maskManager = new CVMaskElement(data,this,this.globalData);
+    var params = {
+        'data':{value:data},
+        'element':{value:this},
+        'globalData':{value:this.globalData}
+    };
+    this.maskManager = createElement(CVMaskElement,null,params);
+};
+CVBaseElement.prototype.createEffectsManager = function(data){
+    var params = {
+        'effects':{value:data.eff},
+        'element':{value:this}
+    };
+    this.effectsManager = createElement(EffectsManager,null,params);
+};
+CVBaseElement.prototype.getType = function(){
+    return this.type;
+};
+
+CVBaseElement.prototype.resetHierarchy = function(){
+    if(!this.hierarchy){
+        this.hierarchy = [];
+    }else{
+        this.hierarchy.length = 0;
+    }
+};
+
+CVBaseElement.prototype.getHierarchy = function(){
+    if(!this.hierarchy){
+        this.hierarchy = [];
+    }
+    return this.hierarchy;
+};
+
+CVBaseElement.prototype.getLayerSize = function(){
+    if(this.data.ty === 5){
+        return {w:this.data.textData.width,h:this.data.textData.height};
+    }else{
+        return {w:this.data.width,h:this.data.height};
+    }
 };
 
 
