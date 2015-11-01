@@ -1,4 +1,4 @@
-var subframeEnabled = false;
+var subframeEnabled = true;
 var cachedColors = {};
 var bm_rounder = Math.round;
 var bm_rnd;
@@ -151,15 +151,6 @@ var fillColorToString = (function(){
 function RenderedFrame(tr,o) {
     this.tr = tr;
     this.o = o;
-}
-
-function LetterProps(o,sw,sc,fc,m,p){
-    this.o = o;
-    this.sw = sw;
-    this.sc = sc;
-    this.fc = fc;
-    this.m = m;
-    this.props = p;
 }
 
 function iterateDynamicProperties(num){
