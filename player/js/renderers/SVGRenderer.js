@@ -90,7 +90,7 @@ SVGRenderer.prototype.createShape = function (data,parentContainer, placeholder)
 };
 
 SVGRenderer.prototype.createText = function (data,parentContainer, placeholder) {
-    return new ITextElement(data, parentContainer,this.globalData, placeholder);
+    return new SVGTextElement(data, parentContainer,this.globalData, placeholder);
 };
 
 SVGRenderer.prototype.createImage = function (data,parentContainer, placeholder) {
@@ -145,6 +145,9 @@ SVGRenderer.prototype.configAnimation = function(animData){
     defs.appendChild(maskElement);
     this.animationItem.container = maskedElement;
     this.layers = animData.layers;
+    this.globalData.fontManager = new FontManager();
+    this.globalData.fontManager.addChars(animData.chars);
+    this.globalData.fontManager.addFonts(animData.fonts,defs);
 };
 
 SVGRenderer.prototype.buildStage = function (container, layers,elements) {
@@ -204,7 +207,7 @@ SVGRenderer.prototype.renderFrame = function(num){
     if(num === null){
         num = this.lastFrame;
     }else{
-        this.lastFrame = num;
+    this.lastFrame = num;
     }
     /*console.log('-------');
     console.log('FRAME ',num);*/
