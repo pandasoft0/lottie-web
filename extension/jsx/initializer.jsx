@@ -17,7 +17,4 @@ $.evalFile(extensionPath + 'utils/keyframeHelper.jsx');
 $.evalFile(extensionPath + 'utils/maskHelper.jsx');
 $.evalFile(extensionPath + 'utils/timeremapHelper.jsx');
 $.evalFile(extensionPath + 'utils/shapeHelper.jsx');
-$.evalFile(extensionPath + 'utils/textHelper.jsx');
-$.evalFile(extensionPath + 'utils/textAnimatorHelper.jsx');
-$.evalFile(extensionPath + 'utils/textShapeHelper.jsx');
 $.evalFile(extensionPath + 'utils/markerHelper.jsx');

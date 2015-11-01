@@ -38,9 +38,6 @@ function MaskElement(data,element,globalData) {
         }
 
         if(properties[i].mode == 'n') {
-            this.viewData[i] = {
-                prop: PropertyFactory.getShapeProp(this.data,properties[i],3,this.dynamicProperties)
-            };
             continue;
         }
         count += 1;
@@ -106,10 +103,6 @@ function MaskElement(data,element,globalData) {
     }
 
     defs.appendChild(this.maskElement);
-};
-
-MaskElement.prototype.getMaskProperty = function(pos){
-    return this.viewData[pos].prop;
 };
 
 MaskElement.prototype.prepareFrame = function(num){
