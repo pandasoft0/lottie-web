@@ -11,6 +11,7 @@ BaseElement.prototype.prepareFrame = function(num){
         if(this.isVisible !== false){
             this.isVisible = false;
         }
+        return;
     }
     var i, len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
@@ -69,3 +70,10 @@ BaseElement.prototype.getLayerSize = function(){
         return {w:this.data.width,h:this.data.height};
     }
 };
+
+BaseElement.prototype.hide = function(){
+
+};
+
+
+BaseElement.prototype.mHelper = new Matrix();
