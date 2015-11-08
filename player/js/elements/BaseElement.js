@@ -73,10 +73,3 @@ BaseElement.prototype.getLayerSize = function(){
         return {w:this.data.width,h:this.data.height};
     }
 };
-
-BaseElement.prototype.hide = function(){
-
-};
-
-
-BaseElement.prototype.mHelper = new Matrix();

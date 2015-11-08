@@ -23,9 +23,7 @@ var bm_compsManager = (function () {
                 selected: false,
                 settings: {
                     segmented: false,
-                    segmentTime: 10,
-                    standalone: false,
-                    glyphs: true
+                    segmentTime: 10
                 }
             };
         }
@@ -38,18 +36,8 @@ var bm_compsManager = (function () {
     function setCompositionSettings(id, data) {
         var i = 0, len = compositions.length, compData;
         while (i < len) {
-            compData = compositions[i];
-            if (compData.id === id) {
-                compData.settings = data;
-                if (compData.destination) {
-                    var lastInd = compData.destination.lastIndexOf('.');
-                    compData.destination = compData.destination.substr(0, lastInd);
-                    compData.destination += compData.settings.standalone ? '.js' : '.json';
-                    lastInd = compData.absoluteURI.lastIndexOf('.');
-                    compData.absoluteURI = compData.absoluteURI.substr(0, lastInd);
-                    compData.absoluteURI += compData.settings.standalone ? '.js' : '.json';
-                    bm_eventDispatcher.sendEvent('bm:compositions:list', compositions);
-                }
+            if (compositions[i].id === id) {
+                compositions[i].settings = data;
                 break;
             }
             i += 1;
@@ -76,13 +64,7 @@ var bm_compsManager = (function () {
             }
             i += 1;
         }
-        var uri;
-        if (compData.absoluteURI) {
-            uri = compData.absoluteURI;
-        } else {
-            uri = Folder.desktop.absoluteURI + '/data';
-            uri += compData.settings.standalone ? '.js' : '.json';
-        }
+        var uri = compData.absoluteURI || Folder.desktop.absoluteURI + '/data.json';
         var f = new File(uri);
         var saveFileData = f.saveDlg();
         if (saveFileData !== null) {
