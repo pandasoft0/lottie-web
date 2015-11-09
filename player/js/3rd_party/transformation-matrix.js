@@ -116,6 +116,12 @@ var Matrix = (function(){
          y: x * me.b + y * me.d + me.f
          };*/
     }
+    function applyToX(x, y) {
+        return x * this.props[0] + y * this.props[2] + this.props[4];
+    }
+    function applyToY(x, y) {
+        return x * this.props[1] + y * this.props[3] + this.props[5];
+    }
 
     function applyToPointArray(x,y){
         return [x * this.props[0] + y * this.props[2] + this.props[4],x * this.props[1] + y * this.props[3] + this.props[5]];
@@ -146,6 +152,8 @@ var Matrix = (function(){
         this.translate = translate;
         this.transform = transform;
         this.applyToPoint = applyToPoint;
+        this.applyToX = applyToX;
+        this.applyToY = applyToY;
         this.applyToPointArray = applyToPointArray;
         this.applyToPointStringified = applyToPointStringified;
         this.toArray = toArray;
