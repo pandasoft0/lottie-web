@@ -24,11 +24,7 @@
         animationManager.moveFrame(value);
     }
     function searchAnimations(){
-        if(standalone === true){
-            animationManager.searchAnimations(animationData,standalone, renderer);
-        }else{
-            animationManager.searchAnimations();
-        }
+        animationManager.searchAnimations();
     }
     function registerAnimation(elem){
         return animationManager.registerAnimation(elem);
@@ -46,9 +42,6 @@
         subframeEnabled = flag;
     }
     function loadAnimation(params){
-        if(standalone === true){
-            params.animationData = JSON.parse(animationData);
-        }
         return animationManager.loadAnimation(params);
     }
     function destroy(animation){
@@ -103,31 +96,9 @@
         }
     }
 
-    function getQueryVariable(variable) {
-        var vars = queryString.split('&');
-        for (var i = 0; i < vars.length; i++) {
-            var pair = vars[i].split('=');
-            if (decodeURIComponent(pair[0]) == variable) {
-                return decodeURIComponent(pair[1]);
-            }
-        }
-    }
-
     bodymovinjs.checkReady = checkReady;
 
     window.bodymovin = bodymovinjs;
-
-    var standalone = '__[STANDALONE]__';
-    var animationData = '__[ANIMATIONDATA]__';
-
-    var renderer = '';
-    if(standalone) {
-        var scripts = document.getElementsByTagName('script');
-        var index = scripts.length - 1;
-        var myScript = scripts[index];
-        var queryString = myScript.src.replace(/^[^\?]+\??/,'');
-        renderer = getQueryVariable('renderer');
-    }
 
     var readyStateCheckInterval = setInterval(checkReady, 100);
 
