@@ -23,21 +23,7 @@ BaseElement.prototype.prepareFrame = function(num){
     if(this.data.hasMask){
         this.maskManager.prepareFrame(num);
     }
-    /* TODO check this
-    if(this.data.sy){
-        if(this.data.sy[0].renderedData[num]){
-            if(this.data.sy[0].renderedData[num].c){
-                this.feFlood.setAttribute('flood-color','rgb('+Math.round(this.data.sy[0].renderedData[num].c[0])+','+Math.round(this.data.sy[0].renderedData[num].c[1])+','+Math.round(this.data.sy[0].renderedData[num].c[2])+')');
-            }
-            if(this.data.sy[0].renderedData[num].s){
-                this.feMorph.setAttribute('radius',this.data.sy[0].renderedData[num].s);
-            }
-        }
-    }
-    */
-
     this.currentFrameNum = num;
-    return this.isVisible;
 };
 
 BaseElement.prototype.init = function(){

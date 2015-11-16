@@ -20,16 +20,16 @@ function dataFunctionManager(){
                 var maskProps = layerData.masksProperties;
                 jLen = maskProps.length;
                 for(j=0;j<jLen;j+=1){
-                    if(maskProps[j].pt.k.i){
-                        convertPathsToAbsoluteValues(maskProps[j].pt.k);
+                    if(maskProps[j].pt.i){
+                        convertPathsToAbsoluteValues(maskProps[j].pt);
                     }else{
-                        kLen = maskProps[j].pt.k.length;
+                        kLen = maskProps[j].pt.length;
                         for(k=0;k<kLen;k+=1){
-                            if(maskProps[j].pt.k[k].s){
-                                convertPathsToAbsoluteValues(maskProps[j].pt.k[k].s[0]);
+                            if(maskProps[j].pt[k].s){
+                                convertPathsToAbsoluteValues(maskProps[j].pt[k].s[0]);
                             }
-                            if(maskProps[j].pt.k[k].e){
-                                convertPathsToAbsoluteValues(maskProps[j].pt.k[k].e[0]);
+                            if(maskProps[j].pt[k].e){
+                                convertPathsToAbsoluteValues(maskProps[j].pt[k].e[0]);
                             }
                         }
                     }
@@ -37,7 +37,7 @@ function dataFunctionManager(){
             }
             if(layerData.ty===0){
                 layerData.layers = findCompLayers(layerData.refId, comps);
-                completeLayers(layerData.layers,comps);
+                completeLayers(layerData.layers, comps);
             }else if(layerData.ty === 4){
                 completeShapes(layerData.shapes);
             }
@@ -64,16 +64,16 @@ function dataFunctionManager(){
             }
             if(arr[i].ty == 'sh'){
                 arr[i].trimmed = isTrimmed;
-                if(arr[i].ks.k.i){
-                    convertPathsToAbsoluteValues(arr[i].ks.k);
+                if(arr[i].ks.i){
+                    convertPathsToAbsoluteValues(arr[i].ks);
                 }else{
-                    jLen = arr[i].ks.k.length;
+                    jLen = arr[i].ks.length;
                     for(j=0;j<jLen;j+=1){
-                        if(arr[i].ks.k[j].s){
-                            convertPathsToAbsoluteValues(arr[i].ks.k[j].s[0]);
+                        if(arr[i].ks[j].s){
+                            convertPathsToAbsoluteValues(arr[i].ks[j].s[0]);
                         }
-                        if(arr[i].ks.k[j].e){
-                            convertPathsToAbsoluteValues(arr[i].ks.k[j].e[0]);
+                        if(arr[i].ks[j].e){
+                            convertPathsToAbsoluteValues(arr[i].ks[j].e[0]);
                         }
                     }
                 }

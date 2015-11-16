@@ -4,7 +4,6 @@ function MaskElement(data,element,globalData) {
     this.element = element;
     this.globalData = globalData;
     this.paths = [];
-    this.storedData = [];
     this.masksProperties = this.data.masksProperties;
     this.viewData = new Array(this.masksProperties.length);
     this.maskElement = null;
@@ -19,7 +18,7 @@ function MaskElement(data,element,globalData) {
     var currentMasks = [];
     var j, jLen;
     var layerId = randomString(10);
-    var rect, expansor, feMorph;
+    var rect;
     var maskType = 'clipPath', maskRef = 'clip-path';
     for (i = 0; i < len; i++) {
 
@@ -61,35 +60,6 @@ function MaskElement(data,element,globalData) {
             path.setAttribute('stroke-miterlimit', '10');
         }
         path.setAttribute('clip-rule','nonzero');
-
-        if(properties[i].x.k !== 0){
-            var filterID = 'fi_'+randomString(10);
-            expansor = document.createElementNS(svgNS,'filter');
-            expansor.setAttribute('id',filterID);
-            feMorph = document.createElementNS(svgNS,'feMorphology');
-            feMorph.setAttribute('operator','dilate');
-            feMorph.setAttribute('in','SourceGraphic');
-            feMorph.setAttribute('radius','0');
-            expansor.appendChild(feMorph);
-            defs.appendChild(expansor);
-            if(properties[i].mode == 's'){
-                path.setAttribute('stroke', '#000000');
-            }else{
-                path.setAttribute('stroke', '#ffffff');
-            }
-        }else{
-            feMorph = null;
-        }
-
-
-        this.storedData[i] = {
-             elem: path,
-             expan: feMorph,
-            lastPath: '',
-            lastOperator:'',
-            filterId:filterID,
-            lastRadius:0
-        };
         if(properties[i].mode == 'i'){
             jLen = currentMasks.length;
             var g = document.createElementNS(svgNS,'g');
@@ -140,38 +110,14 @@ MaskElement.prototype.prepareFrame = function(num){
     var i, len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
         this.dynamicProperties[i].getInterpolatedValue(num);
-
     }
-};
+}
 
 MaskElement.prototype.renderFrame = function () {
     var i, len = this.data.masksProperties.length;
     for (i = 0; i < len; i++) {
         if(this.data.masksProperties[i].mode !== 'n' && (this.viewData[i].prop.mdf || this.firstFrame)){
             this.drawPath(this.data.masksProperties[i],this.viewData[i].prop.v,this.viewData[i]);
-            if(this.storedData[i].expan){
-                feMorph = this.storedData[i].expan;
-                if(this.data.masksProperties[i].expansion[num] < 0){
-                    if(this.storedData[i].lastOperator !== 'erode'){
-                        this.storedData[i].lastOperator = 'erode';
-                        this.storedData[i].elem.setAttribute('filter','url(#'+this.storedData[i].filterId+')');
-                    }
-                    if(this.storedData[i].lastRadius !== this.data.masksProperties[i].expansion[num]){
-                        feMorph.setAttribute('radius',-this.data.masksProperties[i].expansion[num]);
-                        this.storedData[i].lastRadius = this.data.masksProperties[i].expansion[num];
-                    }
-                }else{
-                    if(this.storedData[i].lastOperator !== 'dilate'){
-                        this.storedData[i].lastOperator = 'dilate';
-                        this.storedData[i].elem.setAttribute('filter',null);;
-                    }
-                    if(this.storedData[i].lastRadius !== this.data.masksProperties[i].expansion[num]){
-                        this.storedData[i].elem.setAttribute('stroke-width', this.data.masksProperties[i].expansion[num]*2)
-                        this.storedData[i].lastRadius = this.data.masksProperties[i].expansion[num];
-                    }
-
-                }
-            }
         }
     }
     this.firstFrame = false;
