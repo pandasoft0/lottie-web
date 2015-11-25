@@ -92,6 +92,12 @@ BaseElement.prototype.getLayerSize = function(){
     }
 };
 
+BaseElement.prototype.hide = function(){
+
+};
+
+
+BaseElement.prototype.mHelper = new Matrix();
 BaseElement.prototype.mask = function(nm){
     return this.maskManager.getMask(nm);
 }

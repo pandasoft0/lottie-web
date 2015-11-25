@@ -75,7 +75,7 @@ AnimationItem.prototype.setParams = function(params) {
         if(params.path.lastIndexOf('\\') != -1){
             this.path = params.path.substr(0,params.path.lastIndexOf('\\')+1);
         }else{
-            this.path = params.path.substr(0,params.path.lastIndexOf('/')+1);
+        this.path = params.path.substr(0,params.path.lastIndexOf('/')+1);
         }
         this.fileName = params.path.substr(params.path.lastIndexOf('/')+1);
         this.fileName = this.fileName.substr(0,this.fileName.lastIndexOf('.json'));
@@ -97,9 +97,10 @@ AnimationItem.prototype.setParams = function(params) {
     }
 };
 
-AnimationItem.prototype.setData = function (wrapper) {
+AnimationItem.prototype.setData = function (wrapper, animationData) {
     var params = {
-        wrapper: wrapper
+        wrapper: wrapper,
+        animationData: animationData ? JSON.parse(animationData) : null
     };
     var wrapperAttributes = wrapper.attributes;
 
@@ -212,18 +213,36 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.firstFrame = Math.round(this.animationData.ip);
     this.frameMult = this.animationData.fr / 1000;
     /*
-    this.firstFrame = 205;
+    this.firstFrame = 16;
     this.totalFrames = 1;
     this.animationData.tf = 1;
     //this.frameMult = 10000/1000;
     //*/////
     this.trigger('config_ready');
     this.loadSegments();
-    dataManager.completeData(this.animationData);
-    this.renderer.buildItems(this.animationData.layers);
+    dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
     this.updaFrameModifier();
-    this.checkLoaded();
+    if(this.renderer.globalData.fontManager){
+        this.waitForFontsLoaded();
+    }else{
+        this.checkLoaded();
+    }
 };
+
+AnimationItem.prototype.waitForFontsLoaded = (function(){
+    function checkFontsLoaded(){
+        if(this.renderer.globalData.fontManager.loaded){
+            this.renderer.buildItems(this.animationData.layers);
+            this.checkLoaded();
+        }else{
+            setTimeout(checkFontsLoaded.bind(this),20);
+        }
+    }
+
+    return function(){
+        checkFontsLoaded.bind(this)();
+    }
+}());
 
 AnimationItem.prototype.elementLoaded = function () {
     this.pendingElements--;
@@ -355,6 +374,9 @@ AnimationItem.prototype.playSegments = function (arr,forceFlag) {
     if(forceFlag){
         this.adjustSegment(this.segments.shift());
         this.setCurrentRawFrameValue(0);
+    }
+    if(this.isPaused){
+        this.play();
     }
 };
 

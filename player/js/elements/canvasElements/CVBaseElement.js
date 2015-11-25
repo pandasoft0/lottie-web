@@ -85,3 +85,4 @@ CVBaseElement.prototype.destroy = function(){
     }
 };
 
+CVBaseElement.prototype.mHelper = new Matrix();

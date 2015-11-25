@@ -1,10 +1,10 @@
+
 function CVMaskElement(data,element,globalData){
     this.data = data;
     this.element = element;
     this.globalData = globalData;
     this.dynamicProperties = [];
     this.masksProperties = this.data.masksProperties;
-    this.totalMasks = this.masksProperties.length;
     this.ctx = this.element.canvasContext;
     this.viewData = new Array(this.masksProperties.length);
     var i, len = this.masksProperties.length;
@@ -12,6 +12,10 @@ function CVMaskElement(data,element,globalData){
         this.viewData[i] = PropertyFactory.getShapeProp(this.element,this.masksProperties[i],3,this.dynamicProperties,null);
     }
 }
+
+CVMaskElement.prototype.getMaskProperty = function(pos){
+    return this.viewData[pos];
+};
 
 CVMaskElement.prototype.prepareFrame = function(num){
     var i, len = this.dynamicProperties.length;
