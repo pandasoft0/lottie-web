@@ -48,14 +48,6 @@ var Matrix = (function(){
         return this._t(mCos, mSin, -mSin, mCos, 0, 0);
     }
 
-    function shear(sy,sx){
-        return this._t(1, sy, sx, 1, 0, 0);
-    }
-
-    function skew(ax, ay){
-        return this.shear(Math.tan(ax), Math.tan(ay));
-    }
-
     function scale(sx, sy) {
         if(sx == 1 && sy == 1){
             return this;
@@ -124,12 +116,6 @@ var Matrix = (function(){
          y: x * me.b + y * me.d + me.f
          };*/
     }
-    function applyToX(x, y) {
-        return x * this.props[0] + y * this.props[2] + this.props[4];
-    }
-    function applyToY(x, y) {
-        return x * this.props[1] + y * this.props[3] + this.props[5];
-    }
 
     function applyToPointArray(x,y){
         return [x * this.props[0] + y * this.props[2] + this.props[4],x * this.props[1] + y * this.props[3] + this.props[5]];
@@ -155,15 +141,11 @@ var Matrix = (function(){
     return function(){
         this.reset = reset;
         this.rotate = rotate;
-        this.skew = skew;
-        this.shear = shear;
         this.scale = scale;
         this.setTransform = setTransform;
         this.translate = translate;
         this.transform = transform;
         this.applyToPoint = applyToPoint;
-        this.applyToX = applyToX;
-        this.applyToY = applyToY;
         this.applyToPointArray = applyToPointArray;
         this.applyToPointStringified = applyToPointStringified;
         this.toArray = toArray;
