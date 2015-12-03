@@ -1,4 +1,4 @@
-/*jslint vars: true , plusplus: true, continue:true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
+/*jslint vars: true , plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global bm_keyframeHelper, bm_eventDispatcher*/
 var bm_shapeHelper = (function () {
     'use strict';
@@ -14,7 +14,6 @@ var bm_shapeHelper = (function () {
     };
 
     function getItemType(matchName) {
-        bm_eventDispatcher.log(matchName);
         switch (matchName) {
         case 'ADBE Vector Shape - Group':
             return shapeItemTypes.shape;
@@ -27,7 +26,6 @@ var bm_shapeHelper = (function () {
         case 'ADBE Vector Graphic - Stroke':
             return shapeItemTypes.stroke;
         case 'ADBE Vector Graphic - Merge':
-        case 'ADBE Vector Filter - Merge':
             return shapeItemTypes.merge;
         case 'ADBE Vector Graphic - Trim':
         case 'ADBE Vector Filter - Trim':
@@ -72,31 +70,29 @@ var bm_shapeHelper = (function () {
         }
     }
     
-    function iterateProperties(iteratable, array, frameRate, isText) {
+    function iterateProperties(iteratable, array, frameRate) {
         var i, len = iteratable.numProperties, ob, prop, itemType;
         for (i = 0; i < len; i += 1) {
             prop = iteratable.property(i + 1);
             if (prop.enabled) {
                 itemType = getItemType(prop.matchName);
-                if (isText && itemType !== shapeItemTypes.shape && itemType !== shapeItemTypes.group && itemType !== shapeItemTypes.merge) {
-                    continue;
-                }
                 if (itemType === shapeItemTypes.shape) {
                     ob = {};
-                    ob.ind = i;
                     ob.ty = itemType;
                     ob.closed = prop.property('Path').value.closed;
                     ob.ks = bm_keyframeHelper.exportKeyframes(prop.property('Path'), frameRate);
                     if (prop.property("Shape Direction").value === 3) {
                         reverseShape(ob.ks, ob.closed);
                     }
-                } else if (itemType === shapeItemTypes.rect && !isText) {
+                    array.push(ob);
+                } else if (itemType === shapeItemTypes.rect) {
                     ob = {};
                     ob.ty = itemType;
                     ob.d = prop.property("Shape Direction").value;
                     ob.s = bm_keyframeHelper.exportKeyframes(prop.property('Size'), frameRate);
                     ob.p = bm_keyframeHelper.exportKeyframes(prop.property('Position'), frameRate);
                     ob.r = bm_keyframeHelper.exportKeyframes(prop.property('Roundness'), frameRate);
+                    array.push(ob);
                 } else if (itemType === shapeItemTypes.ellipse) {
                     ob = {};
                     ob.d = prop.property("Shape Direction").value;
@@ -110,6 +106,7 @@ var bm_shapeHelper = (function () {
                     ob.fillEnabled = prop.enabled;
                     ob.c = bm_keyframeHelper.exportKeyframes(prop.property('Color'), frameRate);
                     ob.o = bm_keyframeHelper.exportKeyframes(prop.property('Opacity'), frameRate);
+                    array.push(ob);
                 } else if (itemType === shapeItemTypes.stroke) {
                     ob = {};
                     ob.ty = itemType;
@@ -130,15 +127,14 @@ var bm_shapeHelper = (function () {
                             changed = true;
                             var dashData = {};
                             var name = '';
-                            if (prop.property('Dashes').property(j + 1).name.indexOf('Dash') !== -1) {
+                            if (prop.property('Dashes').property(j + 1).name === 'Dash') {
                                 name = 'd';
-                            } else if (prop.property('Dashes').property(j + 1).name.indexOf('Gap') !== -1) {
+                            } else if (prop.property('Dashes').property(j + 1).name === 'Gap') {
                                 name = 'g';
                             } else if (prop.property('Dashes').property(j + 1).name === 'Offset') {
                                 name = 'o';
                             }
                             dashData.n = name;
-                            dashData.nm = prop.property('Dashes').property(j + 1).name.toLowerCase().split(' ').join('');
                             dashData.v = bm_keyframeHelper.exportKeyframes(prop.property('Dashes').property(j + 1), frameRate);
                             dashesData.push(dashData);
                         }
@@ -146,10 +142,12 @@ var bm_shapeHelper = (function () {
                     if (changed) {
                         ob.d = dashesData;
                     }
+                    array.push(ob);
                 } else if (itemType === shapeItemTypes.merge) {
                     ob = {};
                     ob.ty = itemType;
                     ob.mm = prop.property('ADBE Vector Merge Type').value;
+                    array.push(ob);
                 } else if (itemType === shapeItemTypes.trim) {
                     ob = {};
                     ob.ty = itemType;
@@ -157,27 +155,22 @@ var bm_shapeHelper = (function () {
                     ob.e = bm_keyframeHelper.exportKeyframes(prop.property('End'), frameRate);
                     ob.o = bm_keyframeHelper.exportKeyframes(prop.property('Offset'), frameRate);
                     ob.m = prop.property('Trim Multiple Shapes').value;
+                    array.push(ob);
                 } else if (itemType === shapeItemTypes.group) {
                     ob = {
                         ty : itemType,
-                        it: [],
-                        nm: prop.name
+                        it: []
                     };
-                    iterateProperties(prop.property('Contents'), ob.it, frameRate, isText);
-                    if (!isText) {
-                        var trOb = {};
-                        var transformProperty = prop.property('Transform');
-                        trOb.ty = 'tr';
-                        trOb.p = bm_keyframeHelper.exportKeyframes(transformProperty.property('Position'), frameRate);
-                        trOb.a = bm_keyframeHelper.exportKeyframes(transformProperty.property('Anchor Point'), frameRate);
-                        trOb.s = bm_keyframeHelper.exportKeyframes(transformProperty.property('Scale'), frameRate);
-                        trOb.r = bm_keyframeHelper.exportKeyframes(transformProperty.property('Rotation'), frameRate);
-                        trOb.o = bm_keyframeHelper.exportKeyframes(transformProperty.property('Opacity'), frameRate);
-                        ob.it.push(trOb);
-                    }
-                }
-                if (ob) {
-                    ob.nm = prop.name;
+                    iterateProperties(prop.property('Contents'), ob.it, frameRate);
+                    var trOb = {};
+                    var transformProperty = prop.property('Transform');
+                    trOb.ty = 'tr';
+                    trOb.p = bm_keyframeHelper.exportKeyframes(transformProperty.property('Position'), frameRate);
+                    trOb.a = bm_keyframeHelper.exportKeyframes(transformProperty.property('Anchor Point'), frameRate);
+                    trOb.s = bm_keyframeHelper.exportKeyframes(transformProperty.property('Scale'), frameRate);
+                    trOb.r = bm_keyframeHelper.exportKeyframes(transformProperty.property('Rotation'), frameRate);
+                    trOb.o = bm_keyframeHelper.exportKeyframes(transformProperty.property('Opacity'), frameRate);
+                    ob.it.push(trOb);
                     array.push(ob);
                 }
             }
@@ -185,10 +178,10 @@ var bm_shapeHelper = (function () {
         }
     }
     
-    function exportShape(layerInfo, layerOb, frameRate, isText) {
+    function exportShape(layerInfo, layerOb, frameRate) {
         var shapes = [], contents = layerInfo.property('Contents');
         layerOb.shapes = shapes;
-        iterateProperties(contents, shapes, frameRate, isText);
+        iterateProperties(contents, shapes, frameRate);
     }
     
     ob.exportShape = exportShape;

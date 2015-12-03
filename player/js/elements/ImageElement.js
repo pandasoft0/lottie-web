@@ -1,7 +1,7 @@
-function IImageElement(data,parentContainer,globalData,comp,placeholder){
+function IImageElement(data,parentContainer,globalData,placeholder){
     this.assetData = globalData.getAssetData(data.refId);
     this.path = globalData.getPath();
-    this.parent.constructor.call(this,data,parentContainer,globalData,comp,placeholder);
+    this.parent.constructor.call(this,data,parentContainer,globalData,placeholder);
 }
 createElement(SVGBaseElement, IImageElement);
 
