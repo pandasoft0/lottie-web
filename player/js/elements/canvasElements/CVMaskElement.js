@@ -1,22 +1,26 @@
+
 function CVMaskElement(data,element,globalData){
     this.data = data;
     this.element = element;
     this.globalData = globalData;
     this.dynamicProperties = [];
     this.masksProperties = this.data.masksProperties;
-    this.totalMasks = this.masksProperties.length;
     this.ctx = this.element.canvasContext;
     this.viewData = new Array(this.masksProperties.length);
     var i, len = this.masksProperties.length;
     for (i = 0; i < len; i++) {
-        this.viewData[i] = PropertyFactory.getShapeProp(this.data,this.masksProperties[i],3,this.dynamicProperties)
+        this.viewData[i] = PropertyFactory.getShapeProp(this.element,this.masksProperties[i],3,this.dynamicProperties,null);
     }
+}
+
+CVMaskElement.prototype.getMaskProperty = function(pos){
+    return this.viewData[pos];
 };
 
 CVMaskElement.prototype.prepareFrame = function(num){
     var i, len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
-        this.dynamicProperties[i].getInterpolatedValue(num);
+        this.dynamicProperties[i].getValue(num);
     }
 };
 
@@ -56,6 +60,18 @@ CVMaskElement.prototype.renderFrame = function (transform) {
     }
     if(hasMasks){
         ctx.clip();
+    }
+};
+
+CVMaskElement.prototype.getMask = function(nm){
+    var i = 0, len = this.masksProperties.length;
+    while(i<len){
+        if(this.masksProperties[i].nm === nm){
+            return {
+                maskPath: this.viewData[i].pv
+            }
+        }
+        i += 1;
     }
 };
 
