@@ -1,8 +1,8 @@
-function CVImageElement(data, comp,globalData){
+function CVImageElement(data,globalData){
     this.animationItem = globalData.renderer.animationItem;
     this.assetData = this.animationItem.getAssetData(data.refId);
     this.path = this.animationItem.getPath();
-    this.parent.constructor.call(this,data, comp,globalData);
+    this.parent.constructor.call(this,data,globalData);
     this.animationItem.pendingElements += 1;
 }
 createElement(CVBaseElement, CVImageElement);
