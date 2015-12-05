@@ -1,4 +1,4 @@
-var subframeEnabled = true;
+var subframeEnabled = false;
 var cachedColors = {};
 var bm_rounder = Math.round;
 var bm_rnd;
@@ -6,6 +6,7 @@ var bm_pow = Math.pow;
 var bm_sqrt = Math.sqrt;
 var bm_abs = Math.abs;
 var bm_floor = Math.floor;
+var bm_max = Math.max;
 var bm_min = Math.min;
 var defaultCurveSegments = 50;
 var degToRads = Math.PI/180;
@@ -179,9 +180,18 @@ function RenderedFrame(tr,o) {
     this.o = o;
 }
 
+function LetterProps(o,sw,sc,fc,m,p){
+    this.o = o;
+    this.sw = sw;
+    this.sc = sc;
+    this.fc = fc;
+    this.m = m;
+    this.props = p;
+}
+
 function iterateDynamicProperties(num){
     var i, len = this.dynamicProperties;
     for(i=0;i<len;i+=1){
-        this.dynamicProperties[i].getInterpolatedValue(num);
+        this.dynamicProperties[i].getValue(num);
     }
 }

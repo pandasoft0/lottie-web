@@ -1,5 +1,5 @@
-function ISolidElement(data,parentContainer,globalData, placeholder){
-    this.parent.constructor.call(this,data,parentContainer,globalData, placeholder);
+function ISolidElement(data,parentContainer,globalData,comp, placeholder){
+    this.parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 }
 createElement(SVGBaseElement, ISolidElement);
 
@@ -16,7 +16,7 @@ ISolidElement.prototype.createElements = function(){
     if(this.layerElement === this.parentContainer){
         this.appendNodeToParent(rect);
     }else{
-        this.layerElement.appendChild(rect);
+    this.layerElement.appendChild(rect);
     }
     if(this.data.ln){
         this.innerElem.setAttribute('id',this.data.ln);
