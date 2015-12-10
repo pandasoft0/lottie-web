@@ -9,7 +9,7 @@ function CanvasRenderer(animationItem, config){
     if (this.animationItem.wrapper) {
         this.renderConfig.dpr = (config && config.dpr) || window.devicePixelRatio || 1;
     }
-    this.renderedFrame = -1;
+    this.lastFrame = -1;
     this.globalData = {
         frameNum: -1
     };
@@ -27,39 +27,36 @@ function CanvasRenderer(animationItem, config){
     this.elements = [];
 }
 
-CanvasRenderer.prototype.createItem = function(layer, comp){
+CanvasRenderer.prototype.createItem = function(layer){
     switch(layer.ty){
         case 0:
-            return this.createComp(layer, comp);
+            return this.createComp(layer);
         case 1:
-            return this.createSolid(layer, comp);
+            return this.createSolid(layer);
         case 2:
-            return this.createImage(layer, comp);
+            return this.createImage(layer);
         case 4:
-            return this.createShape(layer, comp);
+            return this.createShape(layer);
         case 5:
-            return this.createText(layer, comp);
+            return this.createText(layer);
         case 99:
-            return this.createPlaceHolder(layer, comp);
+            return this.createPlaceHolder(layer);
         default:
-            return this.createBase(layer, comp);
+            return this.createBase(layer);
     }
-    return this.createBase(layer,comp);
+    return this.createBase(layer,parentContainer);
 };
 
-CanvasRenderer.prototype.buildItems = function(layers,elements, comp){
+CanvasRenderer.prototype.buildItems = function(layers,elements){
     if(!elements){
         elements = this.elements;
     }
-    if(!comp){
-        comp = this;
-    }
     var i, len = layers.length;
     for (i = 0; i < len; i++) {
-        elements[i] = this.createItem(layers[i], comp);
+        elements[i] = this.createItem(layers[i]);
         if (layers[i].ty === 0) {
             var elems = [];
-            this.buildItems(layers[i].layers,elems,elements[i]);
+            this.buildItems(layers[i].layers,elems);
             elements[elements.length - 1].setElements(elems);
         }
     }
@@ -75,10 +72,10 @@ CanvasRenderer.prototype.includeLayers = function(layers,parentContainer,element
         j = 0;
         while(j<jLen){
             if(elements[j].data.id == layers[i].id){
-                elements[j] = this.createItem(layers[i],this);
+                elements[j] = this.createItem(layers[i],parentContainer);
                 if (layers[i].ty === 0) {
                     elems = [];
-                    this.buildItems(layers[i].layers,elems, elements[j]);
+                    this.buildItems(layers[i].layers,elems);
                     elements[j].setElements(elems);
                 }
                 break;
@@ -88,38 +85,35 @@ CanvasRenderer.prototype.includeLayers = function(layers,parentContainer,element
     }
 };
 
-CanvasRenderer.prototype.createBase = function (data, comp) {
-    return new CVBaseElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createBase = function (data) {
+    return new CVBaseElement(data, this.globalData);
 };
 
-CanvasRenderer.prototype.createShape = function (data, comp) {
-    return new CVShapeElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createShape = function (data) {
+    return new CVShapeElement(data, this.globalData);
 };
 
-CanvasRenderer.prototype.createText = function (data, comp) {
-    return new CVTextElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createText = function (data) {
+    return new CVTextElement(data, this.globalData);
 };
 
 CanvasRenderer.prototype.createPlaceHolder = function (data) {
     return new PlaceHolderElement(data, null,this.globalData);
 };
 
-CanvasRenderer.prototype.createImage = function (data, comp) {
-    return new CVImageElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createImage = function (data) {
+    return new CVImageElement(data, this.globalData);
 };
 
-CanvasRenderer.prototype.createComp = function (data, comp) {
-    return new CVCompElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createComp = function (data) {
+    return new CVCompElement(data, this.globalData);
 };
 
-CanvasRenderer.prototype.createSolid = function (data, comp) {
-    return new CVSolidElement(data, comp, this.globalData);
+CanvasRenderer.prototype.createSolid = function (data) {
+    return new CVSolidElement(data, this.globalData);
 };
 
 CanvasRenderer.prototype.ctxTransform = function(props){
-    if(props[0] === 1 && props[1] === 0 && props[2] === 0 && props[3] === 1 && props[4] === 0 && props[5] === 0){
-        return;
-    }
     if(!this.renderConfig.clearCanvas){
         this.canvasContext.transform(props[0],props[1],props[2],props[3],props[4],props[5]);
         return;
@@ -127,18 +121,17 @@ CanvasRenderer.prototype.ctxTransform = function(props){
     this.contextData.cTr.transform(props[0],props[1],props[2],props[3],props[4],props[5]);
     var trProps = this.contextData.cTr.props;
     this.canvasContext.setTransform(trProps[0],trProps[1],trProps[2],trProps[3],trProps[4],trProps[5]);
+    ///this.canvasContext.transform(props[0],props[1],props[2],props[3],props[4],props[5]);
 };
 
 CanvasRenderer.prototype.ctxOpacity = function(op){
-    if(op === 1){
-        return;
-    }
     if(!this.renderConfig.clearCanvas){
         this.canvasContext.globalAlpha *= op < 0 ? 0 : op;
         return;
     }
     this.contextData.cO *= op < 0 ? 0 : op;
      this.canvasContext.globalAlpha = this.contextData.cO;
+    ///this.canvasContext.globalAlpha = this.canvasContext.globalAlpha * op;
 };
 
 CanvasRenderer.prototype.reset = function(){
@@ -211,15 +204,11 @@ CanvasRenderer.prototype.configAnimation = function(animData){
     this.globalData.compWidth = animData.w;
     this.globalData.compHeight = animData.h;
     this.globalData.frameRate = animData.fr;
-    this.globalData.frameId = 0;
     this.layers = animData.layers;
     this.transformCanvas = {};
     this.transformCanvas.w = animData.w;
     this.transformCanvas.h = animData.h;
     this.updateContainerSize();
-    this.globalData.fontManager = new FontManager();
-    this.globalData.fontManager.addChars(animData.chars);
-    this.globalData.fontManager.addFonts(animData.fonts,document);
 };
 
 CanvasRenderer.prototype.updateContainerSize = function () {
@@ -305,27 +294,24 @@ CanvasRenderer.prototype.destroy = function () {
 };
 
 CanvasRenderer.prototype.renderFrame = function(num){
-    if((this.renderedFrame == num && this.renderConfig.clearCanvas === true) || this.destroyed || num === null){
+    if((this.lastFrame == num && this.renderConfig.clearCanvas === true) || this.destroyed){
         return;
     }
-    this.renderedFrame = num;
+    this.lastFrame = num;
     this.globalData.frameNum = num - this.animationItem.firstFrame;
-    this.globalData.frameId += 1;
     if(this.renderConfig.clearCanvas === true){
         this.reset();
-        //this.canvasContext.canvas.width = this.canvasContext.canvas.width;
-        this.canvasContext.clearRect(0, 0, this.globalData.cWidth, this.globalData.cHeight);
+        this.canvasContext.canvas.width = this.canvasContext.canvas.width;
+        //this.canvasContext.clearRect(0, 0, this.globalData.cWidth, this.globalData.cHeight);
     }else{
         this.save();
     }
     this.ctxTransform(this.transformCanvas.props);
-    this.canvasContext.beginPath();
     this.canvasContext.rect(0,0,this.transformCanvas.w,this.transformCanvas.h);
-    this.canvasContext.closePath();
     this.canvasContext.clip();
 
-    //console.log('--------');
-    //console.log('NEW: ',num);
+    ////this.globalData.bmCtx.clip(this.clipper);
+
     var i, len = this.layers.length;
     for (i = 0; i < len; i++) {
         this.elements[i].prepareFrame(num - this.layers[i].st);
@@ -337,5 +323,3 @@ CanvasRenderer.prototype.renderFrame = function(num){
         this.restore();
     }
 };
-
-extendPrototype(ExpressionComp,CanvasRenderer);

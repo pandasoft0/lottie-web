@@ -1,7 +1,6 @@
-function CVBaseElement(data, comp,globalData){
+function CVBaseElement(data,globalData){
     this.globalData = globalData;
     this.data = data;
-    this.comp = comp;
     this.canvasContext = globalData.canvasContext;
     this.init();
 }
@@ -85,4 +84,3 @@ CVBaseElement.prototype.destroy = function(){
     }
 };
 
-CVBaseElement.prototype.mHelper = new Matrix();
