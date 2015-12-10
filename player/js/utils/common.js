@@ -6,6 +6,7 @@ var bm_pow = Math.pow;
 var bm_sqrt = Math.sqrt;
 var bm_abs = Math.abs;
 var bm_floor = Math.floor;
+var bm_max = Math.max;
 var bm_min = Math.min;
 var defaultCurveSegments = 50;
 var degToRads = Math.PI/180;
@@ -26,7 +27,7 @@ function styleDiv(element){
     element.style.top = 0;
     element.style.left = 0;
     element.style.display = 'block';
-    element.style.verticalAlign = 'top';
+    element.style.transformOrigin = '0 0';
     element.style.backfaceVisibility  = element.style.webkitBackfaceVisibility = 'hidden';
     //element.style.transformStyle = element.style.webkitTransformStyle = "preserve-3d";
     styleUnselectableDiv(element);
@@ -65,7 +66,7 @@ function BMSegmentStartEvent(n,f,t){
     this.totalFrames = t;
 }
 
-function addEventListener(eventName, callback){
+function _addEventListener(eventName, callback){
 
     if (!this._cbs[eventName]){
         this._cbs[eventName] = [];
@@ -74,7 +75,7 @@ function addEventListener(eventName, callback){
 
 }
 
-function removeEventListener(eventName,callback){
+function _removeEventListener(eventName,callback){
 
     if (!callback){
         this._cbs[eventName] = null;
@@ -95,7 +96,7 @@ function removeEventListener(eventName,callback){
 
 }
 
-function triggerEvent(eventName, args){
+function _triggerEvent(eventName, args){
 
     if (this._cbs[eventName]) {
         var len = this._cbs[eventName].length;
@@ -179,9 +180,18 @@ function RenderedFrame(tr,o) {
     this.o = o;
 }
 
+function LetterProps(o,sw,sc,fc,m,p){
+    this.o = o;
+    this.sw = sw;
+    this.sc = sc;
+    this.fc = fc;
+    this.m = m;
+    this.props = p;
+}
+
 function iterateDynamicProperties(num){
     var i, len = this.dynamicProperties;
     for(i=0;i<len;i+=1){
-        this.dynamicProperties[i].getInterpolatedValue(num);
+        this.dynamicProperties[i].getValue(num);
     }
 }

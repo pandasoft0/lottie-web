@@ -1,9 +1,6 @@
 # bodymovin
 After Effects plugin for exporting animations to svg + js or canvas + js
 
-## V 3.1.7:
-- Fix rounded rects
-
 ## V 3.1.5:
 - Fix AE 13.6
 
