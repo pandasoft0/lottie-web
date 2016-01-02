@@ -1,5 +1,4 @@
-var subframeEnabled = false;
-var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+var subframeEnabled = true;
 var cachedColors = {};
 var bm_rounder = Math.round;
 var bm_rnd;
@@ -7,9 +6,8 @@ var bm_pow = Math.pow;
 var bm_sqrt = Math.sqrt;
 var bm_abs = Math.abs;
 var bm_floor = Math.floor;
-var bm_max = Math.max;
 var bm_min = Math.min;
-var defaultCurveSegments = 75;
+var defaultCurveSegments = 50;
 var degToRads = Math.PI/180;
 
 function roundValues(flag){
@@ -23,22 +21,15 @@ function roundValues(flag){
 }
 roundValues(false);
 
-function roundTo2Decimals(val){
-    return Math.round(val*10000)/10000;
-}
-
-function roundTo3Decimals(val){
-    return Math.round(val*100)/100;
-}
-
 function styleDiv(element){
     element.style.position = 'absolute';
     element.style.top = 0;
     element.style.left = 0;
     element.style.display = 'block';
-    element.style.transformOrigin = element.style.webkitTransformOrigin = '0 0';
-    element.style.backfaceVisibility  = element.style.webkitBackfaceVisibility = 'visible';
-    element.style.transformStyle = element.style.webkitTransformStyle = element.style.mozTransformStyle = "preserve-3d";
+    element.style.verticalAlign = 'top';
+    element.style.backfaceVisibility  = element.style.webkitBackfaceVisibility = 'hidden';
+    //element.style.transformStyle = element.style.webkitTransformStyle = "preserve-3d";
+    styleUnselectableDiv(element);
 }
 
 function styleUnselectableDiv(element){
@@ -74,7 +65,7 @@ function BMSegmentStartEvent(n,f,t){
     this.totalFrames = t;
 }
 
-function _addEventListener(eventName, callback){
+function addEventListener(eventName, callback){
 
     if (!this._cbs[eventName]){
         this._cbs[eventName] = [];
@@ -83,7 +74,7 @@ function _addEventListener(eventName, callback){
 
 }
 
-function _removeEventListener(eventName,callback){
+function removeEventListener(eventName,callback){
 
     if (!callback){
         this._cbs[eventName] = null;
@@ -104,7 +95,7 @@ function _removeEventListener(eventName,callback){
 
 }
 
-function _triggerEvent(eventName, args){
+function triggerEvent(eventName, args){
 
     if (this._cbs[eventName]) {
         var len = this._cbs[eventName].length;
@@ -188,18 +179,9 @@ function RenderedFrame(tr,o) {
     this.o = o;
 }
 
-function LetterProps(o,sw,sc,fc,m,p){
-    this.o = o;
-    this.sw = sw;
-    this.sc = sc;
-    this.fc = fc;
-    this.m = m;
-    this.props = p;
-}
-
 function iterateDynamicProperties(num){
     var i, len = this.dynamicProperties;
     for(i=0;i<len;i+=1){
-        this.dynamicProperties[i].getValue(num);
+        this.dynamicProperties[i].getInterpolatedValue(num);
     }
 }

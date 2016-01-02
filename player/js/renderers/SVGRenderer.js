@@ -1,7 +1,7 @@
 function SVGRenderer(animationItem){
     this.animationItem = animationItem;
     this.layers = null;
-    this.renderedFrame = -1;
+    this.lastFrame = -1;
     this.globalData = {
         frameNum: -1
     };
@@ -9,25 +9,25 @@ function SVGRenderer(animationItem){
     this.destroyed = false;
 }
 
-SVGRenderer.prototype.createItem = function(layer,parentContainer,comp, placeholder){
+SVGRenderer.prototype.createItem = function(layer,parentContainer, placeholder){
     switch(layer.ty){
         case 2:
-            return this.createImage(layer,parentContainer,comp, placeholder);
+            return this.createImage(layer,parentContainer, placeholder);
         case 0:
-            return this.createComp(layer,parentContainer,comp, placeholder);
+            return this.createComp(layer,parentContainer, placeholder);
         case 1:
-            return this.createSolid(layer,parentContainer,comp, placeholder);
+            return this.createSolid(layer,parentContainer, placeholder);
         case 4:
-            return this.createShape(layer,parentContainer,comp, placeholder);
+            return this.createShape(layer,parentContainer, placeholder);
         case 5:
-            return this.createText(layer,parentContainer,comp, placeholder);
+            return this.createText(layer,parentContainer, placeholder);
         case 99:
             return this.createPlaceHolder(layer,parentContainer);
     }
-    return this.createBase(layer,parentContainer,comp);
+    return this.createBase(layer,parentContainer);
 };
 
-SVGRenderer.prototype.buildItems = function(layers,parentContainer,elements,comp, placeholder){
+SVGRenderer.prototype.buildItems = function(layers,parentContainer,elements, placeholder){
     var  i, len = layers.length;
     if(!elements){
         elements = this.elements;
@@ -35,15 +35,12 @@ SVGRenderer.prototype.buildItems = function(layers,parentContainer,elements,comp
     if(!parentContainer){
         parentContainer = this.animationItem.container;
     }
-    if(!comp){
-        comp = this;
-    }
     var elems;
     for (i = len - 1; i >= 0; i--) {
-        elements[i] = this.createItem(layers[i],parentContainer,comp, placeholder);
+        elements[i] = this.createItem(layers[i],parentContainer, placeholder);
         if (layers[i].ty === 0) {
             elems = [];
-            this.buildItems(layers[i].layers,elements[i].getDomElement(),elems,elements[i], elements[i].placeholder);
+            this.buildItems(layers[i].layers,elements[i].getDomElement(),elems, placeholder);
             elements[i].setElements(elems);
         }
         if(layers[i].td){
@@ -67,10 +64,10 @@ SVGRenderer.prototype.includeLayers = function(layers,parentContainer,elements){
         while(j<jLen){
             if(elements[j].data.id == layers[i].id){
                 placeholder = elements[j];
-                elements[j] = this.createItem(layers[i],parentContainer,this, placeholder);
+                elements[j] = this.createItem(layers[i],parentContainer, placeholder);
                 if (layers[i].ty === 0) {
                     elems = [];
-                    this.buildItems(layers[i].layers,elements[j].getDomElement(),elems,elements[j], elements[i].placeholder);
+                    this.buildItems(layers[i].layers,elements[j].getDomElement(),elems, placeholder);
                     elements[j].setElements(elems);
                 }
                 break;
@@ -85,34 +82,33 @@ SVGRenderer.prototype.includeLayers = function(layers,parentContainer,elements){
     }
 };
 
-SVGRenderer.prototype.createBase = function (data,parentContainer,comp, placeholder) {
-    return new SVGBaseElement(data, parentContainer,this.globalData,comp, placeholder);
+SVGRenderer.prototype.createBase = function (data,parentContainer, placeholder) {
+    return new SVGBaseElement(data, parentContainer,this.globalData, placeholder);
 };
 
 SVGRenderer.prototype.createPlaceHolder = function (data,parentContainer) {
     return new PlaceHolderElement(data, parentContainer,this.globalData);
 };
 
-SVGRenderer.prototype.createShape = function (data,parentContainer,comp, placeholder) {
-    return new IShapeElement(data, parentContainer,this.globalData,comp, placeholder);
+SVGRenderer.prototype.createShape = function (data,parentContainer, placeholder) {
+    return new IShapeElement(data, parentContainer,this.globalData, placeholder);
 };
 
-SVGRenderer.prototype.createText = function (data,parentContainer,comp, placeholder) {
-    return new SVGTextElement(data, parentContainer,this.globalData,comp, placeholder);
+SVGRenderer.prototype.createText = function (data,parentContainer, placeholder) {
+    return new ITextElement(data, parentContainer,this.globalData, placeholder);
+};
+
+SVGRenderer.prototype.createImage = function (data,parentContainer, placeholder) {
+    return new IImageElement(data, parentContainer,this.globalData, placeholder);
+};
+
+SVGRenderer.prototype.createComp = function (data,parentContainer, placeholder) {
+    return new ICompElement(data, parentContainer,this.globalData, placeholder);
 
 };
 
-SVGRenderer.prototype.createImage = function (data,parentContainer,comp, placeholder) {
-    return new IImageElement(data, parentContainer,this.globalData,comp, placeholder);
-};
-
-SVGRenderer.prototype.createComp = function (data,parentContainer,comp, placeholder) {
-    return new ICompElement(data, parentContainer,this.globalData,comp, placeholder);
-
-};
-
-SVGRenderer.prototype.createSolid = function (data,parentContainer,comp, placeholder) {
-    return new ISolidElement(data, parentContainer,this.globalData,comp, placeholder);
+SVGRenderer.prototype.createSolid = function (data,parentContainer, placeholder) {
+    return new ISolidElement(data, parentContainer,this.globalData, placeholder);
 };
 
 SVGRenderer.prototype.configAnimation = function(animData){
@@ -134,7 +130,6 @@ SVGRenderer.prototype.configAnimation = function(animData){
     this.globalData.getAssetData = this.animationItem.getAssetData.bind(this.animationItem);
     this.globalData.getPath = this.animationItem.getPath.bind(this.animationItem);
     this.globalData.elementLoaded = this.animationItem.elementLoaded.bind(this.animationItem);
-    this.globalData.frameId = 0;
     this.globalData.compSize = {
         w: animData.w,
         h: animData.h
@@ -155,9 +150,6 @@ SVGRenderer.prototype.configAnimation = function(animData){
     defs.appendChild(maskElement);
     this.animationItem.container = maskedElement;
     this.layers = animData.layers;
-    this.globalData.fontManager = new FontManager();
-    this.globalData.fontManager.addChars(animData.chars);
-    this.globalData.fontManager.addFonts(animData.fonts,defs);
 };
 
 SVGRenderer.prototype.buildStage = function (container, layers,elements) {
@@ -211,18 +203,17 @@ SVGRenderer.prototype.updateContainerSize = function () {
 };
 
 SVGRenderer.prototype.renderFrame = function(num){
-    if(this.renderedFrame == num || this.destroyed){
+    if(this.lastFrame == num || this.destroyed){
         return;
     }
     if(num === null){
-        num = this.renderedFrame;
+        num = this.lastFrame;
     }else{
-        this.renderedFrame = num;
+        this.lastFrame = num;
     }
-    //console.log('-------');
-    //console.log('FRAME ',num);
+    /*console.log('-------');
+    console.log('FRAME ',num);*/
     this.globalData.frameNum = num;
-    this.globalData.frameId += 1;
     var i, len = this.layers.length;
     for (i = 0; i < len; i++) {
         this.elements[i].prepareFrame(num - this.layers[i].st);
@@ -231,5 +222,3 @@ SVGRenderer.prototype.renderFrame = function(num){
         this.elements[i].renderFrame();
     }
 };
-
-extendPrototype(ExpressionComp,SVGRenderer);

@@ -1,5 +1,5 @@
 /*jslint vars: true , plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global PropertyValueType, KeyframeInterpolationType, bm_generalUtils, bm_eventDispatcher, bm_expressionHelper*/
+/*global PropertyValueType, KeyframeInterpolationType, bm_generalUtils, bm_eventDispatcher*/
 var bm_keyframeHelper = (function () {
     'use strict';
     var ob = {}, property, j = 1, jLen, beziersArray, averageSpeed, duration, bezierIn, bezierOut, frameRate;
@@ -83,9 +83,8 @@ var bm_keyframeHelper = (function () {
         }
     }
     
-    function exportKeys(prop, frRate) {
+    function exportKeyframes(prop, frRate) {
         property = prop;
-        
         frameRate = frRate;
         beziersArray = [];
         if (property.numKeys <= 1) {
@@ -219,15 +218,7 @@ var bm_keyframeHelper = (function () {
                 bezierOut.y = bm_generalUtils.roundNumber(bezierOut.y, 3);
                 segmentOb.i = bezierIn;
                 segmentOb.o = bezierOut;
-                if (bezierIn.x.length) {
-                    segmentOb.n = [];
-                    kLen = bezierIn.x.length;
-                    for (k = 0; k < kLen; k += 1) {
-                        segmentOb.n.push((bezierIn.x[k].toString() + '_' + bezierIn.y[k].toString() + '_' + bezierOut.x[k].toString() + '_' + bezierOut.y[k].toString()).replace(/\./g, 'p'));
-                    }
-                } else {
-                    segmentOb.n = (bezierIn.x.toString() + '_' + bezierIn.y.toString() + '_' + bezierOut.x.toString() + '_' + bezierOut.y.toString()).replace(/\./g, 'p');
-                }
+                segmentOb.n = (bezierIn.x.toString() + '_' + bezierIn.y.toString() + '_' + bezierOut.x.toString() + '_' + bezierOut.y.toString()).replace(/\./g, 'p');
                 segmentOb.t = bm_generalUtils.roundNumber(lastKey.time * frameRate, 3);
                 segmentOb.s = getPropertyValue(property.keyValue(j), true);
                 segmentOb.e = getPropertyValue(property.keyValue(j + 1), true);
@@ -245,23 +236,7 @@ var bm_keyframeHelper = (function () {
             beziersArray.push(segmentOb);
         }
         beziersArray.push({t: property.keyTime(j) * frameRate});
-        if (property.keyOutInterpolationType(j) === KeyframeInterpolationType.HOLD) {
-            var value = getPropertyValue(property.keyValue(j), true);
-            if (!(value instanceof Array)) {
-                value = [value];
-            }
-            beziersArray[beziersArray.length - 1].s = value;
-            beziersArray[beziersArray.length - 1].h = 1;
-        }
         return beziersArray;
-    }
-    
-    function exportKeyframes(prop, frRate) {
-        var returnOb = {
-            k: exportKeys(prop, frRate)
-        };
-        bm_expressionHelper.checkExpression(prop, returnOb);
-        return returnOb;
     }
     
     ob.exportKeyframes = exportKeyframes;

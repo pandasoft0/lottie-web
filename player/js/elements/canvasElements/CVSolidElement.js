@@ -1,5 +1,5 @@
-function CVSolidElement(data, comp,globalData){
-    this.parent.constructor.call(this,data, comp,globalData);
+function CVSolidElement(data,globalData){
+    this.parent.constructor.call(this,data,globalData);
 }
 createElement(CVBaseElement, CVSolidElement);
 

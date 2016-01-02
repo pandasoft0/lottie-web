@@ -1,7 +1,7 @@
-function IImageElement(data,parentContainer,globalData,comp,placeholder){
+function IImageElement(data,parentContainer,globalData,placeholder){
     this.assetData = globalData.getAssetData(data.refId);
     this.path = globalData.getPath();
-    this.parent.constructor.call(this,data,parentContainer,globalData,comp,placeholder);
+    this.parent.constructor.call(this,data,parentContainer,globalData,placeholder);
 }
 createElement(SVGBaseElement, IImageElement);
 
@@ -55,7 +55,7 @@ IImageElement.prototype.renderFrame = function(parentMatrix){
     }
     if(!this.data.hasMask){
         if(this.finalTransform.matMdf || this.firstFrame){
-            this.innerElem.setAttribute('transform',this.finalTransform.mat.to2dCSS());
+            this.innerElem.setAttribute('transform','matrix('+this.finalTransform.mat.props.join(',')+')');
         }
         if(this.finalTransform.opMdf || this.firstFrame){
             this.innerElem.setAttribute('opacity',this.finalTransform.opacity);
