@@ -121,6 +121,7 @@ var ExpressionManager = (function(){
         var val = data.x;
         var transform,content,effect;
         var thisComp = elem.comp;
+        var thisLayer = elem;
         var fnStr = 'var fn = function(){'+val+';this.v = $bm_rt;}';
         eval(fnStr);
         var bindedFn = fn.bind(this);
@@ -266,13 +267,13 @@ var ExpressionManager = (function(){
             var i = 0, len = data.k.length, ob = {};
             for(i=0;i<len;i+=1){
                 if(time === data.k[i].t){
-                    ob.index = i;
+                    ob.index = i+1;
                     break;
                 }else if(time<data.k[i].t){
-                    ob.index = i;
+                    ob.index = i+1;
                     break;
                 }else if(time>data.k[i].t && i === len - 1){
-                    ob.index = len - 1;
+                    ob.index = len;
                     break;
                 }
             }
