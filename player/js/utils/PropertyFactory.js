@@ -1526,7 +1526,6 @@ var PropertyFactory = (function(){
             this.type = 'textSelector';
             this.textTotal = data.totalChars;
             this.selectorValue = 100;
-            this.lastValue = [1,1,1];
             checkExpressions.bind(this)(elem,data);
             this.getMult = getValueProxy;
         }
