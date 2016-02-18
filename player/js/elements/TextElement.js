@@ -56,6 +56,15 @@ ITextElement.prototype.init = function(){
             if('fc' in animatorProps.a) {
                 animatorData.a.fc = PropertyFactory.getProp(this,animatorProps.a.fc,1,0,this.dynamicProperties);
             }
+            if('fh' in animatorProps.a) {
+                animatorData.a.fh = PropertyFactory.getProp(this,animatorProps.a.fh,0,0,this.dynamicProperties);
+            }
+            if('fs' in animatorProps.a) {
+                animatorData.a.fs = PropertyFactory.getProp(this,animatorProps.a.fs,0,0.01,this.dynamicProperties);
+            }
+            if('fb' in animatorProps.a) {
+                animatorData.a.fb = PropertyFactory.getProp(this,animatorProps.a.fb,0,0.01,this.dynamicProperties);
+            }
             if('t' in animatorProps.a) {
                 animatorData.a.t = PropertyFactory.getProp(this,animatorProps.a.t,0,0,this.dynamicProperties);
             }
@@ -241,8 +250,12 @@ ITextElement.prototype.getMeasures = function(){
                     if ('p' in animatorProps) {
                         animatorSelector = renderedData.a[j].s;
                         mult = animatorSelector.getMult(letters[i].anIndexes[j]);
+                        if(mult.length){
+                            animatorOffset += animatorProps.p.v[0] * mult[0];
+                        } else{
+                            animatorOffset += animatorProps.p.v[0] * mult;
+                        }
 
-                        animatorOffset += animatorProps.p.v[0] * mult;
                     }
                 }
                 flag = true;
@@ -296,9 +309,17 @@ ITextElement.prototype.getMeasures = function(){
                     animatorSelector = renderedData.a[j].s;
                     mult = animatorSelector.getMult(letters[i].anIndexes[j]);
                     if(this.maskPath) {
-                        currentLength += animatorProps.t*mult;
+                        if(mult.length) {
+                            currentLength += animatorProps.t*mult[0];
+                        } else {
+                            currentLength += animatorProps.t*mult;
+                        }
                     }else{
-                        xPos += animatorProps.t.v*mult;
+                        if(mult.length) {
+                            xPos += animatorProps.t.v*mult[0];
+                        } else {
+                            xPos += animatorProps.t.v*mult;
+                        }
                     }
                 }
             }
@@ -321,7 +342,12 @@ ITextElement.prototype.getMeasures = function(){
                 if ('a' in animatorProps) {
                     animatorSelector = renderedData.a[j].s;
                     mult = animatorSelector.getMult(letters[i].anIndexes[j]);
-                    matrixHelper.translate(-animatorProps.a.v[0]*mult, -animatorProps.a.v[1]*mult, animatorProps.a.v[2]*mult);
+
+                    if(mult.length){
+                        matrixHelper.translate(-animatorProps.a.v[0]*mult[0], -animatorProps.a.v[1]*mult[1], animatorProps.a.v[2]*mult[2]);
+                    } else {
+                        matrixHelper.translate(-animatorProps.a.v[0]*mult, -animatorProps.a.v[1]*mult, animatorProps.a.v[2]*mult);
+                    }
                 }
             }
             for(j=0;j<jLen;j+=1){
@@ -329,7 +355,11 @@ ITextElement.prototype.getMeasures = function(){
                 if ('s' in animatorProps) {
                     animatorSelector = renderedData.a[j].s;
                     mult = animatorSelector.getMult(letters[i].anIndexes[j]);
-                    matrixHelper.scale(1+((animatorProps.s.v[0]-1)*mult),1+((animatorProps.s.v[1]-1)*mult),1);
+                    if(mult.length){
+                        matrixHelper.scale(1+((animatorProps.s.v[0]-1)*mult[0]),1+((animatorProps.s.v[1]-1)*mult[1]),1);
+                    } else {
+                        matrixHelper.scale(1+((animatorProps.s.v[0]-1)*mult),1+((animatorProps.s.v[1]-1)*mult),1);
+                    }
                 }
             }
             for(j=0;j<jLen;j+=1) {
@@ -337,39 +367,89 @@ ITextElement.prototype.getMeasures = function(){
                 animatorSelector = renderedData.a[j].s;
                 mult = animatorSelector.getMult(letters[i].anIndexes[j]);
                 if ('sk' in animatorProps) {
-                    matrixHelper.skewFromAxis(-animatorProps.sk.v*mult,animatorProps.sa.v*mult);
+                    if(mult.length) {
+                        matrixHelper.skewFromAxis(-animatorProps.sk.v * mult[0], animatorProps.sa.v * mult[1]);
+                    } else {
+                        matrixHelper.skewFromAxis(-animatorProps.sk.v * mult, animatorProps.sa.v * mult);
+                    }
                 }
                 if ('r' in animatorProps) {
-                    matrixHelper.rotateZ(-animatorProps.r.v*mult);
+                    if(mult.length) {
+                        matrixHelper.rotateZ(-animatorProps.r.v * mult[2]);
+                    } else {
+                        matrixHelper.rotateZ(-animatorProps.r.v * mult);
+                    }
                 }
                 if ('ry' in animatorProps) {
-                    matrixHelper.rotateY(animatorProps.ry.v*mult);
+
+                    if(mult.length) {
+                        matrixHelper.rotateY(animatorProps.ry.v*mult[1]);
+                    }else{
+                        matrixHelper.rotateY(animatorProps.ry.v*mult);
+                    }
                 }
                 if ('rx' in animatorProps) {
-                    matrixHelper.rotateX(animatorProps.rx.v*mult);
+                    if(mult.length) {
+                        matrixHelper.rotateX(animatorProps.rx.v*mult[0]);
+                    } else {
+                        matrixHelper.rotateX(animatorProps.rx.v*mult);
+                    }
                 }
                 if ('o' in animatorProps) {
-                    elemOpacity += ((animatorProps.o.v)*mult - elemOpacity)*mult;
+                    if(mult.length) {
+                        elemOpacity += ((animatorProps.o.v)*mult[0] - elemOpacity)*mult[0];
+                    } else {
+                        elemOpacity += ((animatorProps.o.v)*mult - elemOpacity)*mult;
+                    }
                 }
                 if (documentData.strokeWidthAnim && 'sw' in animatorProps) {
-                    sw += animatorProps.sw.v*mult;
+                    if(mult.length) {
+                        sw += animatorProps.sw.v*mult[0];
+                    } else {
+                        sw += animatorProps.sw.v*mult;
+                    }
                 }
                 if (documentData.strokeColorAnim && 'sc' in animatorProps) {
                     for(k=0;k<3;k+=1){
-                        sc[k] = Math.round(sc[k] + (animatorProps.sc.v[k] - sc[k])*mult);
+                        if(mult.length) {
+                            sc[k] = Math.round(sc[k] + (animatorProps.sc.v[k] - sc[k])*mult[0]);
+                        } else {
+                            sc[k] = Math.round(sc[k] + (animatorProps.sc.v[k] - sc[k])*mult);
+                        }
                     }
                 }
-                if (documentData.fillColorAnim && 'fc' in animatorProps) {
-                    for(k=0;k<3;k+=1){
-                        fc[k] = Math.round(fc[k] + (animatorProps.fc.v[k] - fc[k])*mult);
+                if (documentData.fillColorAnim) {
+                    if('fc' in animatorProps){
+                        for(k=0;k<3;k+=1){
+                            if(mult.length) {
+                                fc[k] = Math.round(fc[k] + (animatorProps.fc.v[k] - fc[k])*mult[0]);
+                            } else {
+                                fc[k] = Math.round(fc[k] + (animatorProps.fc.v[k] - fc[k])*mult);
+                            }
+                        }
                     }
-                }
-            }
-            for(j=0;j<jLen;j+=1){
-                animatorProps = renderedData.a[j].a;
-                if ('s' in animatorProps) {
-                    animatorSelector = renderedData.a[j].s;
-                    mult = animatorSelector.getMult(letters[i].anIndexes[j]);
+                    if('fh' in animatorProps){
+
+                        if(mult.length) {
+                            fc = addHueToRGB(fc,animatorProps.fh.v*mult[0]);
+                        } else {
+                            fc = addHueToRGB(fc,animatorProps.fh.v*mult);
+                        }
+                    }
+                    if('fs' in animatorProps){
+                        if(mult.length) {
+                            fc = addSaturationToRGB(fc,animatorProps.fs.v*mult[0]);
+                        } else {
+                            fc = addSaturationToRGB(fc,animatorProps.fs.v*mult);
+                        }
+                    }
+                    if('fb' in animatorProps){
+                        if(mult.length) {
+                            fc = addBrightnessToRGB(fc,animatorProps.fb.v*mult[0]);
+                        } else {
+                            fc = addBrightnessToRGB(fc,animatorProps.fb.v*mult);
+                        }
+                    }
                 }
             }
 
@@ -380,17 +460,19 @@ ITextElement.prototype.getMeasures = function(){
                     animatorSelector = renderedData.a[j].s;
                     mult = animatorSelector.getMult(letters[i].anIndexes[j]);
                     if(this.maskPath) {
-                        matrixHelper.translate(0, animatorProps.p.v[1] * mult, -animatorProps.p.v[2] * mult);
+                        if(mult.length) {
+                            matrixHelper.translate(0, animatorProps.p.v[1] * mult[0], -animatorProps.p.v[2] * mult[1]);
+                        } else {
+                            matrixHelper.translate(0, animatorProps.p.v[1] * mult, -animatorProps.p.v[2] * mult);
+                        }
                     }else{
-                        matrixHelper.translate(animatorProps.p.v[0] * mult, animatorProps.p.v[1] * mult, -animatorProps.p.v[2] * mult);
+
+                        if(mult.length) {
+                            matrixHelper.translate(animatorProps.p.v[0] * mult[0], animatorProps.p.v[1] * mult[1], -animatorProps.p.v[2] * mult[2]);
+                        } else {
+                            matrixHelper.translate(animatorProps.p.v[0] * mult, animatorProps.p.v[1] * mult, -animatorProps.p.v[2] * mult);
+                        }
                     }
-                }
-            }
-            for(j=0;j<jLen;j+=1){
-                animatorProps = renderedData.a[j].a;
-                if ('a' in animatorProps) {
-                    animatorSelector = renderedData.a[j].s;
-                    mult = animatorSelector.getMult(letters[i].anIndexes[j]);
                 }
             }
             if(documentData.strokeWidthAnim){
