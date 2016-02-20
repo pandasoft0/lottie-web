@@ -218,10 +218,10 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.frameRate = this.animationData.fr;
     this.firstFrame = Math.round(this.animationData.ip);
     this.frameMult = this.animationData.fr / 1000;
-    //*
+    /*
     this.firstFrame = 0;
-    this.totalFrames = 50;
-    this.animationData.tf = 50;
+    this.totalFrames = 2;
+    this.animationData.tf = 2;
     //this.frameMult = 1/100;
     //*/////
     this.trigger('config_ready');
@@ -259,6 +259,7 @@ AnimationItem.prototype.elementLoaded = function () {
 AnimationItem.prototype.checkLoaded = function () {
     if (this.pendingElements === 0) {
         this.renderer.buildStage(this.container, this.layers);
+        this.trigger('DOMLoaded');
         this.isLoaded = true;
         this.gotoFrame();
         if(this.autoplay){
