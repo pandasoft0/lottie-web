@@ -1,12 +1,5 @@
-(function (root, factory) {
-    if(typeof define === "function" && define.amd) {
-        define( factory);
-    } else if(typeof module === "object" && module.exports) {
-        module.exports = factory();
-    } else {
-        root.bodymovin = factory();
-    }
-}(window, function() {
+(function (window){
+
     var bodymovinjs = {};
 
     function play(animation){
@@ -101,12 +94,12 @@
     bodymovinjs.goToAndStop = goToAndStop;
     bodymovinjs.destroy = destroy;
     bodymovinjs.setQuality = setQuality;
-    bodymovinjs.version = '4.0.9';
+    bodymovinjs.version = '4.0.10';
 
     function checkReady(){
         if (document.readyState === "complete") {
             clearInterval(readyStateCheckInterval);
-            searchAnimations();
+                searchAnimations();
         }
     }
 
@@ -119,6 +112,10 @@
             }
         }
     }
+
+    bodymovinjs.checkReady = checkReady;
+
+    window.bodymovin = bodymovinjs;
 
     var standalone = '__[STANDALONE]__';
     var animationData = '__[ANIMATIONDATA]__';
@@ -134,5 +131,4 @@
 
     var readyStateCheckInterval = setInterval(checkReady, 100);
 
-    return bodymovinjs;
-}));
+}(window));

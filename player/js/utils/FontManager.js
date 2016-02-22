@@ -140,28 +140,7 @@ var FontManager = (function(){
     }
 
     function addChars(chars){
-        if(!this.chars){
-            this.chars = [];
-        }
-        if(!chars){
-            return;
-        }
-        var i, len = chars.length;
-        var j, jLen = this.chars.length, found;
-        for(i=0;i<len;i+=1){
-            j = 0;
-            found = false;
-            while(j<jLen){
-                if(this.chars[j].style === chars[i].style && this.chars[j].fFamily === chars[i].fFamily && this.chars[j].ch === chars[i].ch){
-                    found = true;
-                }
-                j += 1;
-            }
-            if(!found){
-                this.chars.push(chars[i]);
-                jLen += 1;
-            }
-        }
+        this.chars = chars;
     }
 
     function getCharData(char, style, font){
