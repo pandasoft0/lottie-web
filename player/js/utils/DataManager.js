@@ -267,7 +267,7 @@ function dataFunctionManager(){
             if(animators[j].a.sw){
                 documentData.strokeWidthAnim = true;
             }
-            if(animators[j].a.fc || animators[j].a.fh || animators[j].a.fs || animators[j].a.fb){
+            if(animators[j].a.fc){
                 documentData.fillColorAnim = true;
             }
             ind = 0;

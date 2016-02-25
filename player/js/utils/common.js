@@ -1,4 +1,4 @@
-var subframeEnabled = false;
+var subframeEnabled = true;
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 var cachedColors = {};
 var bm_rounder = Math.round;
@@ -9,10 +9,6 @@ var bm_abs = Math.abs;
 var bm_floor = Math.floor;
 var bm_max = Math.max;
 var bm_min = Math.min;
-var BMMath = {
-    pow: bm_pow,
-    random: Math.random
-};
 var defaultCurveSegments = 75;
 var degToRads = Math.PI/180;
 
@@ -130,89 +126,6 @@ function randomString(length, chars){
     var result = '';
     for (i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
     return result;
-}
-
-function HSVtoRGB(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (arguments.length === 1) {
-        s = h.s, v = h.v, h = h.h;
-    }
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    return [ Math.round(r * 255),
-         Math.round(g * 255),
-         Math.round(b * 255) ];
-}
-
-function RGBtoHSV(r, g, b) {
-    if (arguments.length === 1) {
-        g = r.g, b = r.b, r = r.r;
-    }
-    var max = Math.max(r, g, b), min = Math.min(r, g, b),
-        d = max - min,
-        h,
-        s = (max === 0 ? 0 : d / max),
-        v = max / 255;
-
-    switch (max) {
-        case min: h = 0; break;
-        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
-        case g: h = (b - r) + d * 2; h /= 6 * d; break;
-        case b: h = (r - g) + d * 4; h /= 6 * d; break;
-    }
-
-    return [
-         h,
-         s,
-         v
-    ];
-}
-
-function addSaturationToRGB(color,offset){
-    var hsv = RGBtoHSV(color[0],color[1],color[2]);
-    hsv[1] += offset;
-    if (hsv[1] > 1) {
-        hsv[1] = 1;
-    }
-    else if (hsv[1] <= 0) {
-        hsv[1] = 0;
-    }
-    return HSVtoRGB(hsv[0],hsv[1],hsv[2]);
-}
-
-function addBrightnessToRGB(color,offset){
-    var hsv = RGBtoHSV(color[0],color[1],color[2]);
-    hsv[2] += offset;
-    if (hsv[2] > 1) {
-        hsv[2] = 1;
-    }
-    else if (hsv[2] < 0) {
-        hsv[2] = 0;
-    }
-    return HSVtoRGB(hsv[0],hsv[1],hsv[2]);
-}
-
-function addHueToRGB(color,offset) {
-    var hsv = RGBtoHSV(color[0],color[1],color[2]);
-    hsv[0] += offset/360;
-    if (hsv[0] > 1) {
-        hsv[0] -= 1;
-    }
-    else if (hsv[0] < 0) {
-        hsv[0] += 1;
-    }
-    return HSVtoRGB(hsv[0],hsv[1],hsv[2]);
 }
 
 function componentToHex(c) {
