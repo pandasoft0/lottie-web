@@ -18,5 +18,3 @@ LayerInterface.prototype.effect = function(num) {
     console.log(this.effectsManager);
     console.log(num);
 }
-
-extendPrototype(LayerInterface,BaseElement);

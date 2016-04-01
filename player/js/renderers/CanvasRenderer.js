@@ -349,3 +349,5 @@ CanvasRenderer.prototype.hide = function(){
 CanvasRenderer.prototype.show = function(){
     this.animationItem.container.style.display = 'block';
 };
+
+extendPrototype(ExpressionComp,CanvasRenderer);
