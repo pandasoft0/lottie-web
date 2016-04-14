@@ -178,6 +178,7 @@ var PropertyFactory = (function(){
             return;
         }
         this.mdf = false;
+        this.frameId = this.elem.globalData.frameId;
         var frameNum = this.comp.renderedFrame - this.offsetTime;
         if(frameNum === this.lastFrame || (this.lastFrame !== initFrame && ((this.lastFrame >= this.keyframes[this.keyframes.length- 1].t-this.offsetTime && frameNum >= this.keyframes[this.keyframes.length- 1].t-this.offsetTime) || (this.lastFrame < this.keyframes[0].t-this.offsetTime && frameNum < this.keyframes[0].t-this.offsetTime)))){
 
@@ -353,7 +354,6 @@ var PropertyFactory = (function(){
             }
         }
         this.lastFrame = frameNum;
-        this.frameId = this.elem.globalData.frameId;
     }
 
     function interpolateShape() {
@@ -442,8 +442,8 @@ var PropertyFactory = (function(){
     }
 
     function checkExpressions(elem,data){
-        this.getExpression = ExpressionManager.initiateExpression;
         if(data.x){
+            this.getExpression = ExpressionManager.initiateExpression;
             this.k = true;
             this.x = true;
             if(this.getValue) {
@@ -642,6 +642,7 @@ var PropertyFactory = (function(){
                 return;
             }
             this.mdf = false;
+            this.frameId = this.elem.globalData.frameId;
             var i, len = this.dynamicProperties.length;
 
             for(i=0;i<len;i+=1){
@@ -676,7 +677,6 @@ var PropertyFactory = (function(){
                     this.v.translate(this.p.v[0],this.p.v[1],-this.p.v[2]);
                 }
             }
-            this.frameId = this.elem.globalData.frameId;
         }
 
         function setInverted(){

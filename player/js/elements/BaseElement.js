@@ -15,7 +15,6 @@ BaseElement.prototype.checkMasks = function(){
 }
 
 BaseElement.prototype.prepareFrame = function(num){
-    console.log(this.data.nm);
     if(this.data.ip - this.data.st <= num && this.data.op - this.data.st > num)
     {
         if(this.isVisible !== true){
@@ -63,7 +62,7 @@ BaseElement.prototype.init = function(){
     this.lastNum = -99999;
     if(this.data.ef){
         this.effectsManager = new EffectsManager(this.data,this,this.dynamicProperties);
-        this.effect = this.effectsManager.bind(this.effectsManager);
+        this.effect = this.effectsManager.getEffect.bind(this.effectsManager);
     }
     this.finalTransform = {
         mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
@@ -115,8 +114,6 @@ BaseElement.prototype.mHelper = new Matrix();
 BaseElement.prototype.mask = function(nm){
     return this.maskManager.getMask(nm);
 }
-
-extendPrototype(LayerInterface,BaseElement);
 
 Object.defineProperty(BaseElement.prototype, "anchorPoint", {
     get: function anchorPoint() {
