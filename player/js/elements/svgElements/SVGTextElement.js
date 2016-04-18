@@ -126,12 +126,6 @@ SVGTextElement.prototype.createElements = function(){
         //
         this.textSpans.push(tSpan);
     }
-    if(this.data.ln){
-        this.innerElem.setAttribute('id',this.data.ln);
-    }
-    if(this.data.cl){
-        this.innerElem.setAttribute('class',this.data.cl);
-    }
     if(singleShape && this.globalData.fontManager.chars){
         tSpan.setAttribute('d',shapeStr);
         this.innerElem.appendChild(tSpan);

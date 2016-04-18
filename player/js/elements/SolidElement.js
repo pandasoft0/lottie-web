@@ -21,9 +21,6 @@ ISolidElement.prototype.createElements = function(){
     if(this.data.ln){
         this.innerElem.setAttribute('id',this.data.ln);
     }
-    if(this.data.cl){
-        this.innerElem.setAttribute('class',this.data.cl);
-    }
     this.innerElem = rect;
 };
 

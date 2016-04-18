@@ -13,6 +13,18 @@ function PointEffect(data,elem, dynamicProperties){
 function CheckboxEffect(data,elem, dynamicProperties){
     this.p = PropertyFactory.getProp(elem,data.v,1,0,dynamicProperties);
 }
+function NoValueEffect(data,elem, dynamicProperties){
+    this.p = {};
+}
+
+function groupEffectFunction(num){
+
+}
+
+function GroupEffect() {
+    var fn = groupEffectFunction;
+    return fn;
+}
 
 SliderEffect.prototype.proxyFunction = function(){
     if(this.p.k){
