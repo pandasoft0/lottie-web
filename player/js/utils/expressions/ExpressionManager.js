@@ -128,7 +128,7 @@ var ExpressionManager = (function(){
     }
 
     function length(arr1,arr2){
-        var i,len = Math.min(arr1.length,arr2.length);
+        var i,len = arr1.length;
         var addedLength = 0;
         for(i=0;i<len;i+=1){
             addedLength += Math.pow(arr2[i]-arr1[i],2);
@@ -371,18 +371,7 @@ var ExpressionManager = (function(){
         }.bind(this);
 
         function effect(nm){
-            return elem.effectsManager(nm);
-        }
-
-        function lookAt(elem1,elem2){
-            var fVec = [elem2[0]-elem1[0],elem2[1]-elem1[1],elem2[2]-elem1[2]];
-            var pitch = Math.atan2(fVec[0],Math.sqrt(fVec[1]*fVec[1]+fVec[2]*fVec[2]))/degToRads;
-            var yaw = -Math.atan2(fVec[1],fVec[2])/degToRads;
-            return [yaw,pitch,0];
-        }
-
-        function easeOut(t, val1, val2){
-            return -(val2-val1) * t*(t-2) + val1;
+            return elem.effectsManager.getEffect(nm);
         }
 
         function nearestKey(time){
@@ -436,7 +425,7 @@ var ExpressionManager = (function(){
         var time, value,textIndex,textTotal,selectorValue, index = elem.data.ind + 1;
         var hasParent = !!(elem.hierarchy && elem.hierarchy.length);
         function execute(){
-            //seedRandom(0);
+            seedRandom(0);
             if(this.type === 'textSelector'){
                 textIndex = this.textIndex;
                 textTotal = this.textTotal;
@@ -451,12 +440,6 @@ var ExpressionManager = (function(){
             if(this.getPreValue){
                 this.getPreValue();
             }
-            if(this.lock){
-                console.log(this.elem);
-                this.v = this.pv;
-                return;
-            }
-            this.lock = true;
             value = this.pv;
             time = this.comp.renderedFrame/this.comp.globalData.frameRate;
             bindedFn();
@@ -465,9 +448,9 @@ var ExpressionManager = (function(){
                 if(typeof this.v === 'number'){
                     this.v *= this.mult;
                 }else{
-                    if(!this.v) {
-                        console.log(val);
-                    }
+                    /*if(!this.v) {
+                        //console.log(val);
+                    }*/
                     len = this.v.length;
                     if(value === this.v){
                         this.v = len === 2 ? [value[0],value[1]] : [value[0],value[1],value[2]];
@@ -496,7 +479,6 @@ var ExpressionManager = (function(){
                     }
                 }
             }
-            this.lock = false;
         }
         return execute;
     }
