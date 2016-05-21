@@ -62,20 +62,24 @@ BaseElement.prototype.init = function(){
     this.lastNum = -99999;
     if(this.data.ef){
         this.effectsManager = new EffectsManager(this.data,this,this.dynamicProperties);
-        this.effect = this.effectsManager.getEffect.bind(this.effectsManager);
+        this.effect = this.effectsManager.bind(this.effectsManager);
     }
-    this.finalTransform = {
-        mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
-        matMdf: false,
-        opMdf: false,
-        mat: new Matrix(),
-        opacity: 1
-    };
-    this.finalTransform.op = this.finalTransform.mProp.o;
-    this.transform = this.finalTransform.mProp;
-    this.createElements();
-    if(this.data.hasMask){
-        this.addMasks(this.data);
+    if(this.data.ty === 11){
+
+    } else {
+        this.finalTransform = {
+            mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
+            matMdf: false,
+            opMdf: false,
+            mat: new Matrix(),
+            opacity: 1
+        };
+        this.finalTransform.op = this.finalTransform.mProp.o;
+        this.transform = this.finalTransform.mProp;
+        this.createElements();
+        if(this.data.hasMask){
+            this.addMasks(this.data);
+        }
     }
 };
 BaseElement.prototype.getType = function(){
@@ -114,6 +118,37 @@ BaseElement.prototype.mHelper = new Matrix();
 BaseElement.prototype.mask = function(nm){
     return this.maskManager.getMask(nm);
 }
+
+extendPrototype(LayerInterface,BaseElement);
+
+Object.defineProperty(BaseElement.prototype, "hasParent", {
+    get: function hasParent() {
+        return this.hierarchy && this.hierarchy.length;
+    }
+});
+Object.defineProperty(BaseElement.prototype, "parent", {
+    get: function parent() {
+        return this.hierarchy[0];
+    }
+});
+
+Object.defineProperty(BaseElement.prototype, "rotation", {
+    get: function rotation() {
+        return this.transform.rotation;
+    }
+});
+
+Object.defineProperty(BaseElement.prototype, "scale", {
+    get: function scale() {
+        return this.transform.scale;
+    }
+});
+
+Object.defineProperty(BaseElement.prototype, "position", {
+    get: function position() {
+        return this.transform.position;
+    }
+});
 
 Object.defineProperty(BaseElement.prototype, "anchorPoint", {
     get: function anchorPoint() {

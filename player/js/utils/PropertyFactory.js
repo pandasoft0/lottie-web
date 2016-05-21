@@ -178,7 +178,6 @@ var PropertyFactory = (function(){
             return;
         }
         this.mdf = false;
-        this.frameId = this.elem.globalData.frameId;
         var frameNum = this.comp.renderedFrame - this.offsetTime;
         if(frameNum === this.lastFrame || (this.lastFrame !== initFrame && ((this.lastFrame >= this.keyframes[this.keyframes.length- 1].t-this.offsetTime && frameNum >= this.keyframes[this.keyframes.length- 1].t-this.offsetTime) || (this.lastFrame < this.keyframes[0].t-this.offsetTime && frameNum < this.keyframes[0].t-this.offsetTime)))){
 
@@ -227,7 +226,8 @@ var PropertyFactory = (function(){
                     if(keyData.__fnct){
                         fnc = keyData.__fnct;
                     }else{
-                        fnc = BezierFactory.getBezierEasing(keyData.o.x,keyData.o.y,keyData.i.x,keyData.i.y,keyData.n).get;
+                        //fnc = bez.getEasingCurve(keyData.o.x,keyData.o.y,keyData.i.x,keyData.i.y,keyData.n);
+                        fnc = BezierFactory.getBezierEasing(outX,outY,inX,inY,keyData.n).get;
                         keyData.__fnct = fnc;
                     }
                     perc = fnc((frameNum-(keyData.t-this.offsetTime))/((nextKeyData.t-this.offsetTime)-(keyData.t-this.offsetTime)));
@@ -353,6 +353,7 @@ var PropertyFactory = (function(){
             }
         }
         this.lastFrame = frameNum;
+        this.frameId = this.elem.globalData.frameId;
     }
 
     function interpolateShape() {
@@ -441,8 +442,8 @@ var PropertyFactory = (function(){
     }
 
     function checkExpressions(elem,data){
+        this.getExpression = ExpressionManager.initiateExpression;
         if(data.x){
-            this.getExpression = ExpressionManager.initiateExpression;
             this.k = true;
             this.x = true;
             if(this.getValue) {
@@ -468,6 +469,7 @@ var PropertyFactory = (function(){
         this.mdf = false;
         this.comp = elem.comp;
         this.k = false;
+        this.frameId = -1;
         checkExpressions.bind(this)(elem,data);
         this.v = new Array(data.k.length);
         this.pv = new Array(data.k.length);
@@ -538,49 +540,49 @@ var PropertyFactory = (function(){
             if(this.p.k){
                 this.getValue();
             }
-            return this.p.pv;
+            return this.p.v;
         }
         function anchorGetter(){
             if(this.a.k){
                 this.getValue();
             }
-            return this.a.pv;
+            return this.a.v;
         }
         function orientationGetter(){
             if(this.or.k){
                 this.getValue();
             }
-            return this.or.pv;
+            return this.or.v;
         }
         function rotationGetter(){
             if(this.r.k){
                 this.getValue();
             }
-            return this.r.pv;
+            return this.r.v;
         }
         function scaleGetter(){
             if(this.s.k){
                 this.getValue();
             }
-            return this.s.pv;
+            return this.s.v;
         }
         function opacityGetter(){
             if(this.o.k){
                 this.o.getValue();
             }
-            return this.o.pv;
+            return this.o.v;
         }
         function skewGetter(){
             if(this.sk.k){
                 this.sk.getValue();
             }
-            return this.sk.pv;
+            return this.sk.v;
         }
         function skewAxisGetter(){
             if(this.sa.k){
                 this.sa.getValue();
             }
-            return this.sa.pv;
+            return this.sa.v;
         }
         function applyToMatrix(mat, processExpressions){
             var i, len = this.dynamicProperties.length;
@@ -641,7 +643,6 @@ var PropertyFactory = (function(){
                 return;
             }
             this.mdf = false;
-            this.frameId = this.elem.globalData.frameId;
             var i, len = this.dynamicProperties.length;
 
             for(i=0;i<len;i+=1){
@@ -676,6 +677,7 @@ var PropertyFactory = (function(){
                     this.v.translate(this.p.v[0],this.p.v[1],-this.p.v[2]);
                 }
             }
+            this.frameId = this.elem.globalData.frameId;
         }
 
         function setInverted(){

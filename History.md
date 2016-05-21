@@ -1,6 +1,3 @@
-## V 4.1.8
-- Fixed easing bezier values for dimensional properties
-
 ## V 4.1.7
 - removing non ASCII chars from file that would break the extension in some languages.
 
