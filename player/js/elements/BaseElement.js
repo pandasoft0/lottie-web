@@ -54,7 +54,6 @@ BaseElement.prototype.prepareFrame = function(num){
 };
 
 BaseElement.prototype.init = function(){
-    this.elemInterface = buildLayerExpressionInterface(this);
     this.hidden = false;
     this.firstFrame = true;
     this.isVisible = false;
@@ -63,24 +62,20 @@ BaseElement.prototype.init = function(){
     this.lastNum = -99999;
     if(this.data.ef){
         this.effectsManager = new EffectsManager(this.data,this,this.dynamicProperties);
-        this.effect = this.effectsManager.bind(this.effectsManager);
+        this.effect = this.effectsManager.getEffect.bind(this.effectsManager);
     }
-    if(this.data.ty === 11){
-
-    } else {
-        this.finalTransform = {
-            mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
-            matMdf: false,
-            opMdf: false,
-            mat: new Matrix(),
-            opacity: 1
-        };
-        this.finalTransform.op = this.finalTransform.mProp.o;
-        this.transform = this.finalTransform.mProp;
-        this.createElements();
-        if(this.data.hasMask){
-            this.addMasks(this.data);
-        }
+    this.finalTransform = {
+        mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
+        matMdf: false,
+        opMdf: false,
+        mat: new Matrix(),
+        opacity: 1
+    };
+    this.finalTransform.op = this.finalTransform.mProp.o;
+    this.transform = this.finalTransform.mProp;
+    this.createElements();
+    if(this.data.hasMask){
+        this.addMasks(this.data);
     }
 };
 BaseElement.prototype.getType = function(){
@@ -120,4 +115,8 @@ BaseElement.prototype.mask = function(nm){
     return this.maskManager.getMask(nm);
 }
 
-
+Object.defineProperty(BaseElement.prototype, "anchorPoint", {
+    get: function anchorPoint() {
+        return this.finalTransform.mProp.anchorPoint;
+    }
+});

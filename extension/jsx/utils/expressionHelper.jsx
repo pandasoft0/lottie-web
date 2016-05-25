@@ -449,10 +449,6 @@ var bm_expressionHelper = (function () {
             assignmentObject = createAssignmentObject();
             assignmentObject.expression.right = expressionStatement.expression;
             return assignmentObject;
-        } else if(expressionStatement.expression.type === 'ConditionalExpression'){
-            assignmentObject = createAssignmentObject();
-            assignmentObject.expression.right = expressionStatement.expression;
-            return assignmentObject;
         }
         return expressionStatement;
     }
