@@ -84,20 +84,6 @@
         }
 
     }
-    function installPlugin(type,plugin){
-        if(type==='expressions'){
-            expressionsPlugin = plugin;
-        }
-    }
-
-    function getFactory(name){
-        switch(name){
-            case "propertyFactory":
-                return PropertyFactory;
-            case "matrix":
-                return Matrix;
-        }
-    }
 
     bodymovinjs.play = play;
     bodymovinjs.pause = pause;
@@ -115,9 +101,7 @@
     bodymovinjs.goToAndStop = goToAndStop;
     bodymovinjs.destroy = destroy;
     bodymovinjs.setQuality = setQuality;
-    bodymovinjs.installPlugin = installPlugin;
-    bodymovinjs.__getFactory = getFactory;
-    bodymovinjs.version = '4.1.9';
+    bodymovinjs.version = '4.1.2';
 
     function checkReady(){
         if (document.readyState === "complete") {

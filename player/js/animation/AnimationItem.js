@@ -170,9 +170,6 @@ AnimationItem.prototype.includeLayers = function(data) {
     dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
     this.renderer.includeLayers(data.layers);
     this.renderer.buildStage(this.container, this.layers);
-    if(expressionsPlugin){
-        expressionsPlugin.initExpressions(this);
-    }
     this.renderer.renderFrame(null);
     this.loadNextSegment();
 };
@@ -236,7 +233,7 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.firstFrame = Math.round(this.animationData.ip);
     this.frameMult = this.animationData.fr / 1000;
     /*
-    this.firstFrame = 0;
+    this.firstFrame = 77;
     this.totalFrames = 1;
     this.animationData.tf = 1;
     //this.frameMult = 1/100;
@@ -276,9 +273,6 @@ AnimationItem.prototype.elementLoaded = function () {
 AnimationItem.prototype.checkLoaded = function () {
     if (this.pendingElements === 0) {
         this.renderer.buildStage(this.container, this.layers);
-        if(expressionsPlugin){
-            expressionsPlugin.initExpressions(this);
-        }
         this.trigger('DOMLoaded');
         this.isLoaded = true;
         this.gotoFrame();

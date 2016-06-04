@@ -1,5 +1,4 @@
-var subframeEnabled = false;
-var expressionsPlugin;
+var subframeEnabled = true;
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 var cachedColors = {};
 var bm_rounder = Math.round;
@@ -151,9 +150,9 @@ function HSVtoRGB(h, s, v) {
         case 4: r = t, g = p, b = v; break;
         case 5: r = v, g = p, b = q; break;
     }
-    return [ r,
-        g,
-         b ];
+    return [ Math.round(r * 255),
+         Math.round(g * 255),
+         Math.round(b * 255) ];
 }
 
 function RGBtoHSV(r, g, b) {
@@ -181,7 +180,7 @@ function RGBtoHSV(r, g, b) {
 }
 
 function addSaturationToRGB(color,offset){
-    var hsv = RGBtoHSV(color[0]*255,color[1]*255,color[2]*255);
+    var hsv = RGBtoHSV(color[0],color[1],color[2]);
     hsv[1] += offset;
     if (hsv[1] > 1) {
         hsv[1] = 1;
@@ -193,7 +192,7 @@ function addSaturationToRGB(color,offset){
 }
 
 function addBrightnessToRGB(color,offset){
-    var hsv = RGBtoHSV(color[0]*255,color[1]*255,color[2]*255);
+    var hsv = RGBtoHSV(color[0],color[1],color[2]);
     hsv[2] += offset;
     if (hsv[2] > 1) {
         hsv[2] = 1;
@@ -205,7 +204,7 @@ function addBrightnessToRGB(color,offset){
 }
 
 function addHueToRGB(color,offset) {
-    var hsv = RGBtoHSV(color[0]*255,color[1]*255,color[2]*255);
+    var hsv = RGBtoHSV(color[0],color[1],color[2]);
     hsv[0] += offset/360;
     if (hsv[0] > 1) {
         hsv[0] -= 1;
