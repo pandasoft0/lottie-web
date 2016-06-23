@@ -34,4 +34,6 @@ var Expressions = (function(){
    return ob;
 }());
 
-expressionsPlugin = Expressions;
+
+
+bodymovin.installPlugin('expressions',Expressions);
