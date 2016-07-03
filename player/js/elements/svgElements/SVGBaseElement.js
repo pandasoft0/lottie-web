@@ -107,13 +107,6 @@ SVGBaseElement.prototype.createElements = function(){
         this.layerElement = document.createElementNS(svgNS,'g');
         this.appendNodeToParent(this.layerElement);
     }
-    if(this.data.bm !== 0){
-        if(this.layerElement === this.parentContainer){
-            this.layerElement = document.createElementNS(svgNS,'g');
-            this.appendNodeToParent(this.layerElement);
-        }
-        this.setBlendMode();
-    }
     if(this.layerElement !== this.parentContainer){
         this.placeholder = null;
     }
@@ -183,8 +176,6 @@ SVGBaseElement.prototype.createElements = function(){
         }
     }*/
 };
-
-SVGBaseElement.prototype.setBlendMode = BaseElement.prototype.setBlendMode;
 
 SVGBaseElement.prototype.renderFrame = function(parentTransform){
     if(this.data.ty === 3){

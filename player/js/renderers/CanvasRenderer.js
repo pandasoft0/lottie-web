@@ -14,38 +14,38 @@ function CanvasRenderer(animationItem, config){
         frameNum: -1
     };
     this.contextData = {
-        saved : Array.apply(null,{length:15}),
-        savedOp: Array.apply(null,{length:15}),
+        saved : new Array(15),
+        savedOp: new Array(15),
         cArrPos : 0,
         cTr : new Matrix(),
         cO : 1
     };
     var i, len = 15;
     for(i=0;i<len;i+=1){
-        this.contextData.saved[i] = Array.apply(null,{length:16});
+        this.contextData.saved[i] = new Array(16);
     }
     this.elements = [];
     this.transformMat = new Matrix();
 }
 
-CanvasRenderer.prototype.createItem = function(layer, comp, globalData){
+CanvasRenderer.prototype.createItem = function(layer, comp){
     switch(layer.ty){
         case 0:
-            return this.createComp(layer, comp, globalData);
+            return this.createComp(layer, comp);
         case 1:
-            return this.createSolid(layer, comp, globalData);
+            return this.createSolid(layer, comp);
         case 2:
-            return this.createImage(layer, comp, globalData);
+            return this.createImage(layer, comp);
         case 4:
-            return this.createShape(layer, comp, globalData);
+            return this.createShape(layer, comp);
         case 5:
-            return this.createText(layer, comp, globalData);
+            return this.createText(layer, comp);
         case 99:
-            return this.createPlaceHolder(layer, comp, globalData);
+            return this.createPlaceHolder(layer, comp);
         default:
-            return this.createBase(layer, comp, globalData);
+            return this.createBase(layer, comp);
     }
-    return this.createBase(layer,comp, globalData);
+    return this.createBase(layer,comp);
 };
 
 CanvasRenderer.prototype.buildItems = function(layers,elements, comp){
@@ -57,10 +57,10 @@ CanvasRenderer.prototype.buildItems = function(layers,elements, comp){
     }
     var i, len = layers.length;
     for (i = 0; i < len; i++) {
-        elements[i] = this.createItem(layers[i], comp,comp.globalData);
+        elements[i] = this.createItem(layers[i], comp);
         if (layers[i].ty === 0) {
             var elems = [];
-            this.buildItems(layers[i].layers,elems,elements[i],comp.globalData);
+            this.buildItems(layers[i].layers,elems,elements[i]);
             elements[elements.length - 1].setElements(elems);
         }
     }
@@ -71,7 +71,7 @@ CanvasRenderer.prototype.includeLayers = function(layers,parentContainer,element
     if(!elements){
         elements = this.elements;
     }
-    var j, jLen = elements.length, elems;
+    var j, jLen = elements.length, elems, placeholder;
     for(i=0;i<len;i+=1){
         j = 0;
         while(j<jLen){
@@ -89,32 +89,32 @@ CanvasRenderer.prototype.includeLayers = function(layers,parentContainer,element
     }
 };
 
-CanvasRenderer.prototype.createBase = function (data, comp, globalData) {
-    return new CVBaseElement(data, comp, globalData);
+CanvasRenderer.prototype.createBase = function (data, comp) {
+    return new CVBaseElement(data, comp, this.globalData);
 };
 
-CanvasRenderer.prototype.createShape = function (data, comp, globalData) {
-    return new CVShapeElement(data, comp, globalData);
+CanvasRenderer.prototype.createShape = function (data, comp) {
+    return new CVShapeElement(data, comp, this.globalData);
 };
 
-CanvasRenderer.prototype.createText = function (data, comp, globalData) {
-    return new CVTextElement(data, comp, globalData);
+CanvasRenderer.prototype.createText = function (data, comp) {
+    return new CVTextElement(data, comp, this.globalData);
 };
 
-CanvasRenderer.prototype.createPlaceHolder = function (data, globalData) {
-    return new PlaceHolderElement(data, null,globalData);
+CanvasRenderer.prototype.createPlaceHolder = function (data) {
+    return new PlaceHolderElement(data, null,this.globalData);
 };
 
-CanvasRenderer.prototype.createImage = function (data, comp, globalData) {
-    return new CVImageElement(data, comp, globalData);
+CanvasRenderer.prototype.createImage = function (data, comp) {
+    return new CVImageElement(data, comp, this.globalData);
 };
 
-CanvasRenderer.prototype.createComp = function (data, comp, globalData) {
-    return new CVCompElement(data, comp, globalData);
+CanvasRenderer.prototype.createComp = function (data, comp) {
+    return new CVCompElement(data, comp, this.globalData);
 };
 
-CanvasRenderer.prototype.createSolid = function (data, comp, globalData) {
-    return new CVSolidElement(data, comp, globalData);
+CanvasRenderer.prototype.createSolid = function (data, comp) {
+    return new CVSolidElement(data, comp, this.globalData);
 };
 
 CanvasRenderer.prototype.ctxTransform = function(props){
@@ -142,7 +142,7 @@ CanvasRenderer.prototype.ctxOpacity = function(op){
         return;
     }
     this.contextData.cO *= op < 0 ? 0 : op;
-    this.canvasContext.globalAlpha = this.contextData.cO;
+     this.canvasContext.globalAlpha = this.contextData.cO;
 };
 
 CanvasRenderer.prototype.reset = function(){
@@ -262,6 +262,8 @@ CanvasRenderer.prototype.updateContainerSize = function () {
         this.transformCanvas.ty = 0;
     }
     this.transformCanvas.props = [this.transformCanvas.sx,0,0,0,0,this.transformCanvas.sy,0,0,0,0,1,0,this.transformCanvas.tx,this.transformCanvas.ty,0,1];
+    this.globalData.cWidth = elementWidth;
+    this.globalData.cHeight = elementHeight;
 };
 
 CanvasRenderer.prototype.buildStage = function (container, layers, elements) {
@@ -319,6 +321,7 @@ CanvasRenderer.prototype.renderFrame = function(num){
     this.globalData.frameId += 1;
     if(this.renderConfig.clearCanvas === true){
         this.reset();
+        this.canvasContext.save();
         //this.canvasContext.canvas.width = this.canvasContext.canvas.width;
         this.canvasContext.clearRect(0, 0, this.transformCanvas.w, this.transformCanvas.h);
     }else{
@@ -341,6 +344,8 @@ CanvasRenderer.prototype.renderFrame = function(num){
     }
     if(this.renderConfig.clearCanvas !== true){
         this.restore();
+    } else {
+        this.canvasContext.restore();
     }
 };
 

@@ -42,9 +42,6 @@ HShapeElement.prototype.createElements = function(){
     this.searchShapes(this.shapesData,this.viewData,this.dynamicProperties,[]);
     this.buildExpressionInterface();
     this.layerElement = parent;
-    if(this.data.bm !== 0){
-        this.setBlendMode();
-    }
 };
 
 HShapeElement.prototype.renderFrame = function(parentMatrix){
