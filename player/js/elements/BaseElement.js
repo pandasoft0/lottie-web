@@ -18,6 +18,7 @@ BaseElement.prototype.prepareFrame = function(num){
     if(this.data.ip - this.data.st <= num && this.data.op - this.data.st > num)
     {
         if(this.isVisible !== true){
+            this.globalData.mdf = true;
             this.isVisible = true;
             this.firstFrame = true;
             if(this.data.hasMask){
@@ -26,12 +27,16 @@ BaseElement.prototype.prepareFrame = function(num){
         }
     }else{
         if(this.isVisible !== false){
+            this.globalData.mdf = true;
             this.isVisible = false;
         }
     }
     var i, len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
         this.dynamicProperties[i].getValue();
+        if(this.dynamicProperties[i].mdf){
+            this.globalData.mdf = true;
+        }
     }
     if(this.data.hasMask){
         this.maskManager.prepareFrame(num*this.data.sr);
@@ -52,6 +57,57 @@ BaseElement.prototype.prepareFrame = function(num){
     this.currentFrameNum = num*this.data.sr;
     return this.isVisible;
 };
+BaseElement.prototype.setBlendMode = function(){
+    var blendModeValue = '';
+    switch(this.data.bm){
+        case 1:
+            blendModeValue = 'multiply';
+            break;
+        case 2:
+            blendModeValue = 'screen';
+            break;
+        case 3:
+            blendModeValue = 'overlay';
+            break;
+        case 4:
+            blendModeValue = 'darken';
+            break;
+        case 5:
+            blendModeValue = 'lighten';
+            break;
+        case 6:
+            blendModeValue = 'color-dodge';
+            break;
+        case 7:
+            blendModeValue = 'color-burn';
+            break;
+        case 8:
+            blendModeValue = 'hard-light';
+            break;
+        case 9:
+            blendModeValue = 'soft-light';
+            break;
+        case 10:
+            blendModeValue = 'difference';
+            break;
+        case 11:
+            blendModeValue = 'exclusion';
+            break;
+        case 12:
+            blendModeValue = 'hue';
+            break;
+        case 13:
+            blendModeValue = 'saturation';
+            break;
+        case 14:
+            blendModeValue = 'color';
+            break;
+        case 15:
+            blendModeValue = 'luminosity';
+            break;
+    }
+    this.layerElement.style['mix-blend-mode'] = blendModeValue;
+}
 
 BaseElement.prototype.init = function(){
     if(!this.data.sr){
