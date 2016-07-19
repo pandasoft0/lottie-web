@@ -10,7 +10,7 @@
         }
         #bodymovin{
             background-color:#000;
-            width:909px;
+            width:900px;
             height:500px;
             /*width:800px;
             height:500px;*/
@@ -110,12 +110,12 @@
     var count = 0;
     var animData = {
         container: document.getElementById('bodymovin'),
-        renderer: 'svg',
-        loop: true,
+        renderer: 'canvas',
+        loop: false,
         autoplay: true,
         autoloadSegments: true,
         //animationData: anim2
-        path: 'exports/banner/data.json'
+        path: 'exports/render/data.json'
     };
 
     var anim;
