@@ -29,11 +29,9 @@ IShapeElement.prototype.createElements = function(){
     //TODO check if I can use symbol so i can set its viewBox
     this._parent.createElements.call(this);
     this.searchShapes(this.shapesData,this.viewData,this.dynamicProperties);
-    if(!this.data.hd){
-        this.layerElement.appendChild(this.shapesContainer);
-        styleUnselectableDiv(this.layerElement);
-        styleUnselectableDiv(this.shapesContainer);
-    }
+    this.layerElement.appendChild(this.shapesContainer);
+    styleUnselectableDiv(this.layerElement);
+    styleUnselectableDiv(this.shapesContainer);
     //this.elemInterface.registerShapeExpressionInterface(ShapeExpressionInterface.createShapeInterface(this.shapesData,this.viewData,this.elemInterface));
 };
 
@@ -167,7 +165,7 @@ IShapeElement.prototype.searchShapes = function(arr,data,dynamicProperties){
             }
             data[i].st = hasStrokes;
             data[i].fl = hasFills;
-        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd'){
+        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd' || arr[i].ty == 'ms'){
             var modifier = ShapeModifiers.getModifier(arr[i].ty);
             modifier.init(this,arr[i],dynamicProperties);
             this.shapeModifiers.push(modifier);
@@ -215,6 +213,7 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
         this.hide();
         return;
     }
+    this.globalToLocal([0,0,0]);
 
     this.hidden = false;
     if(this.finalTransform.matMdf && !this.data.hasMask){

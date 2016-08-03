@@ -26,7 +26,7 @@ HImageElement.prototype.createElements = function(){
         this.imageElem.setAttribute('height',this.assetData.h+"px");
         cont.appendChild(this.imageElem);
         this.layerElement = parent;
-        this.appendNodeToParent(parent);
+        this.parentContainer.appendChild(parent);
         this.innerElem = parent;
         this.maskedElement = this.imageElem;
         img.addEventListener('load', imageLoaded.bind(this), false);
@@ -34,7 +34,7 @@ HImageElement.prototype.createElements = function(){
     } else {
         styleDiv(img);
         this.layerElement = img;
-        this.appendNodeToParent(img);
+        this.parentContainer.appendChild(img);
         this.innerElem = img;
     }
     img.src = this.path+this.assetData.p;

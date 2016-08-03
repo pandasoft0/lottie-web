@@ -1,19 +1,23 @@
 function CVImageElement(data, comp,globalData){
-    this.assetData = globalData.getAssetData(data.refId);
-    this.path = globalData.getPath();
+    this.animationItem = globalData.renderer.animationItem;
+    this.assetData = this.animationItem.getAssetData(data.refId);
+    this.path = this.animationItem.getPath();
     this._parent.constructor.call(this,data, comp,globalData);
-    this.globalData.addPendingElement();
+    this.animationItem.pendingElements += 1;
 }
 createElement(CVBaseElement, CVImageElement);
 
 CVImageElement.prototype.createElements = function(){
+    var self = this;
+
     var imageLoaded = function(){
-        this.globalData.elementLoaded();
-    }.bind(this);
+        self.animationItem.elementLoaded();
+    };
     var imageFailed = function(){
-        this.failed = true;
-        this.globalData.elementLoaded();
-    }.bind(this);
+        //console.log('imageFailed');
+        self.failed = true;
+        self.animationItem.elementLoaded();
+    };
 
     this.img = new Image();
     this.img.addEventListener('load', imageLoaded, false);
@@ -45,5 +49,6 @@ CVImageElement.prototype.renderFrame = function(parentMatrix){
 
 CVImageElement.prototype.destroy = function(){
     this.img = null;
+    this.animationItem = null;
     this._parent.destroy.call();
 };

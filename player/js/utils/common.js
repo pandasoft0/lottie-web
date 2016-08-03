@@ -1,4 +1,4 @@
-var subframeEnabled = true;
+var subframeEnabled = false;
 var expressionsPlugin;
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 var cachedColors = {};
@@ -10,30 +10,10 @@ var bm_abs = Math.abs;
 var bm_floor = Math.floor;
 var bm_max = Math.max;
 var bm_min = Math.min;
-
-var BMMath = {};
-(function(){
-    var propertyNames = Object.getOwnPropertyNames(Math);
-    var i, len = propertyNames.length;
-    for(i=0;i<len;i+=1){
-        BMMath[propertyNames[i]] = Math[propertyNames[i]];
-    }
-}());
-
-BMMath.random = Math.random;
-BMMath.abs = function(val){
-    var tOfVal = typeof val;
-    if(tOfVal === 'object' && val.length){
-        var absArr = Array.apply(null,{length:val.length});
-        var i, len = val.length;
-        for(i=0;i<len;i+=1){
-            absArr[i] = Math.abs(val[i]);
-        }
-        return absArr;
-    }
-    return val;
-
-}
+var BMMath = {
+    pow: bm_pow,
+    random: Math.random
+};
 var defaultCurveSegments = 75;
 var degToRads = Math.PI/180;
 var roundCorner = 0.5519;

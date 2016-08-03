@@ -191,8 +191,6 @@ var PropertyFactory = (function(){
         this.mdf = false;
         this.comp = elem.comp;
         this.k = false;
-        this.kf = false;
-        this.vel = 0;
     }
 
     function MultiDimensionalProperty(elem,data, mult){
@@ -201,13 +199,10 @@ var PropertyFactory = (function(){
         this.mdf = false;
         this.comp = elem.comp;
         this.k = false;
-        this.kf = false;
         this.frameId = -1;
         this.v = new Array(data.k.length);
         this.pv = new Array(data.k.length);
         this.lastValue = new Array(data.k.length);
-        var arr = Array.apply(null, {length:data.k.length});
-        this.vel = arr.map(function () { return 0 });
         var i, len = data.k.length;
         for(i = 0;i<len;i+=1){
             this.v[i] = mult ? data.k[i] * mult : data.k[i];
@@ -222,7 +217,6 @@ var PropertyFactory = (function(){
         this.lastPValue = -99999;
         this.frameId = -1;
         this.k = true;
-        this.kf = true;
         this.data = data;
         this.mult = mult;
         this.elem = elem;
@@ -252,7 +246,6 @@ var PropertyFactory = (function(){
         this.keyframes = data.k;
         this.offsetTime = elem.data.st;
         this.k = true;
-        this.kf = true;
         this.mult = mult;
         this.elem = elem;
         this.comp = elem.comp;
@@ -608,15 +601,11 @@ var PropertyFactory = (function(){
         var max = Math.max;
         var min = Math.min;
         var floor = Math.floor;
-        this.mdf = false;
         function updateRange(){
             if(this.dynamicProperties.length){
                 var i, len = this.dynamicProperties.length;
                 for(i=0;i<len;i+=1){
                     this.dynamicProperties[i].getValue();
-                    if(this.dynamicProperties[i].mdf){
-                        this.mdf = true;
-                    }
                 }
             }
             var totalChars = this.data.totalChars;

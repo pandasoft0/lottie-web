@@ -118,9 +118,6 @@ CVBaseElement.prototype.renderFrame = function(parentTransform){
         this.globalData.renderer.save(true);
         this.maskManager.renderFrame(this.data.ty === 0?null:finalMat);
     }
-    if(this.data.hd){
-        this.isVisible = false;
-    }
     return this.isVisible;
 
 };

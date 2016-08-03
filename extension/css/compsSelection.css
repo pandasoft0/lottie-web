@@ -40,18 +40,10 @@
     
 }
 
-#compsSelection .compsTable .th .textInput{
-    width: 100%;
-}
-
 #compsSelection .compsTable tr{
     background-color: #6E6568;
     color: #EAD3A8;
     height: 42px;
-}
-
-#compsSelection .compsTable thead tr{
-    height: 30px;
 }
 
 #compsSelection .compsTable tr.selected{
@@ -137,10 +129,8 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,.8);
-    padding: 10% 0;
-    overflow-y: auto;
+    padding-top: 10%;
 }
-
 
 #compsSelection .settingsBox{
     width: 400px;

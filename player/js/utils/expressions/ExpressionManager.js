@@ -1,6 +1,5 @@
 var ExpressionManager = (function(){
     var ob = {};
-    var Math = BMMath;
 
     function duplicatePropertyValue(value){
         if(typeof value === 'number'){
@@ -146,12 +145,7 @@ var ExpressionManager = (function(){
         return val/degToRads;
     }
 
-    var helperLengthArray = [0,0,0,0,0,0];
-
     function length(arr1,arr2){
-        if(!arr2){
-            arr2 = helperLengthArray;
-        }
         var i,len = Math.min(arr1.length,arr2.length);
         var addedLength = 0;
         for(i=0;i<len;i+=1){
@@ -447,7 +441,7 @@ var ExpressionManager = (function(){
         }.bind(this);
 
         var velocityAtTime = function velocityAtTime(t) {
-            return this.getVelocityAtTime(t);
+            return this.getVelocityAtTime(t*elem.comp.globalData.frameRate);
         }.bind(this);
 
         function effect(nm){
@@ -466,37 +460,25 @@ var ExpressionManager = (function(){
         }
 
         function nearestKey(time){
-            var i, len = data.k.length,index,keyTime;
+            var i, len = data.k.length,index;
             if(!data.k.length || typeof(data.k[0]) === 'number'){
                 index = 0;
-                keyTime = 0;
             } else {
-                index = -1;
-                time *= elem.comp.globalData.frameRate;
-                for(i=0;i<len-1;i+=1){
+                for(i=0;i<len;i+=1){
                     if(time === data.k[i].t){
                         index = i + 1;
-                        keyTime = data.k[i].t;
                         break;
-                    }else if(time>data.k[i].t && time<data.k[i+1].t){
-                        if(time-data.k[i].t > data.k[i+1].t - time){
-                            index = i + 2;
-                            keyTime = data.k[i+1].t;
-                        } else {
-                            index = i + 1;
-                            keyTime = data.k[i].t;
-                        }
+                    }else if(time<data.k[i].t){
+                        index = i + 1;
+                        break;
+                    }else if(time>data.k[i].t && i === len - 1){
+                        index = len;
                         break;
                     }
-                }
-                if(index === -1){
-                    index = i + 1;
-                    keyTime = data.k[i].t;
                 }
             }
             var ob = {};
             ob.index = index;
-            ob.time = keyTime/elem.comp.globalData.frameRate;
             return ob;
         }
 
@@ -538,7 +520,7 @@ var ExpressionManager = (function(){
             return t*fps;
         }
 
-        var time,velocity, value,textIndex,textTotal,selectorValue, index = elem.data.ind + 1;
+        var time, value,textIndex,textTotal,selectorValue, index = elem.data.ind + 1;
         var hasParent = !!(elem.hierarchy && elem.hierarchy.length);
         function execute(){
             //seedRandom(0);
@@ -570,7 +552,6 @@ var ExpressionManager = (function(){
             }
             value = this.pv;
             time = this.comp.renderedFrame/this.comp.globalData.frameRate;
-            velocity = velocityAtTime(time);
             bindedFn();
             if(typeof this.v === 'object' && isNaN(this.v[0])){
                // console.log(val);
@@ -590,7 +571,6 @@ var ExpressionManager = (function(){
                     }
                 }
             }
-
             if(typeof this.v === 'number'){
                 if(this.lastValue !== this.v){
                     this.lastValue = this.v;

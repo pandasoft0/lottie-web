@@ -271,7 +271,7 @@ HybridRenderer.prototype.destroy = function () {
     this.animationItem.wrapper.innerHTML = '';
     this.animationItem.container = null;
     this.globalData.defs = null;
-    var i, len = this.layers ? this.layers.length : 0;
+    var i, len = this.layers.length;
     for (i = 0; i < len; i++) {
         this.elements[i].destroy();
     }

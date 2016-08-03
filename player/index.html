@@ -9,9 +9,9 @@
             overflow: hidden;
         }
         #bodymovin{
-            background-color:#000;
-            width:900px;
-            height:500px;
+            background-color:#999;
+            width:600px;
+            height:338px;
             /*width:800px;
             height:500px;*/
             display:block;
@@ -57,6 +57,7 @@
     <script src="js/utils/shapes/ShapeProperty.js"></script>
     <script src="js/utils/shapes/ShapeModifiers.js"></script>
     <script src="js/utils/shapes/TrimModifier.js"></script>
+    <script src="js/utils/shapes/MouseModifier.js"></script>
     <script src="js/utils/shapes/RoundCornersModifier.js"></script>
     <script src="js/renderers/SVGRenderer.js"></script>
     <script src="js/renderers/CanvasRenderer.js"></script>
@@ -99,7 +100,7 @@
     <!-- end Expressions -->
     <!-- endbuild -->
     <script src="js/module.js"></script>
-    <!-- <script src="bodymovin.js"></script> -->
+    <!-- <script src="bodymovin.js"></script>
     <!-- <script src="bodymovin_light.js"></script> -->
 </head>
 <body>
@@ -107,21 +108,27 @@
 
 <script>
 
+    var bmContainer = document.getElementById('bodymovin');
+
     var count = 0;
     var animData = {
-        container: document.getElementById('bodymovin'),
+        container: bmContainer,
         renderer: 'svg',
-        loop: false,
+        loop: true,
         autoplay: true,
         autoloadSegments: true,
         //animationData: anim2
-        path: 'exports/render/data.json'
+        path: 'exports/render/bicho.json'
     };
 
     var anim;
 
     anim = bodymovin.loadAnimation(animData);
-
+    bmContainer.addEventListener('mousemove',function(ev){
+        //offsetX,offsetY
+        anim.renderer.globalData.mouseX = ev.layerX;
+        anim.renderer.globalData.mouseY = ev.layerY;
+    })
 
 
 </script>
