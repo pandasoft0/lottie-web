@@ -61,7 +61,6 @@ function dataFunctionManager(){
     function completeShapes(arr){
         var i, len = arr.length;
         var j, jLen;
-        var hasPaths = false;
         for(i=len-1;i>=0;i-=1){
             if(arr[i].ty == 'sh'){
                 if(arr[i].ks.k.i){
@@ -77,22 +76,9 @@ function dataFunctionManager(){
                         }
                     }
                 }
-                hasPaths = true;
             }else if(arr[i].ty == 'gr'){
                 completeShapes(arr[i].it);
             }
-        }
-        if(hasPaths){
-            //mx: distance
-            //ss: sensitivity
-            //dc: decay
-            arr.push({
-                "ty": "ms",
-                "mx":20,
-                "ss":10,
-                 "dc":0.001,
-                "maxDist":200
-            });
         }
     }
 

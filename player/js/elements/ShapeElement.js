@@ -29,9 +29,11 @@ IShapeElement.prototype.createElements = function(){
     //TODO check if I can use symbol so i can set its viewBox
     this._parent.createElements.call(this);
     this.searchShapes(this.shapesData,this.viewData,this.dynamicProperties);
-    this.layerElement.appendChild(this.shapesContainer);
-    styleUnselectableDiv(this.layerElement);
-    styleUnselectableDiv(this.shapesContainer);
+    if(!this.data.hd){
+        this.layerElement.appendChild(this.shapesContainer);
+        styleUnselectableDiv(this.layerElement);
+        styleUnselectableDiv(this.shapesContainer);
+    }
     //this.elemInterface.registerShapeExpressionInterface(ShapeExpressionInterface.createShapeInterface(this.shapesData,this.viewData,this.elemInterface));
 };
 
@@ -165,7 +167,7 @@ IShapeElement.prototype.searchShapes = function(arr,data,dynamicProperties){
             }
             data[i].st = hasStrokes;
             data[i].fl = hasFills;
-        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd' || arr[i].ty == 'ms'){
+        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd'){
             var modifier = ShapeModifiers.getModifier(arr[i].ty);
             modifier.init(this,arr[i],dynamicProperties);
             this.shapeModifiers.push(modifier);
@@ -213,7 +215,6 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
         this.hide();
         return;
     }
-    this.globalToLocal([0,0,0]);
 
     this.hidden = false;
     if(this.finalTransform.matMdf && !this.data.hasMask){
@@ -325,13 +326,7 @@ IShapeElement.prototype.renderPath = function(pathData,viewData,groupTransform){
             var pathNodes = paths[j];
             if(pathNodes && pathNodes.v){
                 len = pathNodes.v.length;
-                /*drawPoint(pathNodes.v[0]);
-                drawPoint(pathNodes.i[0]);
-                drawPoint(pathNodes.o[0]);*/
                 for (i = 1; i < len; i += 1) {
-                    /*drawPoint(pathNodes.v[i]);
-                    drawPoint(pathNodes.i[i]);
-                    drawPoint(pathNodes.o[i]);*/
                     if (i == 1) {
                         pathStringTransformed += " M" + groupTransform.mat.applyToPointStringified(pathNodes.v[0][0], pathNodes.v[0][1]);
                     }
