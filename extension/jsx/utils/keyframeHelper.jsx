@@ -192,11 +192,7 @@ var bm_keyframeHelper = (function () {
                     }
                     averageSpeed = [];
                     for (i = 0; i < len; i += 1) {
-                        if(property.propertyValueType === PropertyValueType.COLOR){
-                            averageSpeed[i] =  255*(key.value[i] - lastKey.value[i]) / duration;
-                        } else {
-                            averageSpeed[i] =  (key.value[i] - lastKey.value[i]) / duration;
-                        }
+                        averageSpeed[i] =  (key.value[i] - lastKey.value[i]) / duration;
                     }
                     break;
                 }
@@ -280,11 +276,11 @@ var bm_keyframeHelper = (function () {
                 var value = getPropertyValue(property.keyValue(j), true);
                 if (!(value instanceof Array)) {
                     value = [value];
+                } else {
+                    value = keyframeValues[j-1];
                 }
-            } else {
-                value = keyframeValues[j-1];
+                beziersArray[beziersArray.length - 1].s = value;
             }
-            beziersArray[beziersArray.length - 1].s = value;
             beziersArray[beziersArray.length - 1].h = 1;
         }
         return beziersArray;
