@@ -77,7 +77,7 @@ var compSelectionController = (function () {
         }
         
         function showElemSetings() {
-            settingsManager.show(comp.settings, saveSettings, compositions);
+            settingsManager.show(comp.settings, saveSettings);
         }
         
         function overElemSetings() {
