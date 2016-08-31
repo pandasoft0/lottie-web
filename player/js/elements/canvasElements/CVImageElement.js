@@ -1,5 +1,6 @@
 function CVImageElement(data, comp,globalData){
     this.assetData = globalData.getAssetData(data.refId);
+    this.path = globalData.getPath();
     this._parent.constructor.call(this,data, comp,globalData);
     this.globalData.addPendingElement();
 }
@@ -17,8 +18,7 @@ CVImageElement.prototype.createElements = function(){
     this.img = new Image();
     this.img.addEventListener('load', imageLoaded, false);
     this.img.addEventListener('error', imageFailed, false);
-    var assetPath = this.globalData.getAssetsPath(this.assetData);
-    this.img.src = assetPath;
+    this.img.src = this.path+this.assetData.p;
 
     this._parent.createElements.call(this);
 

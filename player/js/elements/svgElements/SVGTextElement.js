@@ -14,26 +14,32 @@ SVGTextElement.prototype.createElements = function(){
     this._parent.createElements.call(this);
     var documentData = this.data.t.d;
 
+    this.innerElem = document.createElementNS(svgNS,'g');
     if(documentData.fc) {
-        this.layerElement.setAttribute('fill', 'rgb(' + Math.round(documentData.fc[0]*255) + ',' + Math.round(documentData.fc[1]*255) + ',' + Math.round(documentData.fc[2]*255) + ')');
+        this.innerElem.setAttribute('fill', 'rgb(' + Math.round(documentData.fc[0]*255) + ',' + Math.round(documentData.fc[1]*255) + ',' + Math.round(documentData.fc[2]*255) + ')');
     }else{
-        this.layerElement.setAttribute('fill', 'rgba(0,0,0,0)');
+        this.innerElem.setAttribute('fill', 'rgba(0,0,0,0)');
     }
     if(documentData.sc){
-        this.layerElement.setAttribute('stroke', 'rgb(' + Math.round(documentData.sc[0]*255) + ',' + Math.round(documentData.sc[1]*255) + ',' + Math.round(documentData.sc[2]*255) + ')');
-        this.layerElement.setAttribute('stroke-width', documentData.sw);
+        this.innerElem.setAttribute('stroke', 'rgb(' + Math.round(documentData.sc[0]*255) + ',' + Math.round(documentData.sc[1]*255) + ',' + Math.round(documentData.sc[2]*255) + ')');
+        this.innerElem.setAttribute('stroke-width', documentData.sw);
     }
-    this.layerElement.setAttribute('font-size', documentData.s);
+    this.innerElem.setAttribute('font-size', documentData.s);
     var fontData = this.globalData.fontManager.getFontByName(documentData.f);
     if(fontData.fClass){
-        this.layerElement.setAttribute('class',fontData.fClass);
+        this.innerElem.setAttribute('class',fontData.fClass);
     } else {
-        this.layerElement.setAttribute('font-family', fontData.fFamily);
+        this.innerElem.setAttribute('font-family', fontData.fFamily);
         var fWeight = documentData.fWeight, fStyle = documentData.fStyle;
-        this.layerElement.setAttribute('font-style', fStyle);
-        this.layerElement.setAttribute('font-weight', fWeight);
+        this.innerElem.setAttribute('font-style', fStyle);
+        this.innerElem.setAttribute('font-weight', fWeight);
     }
     var i, len;
+    if(this.layerElement === this.parentContainer){
+        this.appendNodeToParent(this.innerElem);
+    }else{
+        this.layerElement.appendChild(this.innerElem);
+    }
 
 
 
@@ -104,12 +110,12 @@ SVGTextElement.prototype.createElements = function(){
                 }
             }
             if(!singleShape){
-                this.layerElement.appendChild(tSpan);
+                this.innerElem.appendChild(tSpan);
             }
         }else{
             tSpan.textContent = letters[i].val;
             tSpan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space","preserve");
-            this.layerElement.appendChild(tSpan);
+            this.innerElem.appendChild(tSpan);
             if(singleShape){
                 tSpan.setAttribute('transform',matrixHelper.to2dCSS());
             }
@@ -121,20 +127,20 @@ SVGTextElement.prototype.createElements = function(){
         this.textSpans.push(tSpan);
     }
     if(this.data.ln){
-        this.layerElement.setAttribute('id',this.data.ln);
+        this.innerElem.setAttribute('id',this.data.ln);
     }
     if(this.data.cl){
-        this.layerElement.setAttribute('class',this.data.cl);
+        this.innerElem.setAttribute('class',this.data.cl);
     }
     if(singleShape && this.globalData.fontManager.chars){
         tSpan.setAttribute('d',shapeStr);
-        this.layerElement.appendChild(tSpan);
+        this.innerElem.appendChild(tSpan);
     }
 };
 
 SVGTextElement.prototype.hide = function(){
     if(!this.hidden){
-        this.layerElement.style.display = 'none';
+        this.innerElem.style.display = 'none';
         this.hidden = true;
     }
 };
@@ -148,7 +154,15 @@ SVGTextElement.prototype.renderFrame = function(parentMatrix){
     }
     if(this.hidden){
         this.hidden = false;
-        this.layerElement.style.display = 'block';
+        this.innerElem.style.display = 'block';
+    }
+    if(!this.data.hasMask){
+        if(this.finalTransform.matMdf){
+            this.innerElem.setAttribute('transform',this.finalTransform.mat.to2dCSS());
+        }
+        if(this.finalTransform.opMdf){
+            this.innerElem.setAttribute('opacity',this.finalTransform.opacity);
+        }
     }
 
     if(this.data.singleShape){
@@ -191,4 +205,5 @@ SVGTextElement.prototype.renderFrame = function(parentMatrix){
 
 SVGTextElement.prototype.destroy = function(){
     this._parent.destroy.call();
+    this.innerElem =  null;
 };

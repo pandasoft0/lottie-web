@@ -13,28 +13,28 @@ var ShapePropertyFactory = (function(){
                 isHold = true;
             }else if(frameNum > this.keyframes[this.keyframes.length - 1].t-this.offsetTime){
                 if(this.keyframes[this.keyframes.length - 2].h === 1){
-                    //keyPropS = this.keyframes[this.keyframes.length - 1].s ? this.keyframes[this.keyframes.length - 1].s[0] : this.keyframes[this.keyframes.length - 2].s[0];
-                    keyPropS = this.keyframes[this.keyframes.length - 1].s[0];
+                    keyPropS = this.keyframes[this.keyframes.length - 2].s[0];
                 }else{
                     keyPropS = this.keyframes[this.keyframes.length - 2].e[0];
                 }
                 isHold = true;
             }else{
-                var i = 0,len = this.keyframes.length- 1,flag = true,keyData,nextKeyData, j, jLen, k, kLen;
+                var i = 0,len = this.keyframes.length- 1, dir = 1,flag = true,keyData,nextKeyData, j, jLen, k, kLen;
+
                 while(flag){
                     keyData = this.keyframes[i];
                     nextKeyData = this.keyframes[i+1];
-                    if((nextKeyData.t - this.offsetTime) > frameNum){
+                    if((nextKeyData.t - this.offsetTime) > frameNum && dir == 1){
                         break;
                     }
-                    if(i < len - 1){
-                        i += 1;
+                    if(i < len - 1 && dir == 1 || i > 0 && dir == -1){
+                        i += dir;
                     }else{
                         flag = false;
                     }
                 }
                 isHold = keyData.h === 1;
-                if(isHold && i === len){
+                if(isHold && i === len - 1){
                     keyData = nextKeyData;
                 }
 
@@ -60,11 +60,27 @@ var ShapePropertyFactory = (function(){
                 keyPropS = keyData.s[0];
             }
 
+            if(this.v.i.length !== keyPropS.i.length){
+                this.v.i.length = keyPropS.i.length;
+                this.v.o.length = keyPropS.o.length;
+                this.v.v.length = keyPropS.v.length;
+                this.pv.i.length = keyPropS.i.length;
+                this.pv.o.length = keyPropS.o.length;
+                this.pv.v.length = keyPropS.v.length;
+            }
             jLen = this.v.i.length;
             kLen = keyPropS.i[0].length;
             var hasModified = false;
             var vertexValue;
             for(j=0;j<jLen;j+=1){
+                if(!this.v.i[j]){
+                    this.v.i[j] = Array.apply(null,{length:kLen});
+                    this.v.o[j] = Array.apply(null,{length:kLen});
+                    this.v.v[j] = Array.apply(null,{length:kLen});
+                    this.pv.i[j] = Array.apply(null,{length:kLen});
+                    this.pv.o[j] = Array.apply(null,{length:kLen});
+                    this.pv.v[j] = Array.apply(null,{length:kLen});
+                }
                 for(k=0;k<kLen;k+=1){
                     if(isHold){
                         vertexValue = keyPropS.i[j][k];

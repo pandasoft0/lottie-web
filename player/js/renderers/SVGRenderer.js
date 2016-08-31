@@ -135,7 +135,7 @@ SVGRenderer.prototype.configAnimation = function(animData){
     this.globalData.defs = defs;
     this.animationItem.container.appendChild(defs);
     this.globalData.getAssetData = this.animationItem.getAssetData.bind(this.animationItem);
-    this.globalData.getAssetsPath = this.animationItem.getAssetsPath.bind(this.animationItem);
+    this.globalData.getPath = this.animationItem.getPath.bind(this.animationItem);
     this.globalData.elementLoaded = this.animationItem.elementLoaded.bind(this.animationItem);
     this.globalData.frameId = 0;
     this.globalData.compSize = {
@@ -222,6 +222,7 @@ SVGRenderer.prototype.renderFrame = function(num){
     }else{
         this.renderedFrame = num;
     }
+    //clearPoints();
     /*console.log('-------');
     console.log('FRAME ',num);*/
     this.globalData.frameNum = num;
@@ -241,9 +242,4 @@ SVGRenderer.prototype.hide = function(){
 
 SVGRenderer.prototype.show = function(){
     this.animationItem.container.style.display = 'block';
-};
-
-SVGRenderer.prototype.setProjectInterface = function(pInterface){
-    console.log('setProjectInterfacesetProjectInterface');
-    this.globalData.projectInterface = pInterface;
 };

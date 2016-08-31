@@ -51,7 +51,11 @@ ICompElement.prototype.renderFrame = function(parentMatrix){
 
     this.hidden = false;
     for( i = 0; i < len; i+=1 ){
-        this.elements[i].renderFrame();
+        if(this.data.hasMask){
+            this.elements[i].renderFrame();
+        }else{
+            this.elements[i].renderFrame(this.finalTransform);
+        }
     }
     if(this.firstFrame){
         this.firstFrame = false;

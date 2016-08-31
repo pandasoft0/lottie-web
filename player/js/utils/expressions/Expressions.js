@@ -25,7 +25,6 @@ var Expressions = (function(){
 
     function initExpressions(animation){
         animation.renderer.compInterface = CompExpressionInterface(animation.renderer);
-        animation.renderer.globalData.projectInterface.registerComposition(animation.renderer.compInterface);
         addLayersInterface(animation.renderer.elements);
     }
 

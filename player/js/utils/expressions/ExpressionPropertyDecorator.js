@@ -201,7 +201,6 @@
         return function TextExpressionSelectorProp(elem,data){
             this.pv = 1;
             this.comp = elem.comp;
-            this.elem = elem;
             this.mult = .01;
             this.type = 'textSelector';
             this.textTotal = data.totalChars;
@@ -209,13 +208,6 @@
             this.lastValue = [1,1,1];
             searchExpressions.bind(this)(elem,data,this);
             this.getMult = getValueProxy;
-            this.getVelocityAtTime = getVelocityAtTime;
-            if(this.kf){
-                this.getValueAtTime = getValueAtTime;
-            } else {
-                this.getValueAtTime = getStaticValueAtTime;
-            }
-            this.setGroupProperty = setGroupProperty;
         }
     }());
 

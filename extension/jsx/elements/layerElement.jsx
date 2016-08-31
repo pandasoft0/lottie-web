@@ -109,12 +109,8 @@ var bm_layerElement = (function () {
     function prepareLayer(layerInfo, ind) {
         var layerData = {};
         var layerType = getLayerType(layerInfo);
-        if (layerType === ob.layerTypes.audio || layerType === ob.layerTypes.light || layerType === ob.layerTypes.adjustment || layerType === ob.layerTypes.pholderStill || layerType === ob.layerTypes.pholderVideo) {
+        if (layerType === ob.layerTypes.audio || layerType === ob.layerTypes.light || layerType === ob.layerTypes.adjustment || layerType === ob.layerTypes.pholderStill || layerType === ob.layerTypes.pholderVideo || layerType === ob.layerTypes.guide) {
             layerData.isValid = false;
-            layerData.render = false;
-        }
-        if (layerType === ob.layerTypes.guide) {
-            layerData.isGuide = true;
             layerData.render = false;
         }
         if (layerInfo.enabled === false) {
