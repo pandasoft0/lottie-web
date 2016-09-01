@@ -1,8 +1,3 @@
-## V 4.4.8
-- animation new method "setSubframe" to enable subframe rendering (true by default).
-- hidden guided layers and parenting restore
-- split animations export resetting segments
-
 ## V 4.4.7
 - Performance improvement
 - Stroke gradient support

@@ -450,8 +450,6 @@ var ExpressionManager = (function(){
             return this.getVelocityAtTime(t);
         }.bind(this);
 
-        var comp = elem.comp.globalData.projectInterface.bind(elem.comp.globalData.projectInterface);
-
         function effect(nm){
             return elem.effectsManager(nm);
         }
