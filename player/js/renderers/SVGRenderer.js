@@ -222,7 +222,6 @@ SVGRenderer.prototype.renderFrame = function(num){
     }else{
         this.renderedFrame = num;
     }
-    //clearPoints();
     /*console.log('-------');
     console.log('FRAME ',num);*/
     this.globalData.frameNum = num;
@@ -242,4 +241,24 @@ SVGRenderer.prototype.hide = function(){
 
 SVGRenderer.prototype.show = function(){
     this.animationItem.container.style.display = 'block';
+};
+
+SVGRenderer.prototype.setProjectInterface = function(pInterface){
+    this.globalData.projectInterface = pInterface;
+};
+
+SVGRenderer.prototype.searchExtraCompositions = function(assets){
+    var i, len = assets.length;
+    var floatingContainer = document.createElementNS(svgNS,'g');
+    for(i=0;i<len;i+=1){
+        if(assets[i].xt){
+            var comp = this.createComp(assets[i],floatingContainer,this.globalData.comp,null);
+            var elems = [];
+            this.buildItems(assets[i].layers,comp.getDomElement(),elems,comp, comp.placeholder);
+            comp.setElements(elems);
+            comp.compInterface = CompExpressionInterface(comp);
+            Expressions.addLayersInterface(comp.elements, this.globalData.projectInterface);
+            this.globalData.projectInterface.registerComposition(comp);
+        }
+    }
 };

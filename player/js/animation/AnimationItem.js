@@ -28,6 +28,7 @@ var AnimationItem = function () {
     this.subframeEnabled = subframeEnabled;
     this.segments = [];
     this.pendingSegment = false;
+    this.projectInterface = ProjectInterface();
 };
 
 AnimationItem.prototype.setParams = function(params) {
@@ -52,6 +53,7 @@ AnimationItem.prototype.setParams = function(params) {
             this.renderer = new HybridRenderer(this, params.rendererSettings);
             break;
     }
+    this.renderer.setProjectInterface(this.projectInterface);
     this.animType = animType;
 
     if(params.loop === '' || params.loop === null){
@@ -226,6 +228,7 @@ AnimationItem.prototype.configAnimation = function (animData) {
         animData.assets = animData.assets.concat(animData.comps);
         animData.comps = null;
     }
+    this.renderer.searchExtraCompositions(animData.assets);
 
     this.layers = this.animationData.layers;
     this.assets = this.animationData.assets;
