@@ -25,8 +25,10 @@ var AnimationItem = function () {
     this.assetsPath = '';
     this.timeCompleted = 0;
     this.segmentPos = 0;
+    this.subframeEnabled = subframeEnabled;
     this.segments = [];
     this.pendingSegment = false;
+    this.projectInterface = ProjectInterface();
 };
 
 AnimationItem.prototype.setParams = function(params) {
@@ -51,6 +53,7 @@ AnimationItem.prototype.setParams = function(params) {
             this.renderer = new HybridRenderer(this, params.rendererSettings);
             break;
     }
+    this.renderer.setProjectInterface(this.projectInterface);
     this.animType = animType;
 
     if(params.loop === '' || params.loop === null){
@@ -224,6 +227,7 @@ AnimationItem.prototype.configAnimation = function (animData) {
         animData.assets = animData.assets.concat(animData.comps);
         animData.comps = null;
     }
+    this.renderer.searchExtraCompositions(animData.assets);
 
     this.layers = this.animationData.layers;
     this.assets = this.animationData.assets;
@@ -249,7 +253,7 @@ AnimationItem.prototype.waitForFontsLoaded = (function(){
     function checkFontsLoaded(){
         if(this.renderer.globalData.fontManager.loaded){
             dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
-            this.renderer.buildItems(this.animationData.layers);
+            //this.renderer.buildItems(this.animationData.layers);
             this.checkLoaded();
         }else{
             setTimeout(checkFontsLoaded.bind(this),20);
@@ -275,6 +279,7 @@ AnimationItem.prototype.checkLoaded = function () {
         if(expressionsPlugin){
             expressionsPlugin.initExpressions(this);
         }
+        this.renderer.initItems();
         this.trigger('DOMLoaded');
         this.isLoaded = true;
         this.gotoFrame();
@@ -288,8 +293,12 @@ AnimationItem.prototype.resize = function () {
     this.renderer.updateContainerSize();
 };
 
+AnimationItem.prototype.setSubframe = function(flag){
+    this.subframeEnabled = flag ? true : false;
+}
+
 AnimationItem.prototype.gotoFrame = function () {
-    if(subframeEnabled){
+    if(this.subframeEnabled){
         this.currentFrame = this.currentRawFrame;
     }else{
         this.currentFrame = Math.floor(this.currentRawFrame);
