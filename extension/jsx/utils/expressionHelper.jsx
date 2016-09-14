@@ -213,12 +213,11 @@ var bm_expressionHelper = (function () {
                 return element;
             case "BinaryExpression":
                 return convertBinaryExpression(element);
-            case "UnaryExpression":
-                return convertUnaryExpression(element);
             case "MemberExpression":
                 handleMemberExpression(element);
                 return element;
             case "UpdateExpression":
+            case "UnaryExpression":
                 return element;
             default:
                 //bm_eventDispatcher.log('es: ', element);
@@ -272,28 +271,9 @@ var bm_expressionHelper = (function () {
         return callStatementOb;
     }
 
-    function convertUnaryExpression(expression){
-        if(expression.operator === '-' && expression.argument.type !== 'Literal'){
-            var callStatementOb = {
-                'arguments': [
-                    getBinaryElement(expression.argument)
-                ],
-                type: "CallExpression",
-                callee: {
-                    name: '$bm_neg',
-                    type: 'Identifier'
-                }
-            };
-            return callStatementOb;
-        }
-        return expression;
-    }
-
     function handleMemberExpression(expression) {
         if (expression.property.type === 'BinaryExpression') {
             expression.property = convertBinaryExpression(expression.property);
-        } else if (expression.property.type === 'UnaryExpression') {
-            expression.property = convertUnaryExpression(expression.property);
         } else if (expression.property.type === 'CallExpression') {
             handleCallExpression(expression.property);
         }
@@ -305,8 +285,6 @@ var bm_expressionHelper = (function () {
         for (i = 0; i < len; i += 1) {
             if (args[i].type === 'BinaryExpression') {
                 args[i] = convertBinaryExpression(args[i]);
-            } else if (args[i].type === 'UnaryExpression') {
-                args[i] = convertUnaryExpression(args[i]);
             }
         }
     }
@@ -386,8 +364,6 @@ var bm_expressionHelper = (function () {
             if (declarations[i].init) {
                 if (declarations[i].init.type === 'BinaryExpression') {
                     declarations[i].init = convertBinaryExpression(declarations[i].init);
-                } else if (declarations[i].init.type === 'UnaryExpression') {
-                    declarations[i].init = convertUnaryExpression(declarations[i].init);
                 } else if (declarations[i].init.type === 'CallExpression') {
                     handleCallExpression(declarations[i].init);
                 }
@@ -399,8 +375,6 @@ var bm_expressionHelper = (function () {
         if(assignmentExpression.right){
             if(assignmentExpression.right.type === 'BinaryExpression') {
                 assignmentExpression.right = convertBinaryExpression(assignmentExpression.right);
-            } else if (assignmentExpression.right.type === 'UnaryExpression') {
-                assignmentExpression.right = convertUnaryExpression(assignmentExpression.right);
             } else if (assignmentExpression.right.type === 'CallExpression') {
                 handleCallExpression(assignmentExpression.right);
             }
@@ -412,8 +386,6 @@ var bm_expressionHelper = (function () {
             handleCallExpression(expressionStatement.expression);
         } else if (expressionStatement.expression.type === 'BinaryExpression') {
             expressionStatement.expression = convertBinaryExpression(expressionStatement.expression);
-        } else if (expressionStatement.expression.type === 'UnaryExpression') {
-            expressionStatement.expression = convertUnaryExpression(expressionStatement.expression);
         } else if (expressionStatement.expression.type === 'AssignmentExpression') {
             handleAssignmentExpression(expressionStatement.expression);
         }
@@ -481,10 +453,6 @@ var bm_expressionHelper = (function () {
             assignmentObject = createAssignmentObject();
             assignmentObject.expression.right = expressionStatement.expression;
             return assignmentObject;
-        } else if(expressionStatement.expression.type === 'AssignmentExpression'){
-            assignmentObject = createAssignmentObject();
-            assignmentObject.expression.right = expressionStatement.expression;
-            return assignmentObject;
         }
         return expressionStatement;
     }
@@ -548,6 +516,7 @@ var bm_expressionHelper = (function () {
 
     function checkExpression(prop, returnOb) {
         if (prop.expressionEnabled && !prop.expressionError) {
+            //([.'"])name([\s'"]) replace .name
             pendingBodies.length = 0;
             doneBodies.length = 0;
             expressionStr = prop.expression;
@@ -569,7 +538,7 @@ var bm_expressionHelper = (function () {
     }
     
     function renameNameProperty(str){
-        var regName = /([.'"])name([\s'";.\)\]])/g;
+        var regName = /([.'"])name([\s'";.])/g;
         return str.replace(regName,'$1_name$2');
     }
     

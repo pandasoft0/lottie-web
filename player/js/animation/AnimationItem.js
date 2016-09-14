@@ -28,7 +28,6 @@ var AnimationItem = function () {
     this.subframeEnabled = subframeEnabled;
     this.segments = [];
     this.pendingSegment = false;
-    this.projectInterface = ProjectInterface();
 };
 
 AnimationItem.prototype.setParams = function(params) {
@@ -53,7 +52,6 @@ AnimationItem.prototype.setParams = function(params) {
             this.renderer = new HybridRenderer(this, params.rendererSettings);
             break;
     }
-    this.renderer.setProjectInterface(this.projectInterface);
     this.animType = animType;
 
     if(params.loop === '' || params.loop === null){
@@ -170,6 +168,7 @@ AnimationItem.prototype.includeLayers = function(data) {
     //this.animationData.tf = 50;
     dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
     this.renderer.includeLayers(data.layers);
+    this.renderer.buildStage(this.container, this.layers);
     if(expressionsPlugin){
         expressionsPlugin.initExpressions(this);
     }
@@ -227,7 +226,6 @@ AnimationItem.prototype.configAnimation = function (animData) {
         animData.assets = animData.assets.concat(animData.comps);
         animData.comps = null;
     }
-    this.renderer.searchExtraCompositions(animData.assets);
 
     this.layers = this.animationData.layers;
     this.assets = this.animationData.assets;
@@ -235,10 +233,6 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.firstFrame = Math.round(this.animationData.ip);
     this.frameMult = this.animationData.fr / 1000;
     this.trigger('config_ready');
-    this.imagePreloader = new ImagePreloader();
-    this.imagePreloader.setAssetsPath(this.assetsPath);
-    this.imagePreloader.setPath(this.path);
-    this.imagePreloader.loadAssets(animData.assets);
     this.loadSegments();
     this.updaFrameModifier();
     if(this.renderer.globalData.fontManager){
@@ -253,7 +247,7 @@ AnimationItem.prototype.waitForFontsLoaded = (function(){
     function checkFontsLoaded(){
         if(this.renderer.globalData.fontManager.loaded){
             dataManager.completeData(this.animationData,this.renderer.globalData.fontManager);
-            //this.renderer.buildItems(this.animationData.layers);
+            this.renderer.buildItems(this.animationData.layers);
             this.checkLoaded();
         }else{
             setTimeout(checkFontsLoaded.bind(this),20);
@@ -276,10 +270,10 @@ AnimationItem.prototype.elementLoaded = function () {
 
 AnimationItem.prototype.checkLoaded = function () {
     if (this.pendingElements === 0) {
+        this.renderer.buildStage(this.container, this.layers);
         if(expressionsPlugin){
             expressionsPlugin.initExpressions(this);
         }
-        this.renderer.initItems();
         this.trigger('DOMLoaded');
         this.isLoaded = true;
         this.gotoFrame();

@@ -9,11 +9,11 @@
             overflow-x: hidden;
             overflow-y: auto;
         }
-
-        #bodymovin{
+        #bodymovin,#bodymovin2{
             background-color:#333;
-            width:1000px;
+            width:1500px;
             height:700px;
+
             /*width:800px;
             height:500px;*/
             display:block;
@@ -60,8 +60,6 @@
     <script src="js/utils/shapes/ShapeModifiers.js"></script>
     <script src="js/utils/shapes/TrimModifier.js"></script>
     <script src="js/utils/shapes/RoundCornersModifier.js"></script>
-    <script src="js/utils/imagePreloader.js"></script>
-    <script src="js/renderers/BaseRenderer.js"></script>
     <script src="js/renderers/SVGRenderer.js"></script>
     <script src="js/renderers/CanvasRenderer.js"></script>
     <script src="js/renderers/HybridRenderer.js"></script>
@@ -70,6 +68,7 @@
     <script src="js/elements/svgElements/SVGBaseElement.js"></script>
     <script src="js/elements/TextElement.js"></script>
     <script src="js/elements/svgElements/SVGTextElement.js"></script>
+    <script src="js/elements/PlaceHolderElement.js"></script>
     <script src="js/elements/CompElement.js"></script>
     <script src="js/elements/ImageElement.js"></script>
     <script src="js/elements/ShapeElement.js"></script>
@@ -97,7 +96,6 @@
     <script src="js/utils/expressions/ShapeInterface.js"></script>
     <script src="js/utils/expressions/LayerInterface.js"></script>
     <script src="js/utils/expressions/CompInterface.js"></script>
-    <script src="js/utils/expressions/ProjectInterface.js"></script>
     <script src="js/effects/SliderEffect.js"></script>
     <script src="js/effects.js"></script>
     <!-- end Expressions -->
@@ -114,16 +112,12 @@
     var anim;
     var animData = {
         container: document.getElementById('bodymovin'),
-        renderer: 'canvas',
+        renderer: 'svg',
         loop: true,
         autoplay: true,
         autoloadSegments: true,
-        rendererSettings:{
-            progressiveLoad: true,
-            clearCanvas:false,
-        },
         //animationData: anim2
-        path: 'exports/render/data.json'
+        path: 'exports/bm/data.json'
     };
     anim = bodymovin.loadAnimation(animData);
 

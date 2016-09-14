@@ -13,7 +13,11 @@ ISolidElement.prototype.createElements = function(){
     rect.setAttribute('width',this.data.sw);
     rect.setAttribute('height',this.data.sh);
     rect.setAttribute('fill',this.data.sc);
-    this.layerElement.appendChild(rect);
+    if(this.layerElement === this.parentContainer){
+        this.appendNodeToParent(rect);
+    }else{
+        this.layerElement.appendChild(rect);
+    }
     this.innerElem = rect;
     if(this.data.ln){
         this.innerElem.setAttribute('id',this.data.ln);
