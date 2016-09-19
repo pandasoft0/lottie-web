@@ -9,11 +9,11 @@
             overflow-x: hidden;
             overflow-y: auto;
         }
-        #bodymovin,#bodymovin2{
-            background-color:#333;
-            width:1500px;
-            height:700px;
 
+        #bodymovin{
+            background-color:#333;
+            width:1200px;
+            height:900px;
             /*width:800px;
             height:500px;*/
             display:block;
@@ -23,23 +23,8 @@
             opacity: 1;
         }
 
-        rect{
-           /* opacity: .5!important;*/
-        }
-
-        svg{
-            /*border: 1px solid red;*/
-        }
-
-         .rbt-black{
-            font-weight: 900;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .strokeClase1, .fillClase1{
-            fill: red;
-            stroke:aquamarine;
-            stroke-opacity: 0;
+        .botas_loop_1,.botas_loop_2{
+            display:none
         }
 
     </style>
@@ -60,6 +45,8 @@
     <script src="js/utils/shapes/ShapeModifiers.js"></script>
     <script src="js/utils/shapes/TrimModifier.js"></script>
     <script src="js/utils/shapes/RoundCornersModifier.js"></script>
+    <script src="js/utils/imagePreloader.js"></script>
+    <script src="js/renderers/BaseRenderer.js"></script>
     <script src="js/renderers/SVGRenderer.js"></script>
     <script src="js/renderers/CanvasRenderer.js"></script>
     <script src="js/renderers/HybridRenderer.js"></script>
@@ -68,7 +55,6 @@
     <script src="js/elements/svgElements/SVGBaseElement.js"></script>
     <script src="js/elements/TextElement.js"></script>
     <script src="js/elements/svgElements/SVGTextElement.js"></script>
-    <script src="js/elements/PlaceHolderElement.js"></script>
     <script src="js/elements/CompElement.js"></script>
     <script src="js/elements/ImageElement.js"></script>
     <script src="js/elements/ShapeElement.js"></script>
@@ -96,6 +82,8 @@
     <script src="js/utils/expressions/ShapeInterface.js"></script>
     <script src="js/utils/expressions/LayerInterface.js"></script>
     <script src="js/utils/expressions/CompInterface.js"></script>
+    <script src="js/utils/expressions/TransformInterface.js"></script>
+    <script src="js/utils/expressions/ProjectInterface.js"></script>
     <script src="js/effects/SliderEffect.js"></script>
     <script src="js/effects.js"></script>
     <!-- end Expressions -->
@@ -112,12 +100,15 @@
     var anim;
     var animData = {
         container: document.getElementById('bodymovin'),
-        renderer: 'html',
-        loop: false,
+        renderer: 'svg',
+        loop: true,
         autoplay: true,
         autoloadSegments: true,
+        rendererSettings: {
+            progressiveLoad:false
+        },
         //animationData: anim2
-        path: 'exports/render/data.json'
+        path: 'exports/navidad/data.json'
     };
     anim = bodymovin.loadAnimation(animData);
 

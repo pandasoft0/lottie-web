@@ -10,6 +10,7 @@ var bm_abs = Math.abs;
 var bm_floor = Math.floor;
 var bm_max = Math.max;
 var bm_min = Math.min;
+var blitter = 10;
 
 var BMMath = {};
 (function(){

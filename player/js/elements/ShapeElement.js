@@ -219,7 +219,7 @@ IShapeElement.prototype.searchShapes = function(arr,data,container,dynamicProper
                     });
                 }
             }
-        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd'){
+        }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd' || arr[i].ty == 'ms'){
             var modifier = ShapeModifiers.getModifier(arr[i].ty);
             modifier.init(this,arr[i],dynamicProperties);
             this.shapeModifiers.push(modifier);
@@ -267,6 +267,7 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
         this.hide();
         return;
     }
+    this.globalToLocal([0,0,0]);
 
     this.hidden = false;
     this.renderModifiers();
