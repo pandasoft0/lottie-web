@@ -12,23 +12,24 @@ var bm_effectsHelper = (function () {
         group: 5,
         noValue: 6,
         dropDownControl: 7,
-        customValue: 9,
-        tint: 20,
-        fill: 21,
-        stroke: 22
+        customValue: 9
     };
     
     function getEffectType(name) {
         switch (name) {
-        case 'ADBE Tint':
-            return effectTypes.tint;
-        case 'ADBE Fill':
-            return effectTypes.fill;
-        case 'ADBE Stroke':
-            return effectTypes.stroke;
+        case 'ADBE Slider Control':
+            return effectTypes.sliderControl;
+        case 'ADBE Angle Control':
+            return effectTypes.angleControl;
+        case 'ADBE Color Control':
+            return effectTypes.colorControl;
+        case 'ADBE Point Control':
+            return effectTypes.pointControl;
+        case 'ADBE Checkbox Control':
+            return effectTypes.checkboxControl;
         default:
-            bm_eventDispatcher.log(name);
-            return effectTypes.group;
+            //bm_eventDispatcher.log(name);
+            return '';
         }
     }
     
@@ -60,7 +61,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.noValue;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = 0;
         return ob;
@@ -70,7 +70,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.sliderControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -80,7 +79,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.angleControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -90,7 +88,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.colorControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -100,7 +97,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.pointControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -110,7 +106,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.checkboxControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -120,7 +115,6 @@ var bm_effectsHelper = (function () {
         var ob = {};
         ob.ty = effectTypes.dropDownControl;
         ob.nm = effect.name;
-        ob.mn = effect.matchName;
         ob.ix = effect.propertyIndex;
         ob.v = bm_keyframeHelper.exportKeyframes(effect, frameRate);
         return ob;
@@ -156,9 +150,9 @@ var bm_effectsHelper = (function () {
         }
     }
     
-    function exportCustomEffect(elem,effectType, frameRate) {
+    function exportCustomEffect(elem, frameRate) {
         var ob = {};
-        ob.ty = effectType;
+        ob.ty = effectTypes.group;
         ob.nm = elem.name;
         ob.ix = elem.propertyIndex;
         ob.ef = [];
@@ -205,13 +199,7 @@ var bm_effectsHelper = (function () {
         var effectsArray = [];
         for (i = 0; i < len; i += 1) {
             effectElement = effects(i + 1);
-            var effectType = getEffectType(effectElement.matchName);
-            //If the effect is not a Slider Control and is not enabled, it won't be exported.
-            if(effectType !== effectTypes.group && !effects(i + 1).enabled){
-                //bm_eventDispatcher.log('PASO');
-                continue;
-            }
-            effectsArray.push(exportCustomEffect(effectElement ,effectType, frameRate));
+            effectsArray.push(exportCustomEffect(effectElement, frameRate));
             /*var effectType = getEffectType(effectElement.matchName);
             switch (effectType) {
             case effectTypes.sliderControl:

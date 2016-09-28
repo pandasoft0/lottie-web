@@ -21,9 +21,6 @@ var LayerExpressionInterface = (function (){
         function _registerMaskInterface(maskManager){
             _thisLayerFunction.mask = maskManager.getMask.bind(maskManager);
         }
-        function _registerEffectsInterface(effects){
-            _thisLayerFunction.effect = effects;
-        }
 
         function _thisLayerFunction(name){
             switch(name){
@@ -34,7 +31,7 @@ var LayerExpressionInterface = (function (){
                 case "transform":
                     return transformInterface;
                 case 4:
-                    return _thisLayerFunction.effect;
+                    return elem.effectsManager;
             }
         }
         _thisLayerFunction.toWorld = toWorld;
@@ -85,9 +82,9 @@ var LayerExpressionInterface = (function (){
             }
         });
 
+        _thisLayerFunction.effect = elem.effectsManager;
         _thisLayerFunction.active = true;
         _thisLayerFunction.registerMaskInterface = _registerMaskInterface;
-        _thisLayerFunction.registerEffectsInterface = _registerEffectsInterface;
         return _thisLayerFunction;
     }
 }());

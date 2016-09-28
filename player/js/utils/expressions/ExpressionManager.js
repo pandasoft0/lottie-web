@@ -470,6 +470,10 @@ var ExpressionManager = (function(){
 
         var comp = elem.comp.globalData.projectInterface.bind(elem.comp.globalData.projectInterface);
 
+        function effect(nm){
+            return elem.effectsManager(nm);
+        }
+
         function lookAt(elem1,elem2){
             var fVec = [elem2[0]-elem1[0],elem2[1]-elem1[1],elem2[2]-elem1[2]];
             var pitch = Math.atan2(fVec[0],Math.sqrt(fVec[1]*fVec[1]+fVec[2]*fVec[2]))/degToRads;
@@ -580,9 +584,6 @@ var ExpressionManager = (function(){
             if(elemType === 4 && !content){
                 content = thisLayer("ADBE Root Vectors Group");
             }
-            if(!effect){
-                effect = thisLayer(4);
-            }
             this.lock = true;
             if(this.getPreValue){
                 this.getPreValue();
@@ -609,9 +610,7 @@ var ExpressionManager = (function(){
                 }
             }
 
-            /*if(!this.v){
-                console.log(val);
-            }*/
+
             if(typeof this.v === 'number'){
                 if(this.lastValue !== this.v){
                     this.lastValue = this.v;
