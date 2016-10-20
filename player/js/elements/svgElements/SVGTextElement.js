@@ -138,10 +138,6 @@ SVGTextElement.prototype.hide = function(){
         this.hidden = true;
     }
 };
-SVGTextElement.prototype.prepareFrame = function(num) {
-    console.log('num', num);
-    this._parent.prepareFrame.call(this, num);
-}
 
 SVGTextElement.prototype.renderFrame = function(parentMatrix){
 
