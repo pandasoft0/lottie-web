@@ -11,7 +11,6 @@ var gzip = require('gulp-gzip');
 var concat = require('gulp-concat');
 var watch = require('gulp-watch');
 var cheerio = require('gulp-cheerio');
-var fs = require('fs');
 
 var bm_version = '4.4.15';
 
@@ -81,23 +80,6 @@ gulp.task('watch-extension', function() {
 gulp.task('copy-extension', function() {
     gulp.src(extensionSource+'/**/*')
         .pipe(gulp.dest(extensionDestination));
-});
-
-gulp.task('tmp', function() {
-    var fileContent = fs.readFileSync("./extension/jsx/initializer.jsx", "utf8");
-    var jsxBuild = '';
-    fileContent.toString().split('\n').forEach(function (line) {
-        //console.log(line);
-        var reg = /evalFile.*'(.*)'/g;
-        var executedRegex = reg.exec(line);
-        if(executedRegex){
-            var path = executedRegex[1];
-            var jsxfileContent = fs.readFileSync("./extension/jsx/"+path, "utf8");
-            jsxBuild += ';\n' +  jsxfileContent.toString();
-        }
-    });
-    jsxBuild = '(function(){\n'+jsxBuild+'\n}())';
-    return fs.writeFile('./extension/jsx/build.jsx', jsxBuild);
 });
 
 var srcs = [];
@@ -194,3 +176,4 @@ gulp.task('buildFull',['buildSources'], function() {
 
 gulp.task('buildAll',['buildLightMin','buildLight','buildFullMin','buildFull','buildFullMinZip'], function() {
 });
+
