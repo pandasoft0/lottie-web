@@ -6,13 +6,17 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var usemin = require('gulp-usemin');
 var replace = require('gulp-replace');
+var rename = require('gulp-rename');
 var wrap = require('gulp-wrap');
 var gzip = require('gulp-gzip');
 var concat = require('gulp-concat');
 var watch = require('gulp-watch');
 var cheerio = require('gulp-cheerio');
+var fs = require('fs');
+var htmlreplace = require('gulp-html-replace');
+var eventstream = require("event-stream");
 
-var bm_version = '4.4.15';
+var bm_version = '4.4.16';
 
 var files = [
     {
@@ -82,8 +86,25 @@ gulp.task('copy-extension', function() {
         .pipe(gulp.dest(extensionDestination));
 });
 
-var srcs = [];
+gulp.task('tmp', function() {
+    var fileContent = fs.readFileSync("./extension/jsx/initializer.jsx", "utf8");
+    var jsxBuild = '';
+    fileContent.toString().split('\n').forEach(function (line) {
+        //console.log(line);
+        var reg = /evalFile.*'(.*)'/g;
+        var executedRegex = reg.exec(line);
+        if(executedRegex){
+            var path = executedRegex[1];
+            var jsxfileContent = fs.readFileSync("./extension/jsx/"+path, "utf8");
+            jsxBuild += ';\n' +  jsxfileContent.toString();
+        }
+    });
+    jsxBuild = '(function(){\n'+jsxBuild+'\n}())';
+    return fs.writeFile('./extension/jsx/build.jsx', jsxBuild);
+});
 
+var srcs = [];
+var demoBuiltData = '';
 
 
 gulp.task('getBuildSources', function(cb) {
@@ -158,13 +179,13 @@ gulp.task('buildFullMin',['buildSources'], function() {
         .pipe(gulp.dest('build/player/'));
 });
 
-gulp.task('buildFullMinZip',['buildSources'], function() {
+gulp.task('createExtensionZipAsset',['buildSources'], function() {
     return gulp.src(srcs)
         .pipe(concat('bm.js'))
         .pipe(wrap(moduleWrap))
         .pipe(uglify())
         .pipe(gzip({ append: true }))
-        .pipe(gulp.dest('build/player/'));
+        .pipe(gulp.dest('extension/assets/player/'));
 });
 
 gulp.task('buildFull',['buildSources'], function() {
@@ -174,6 +195,108 @@ gulp.task('buildFull',['buildSources'], function() {
         .pipe(gulp.dest('build/player/'));
 });
 
-gulp.task('buildAll',['buildLightMin','buildLight','buildFullMin','buildFull','buildFullMinZip'], function() {
+gulp.task('createExtensionStandAlone',['buildSources'], function() {
+    return gulp.src(srcs)
+        .pipe(concat('standalone.js'))
+        .pipe(wrap(moduleWrap))
+        .pipe(uglify())
+        .pipe(gulp.dest('extension/assets/player/'));
 });
 
+gulp.task('createExtensionAsset',['buildSources'], function() {
+    return gulp.src(srcs)
+        .pipe(concat('bm.js'))
+        .pipe(wrap(moduleWrap))
+        .pipe(uglify())
+        .pipe(gulp.dest('extension/assets/player/'));
+});
+
+gulp.task('buildDemoData',['buildSources'], function() {
+
+    function saveToVar() {
+        // you're going to receive Vinyl files as chunks
+        function transform(file, cb) {
+            // read and modify file contents
+            demoBuiltData = String(file.contents);
+
+            cb(null, file);
+        }
+        return eventstream.map(transform);
+    }
+
+    return gulp.src(srcs)
+        .pipe(concat('tmp.js'))
+        .pipe(wrap(moduleWrap))
+        .pipe(uglify())
+        .pipe(saveToVar());
+});
+
+
+gulp.task('replaceDemoData',['buildDemoData'], function() {
+    //htmlreplace;
+    return gulp.src('extension/assets/player/demo.html')
+        .pipe(htmlreplace({
+            scripto:{
+                src: demoBuiltData,
+                tpl: '<!-- build:scripto --><script>%s</script><!-- endbuild -->'
+            }
+        }))
+        .pipe(gulp.dest('extension/assets/player/'));
+});
+
+
+
+gulp.task('buildDemoData',['buildSources'], function() {
+
+    function saveToVar() {
+        // you're going to receive Vinyl files as chunks
+        function transform(file, cb) {
+            // read and modify file contents
+            demoBuiltData = String(file.contents);
+
+            cb(null, file);
+        }
+        return eventstream.map(transform);
+    }
+
+    return gulp.src(srcs)
+        .pipe(concat('tmp.js'))
+        .pipe(wrap(moduleWrap))
+        .pipe(uglify())
+        .pipe(saveToVar());
+});
+
+
+gulp.task('createExtensionLibrary',['buildSources'], function() {
+
+    function replaceCustomValues() {
+        // you're going to receive Vinyl files as chunks
+        function transform(file, cb) {
+            // read and modify file contents
+            var contents = String(file.contents);
+
+            var regex = /"function".*(.)\.bodymovin/;
+            var regexExec = regex.exec(contents);
+            contents = contents.replace(regex,regexExec[1] + '.bm');
+            file.contents = new Buffer(contents);
+            demoBuiltData = String(file.contents);
+
+            cb(null, file);
+        }
+        return eventstream.map(transform);
+    }
+
+    return gulp.src(srcs)
+        .pipe(concat('bm.js'))
+        .pipe(wrap(moduleWrap))
+        .pipe(uglify())
+        .pipe(replaceCustomValues())
+        .pipe(gulp.dest('extension/js/libs/'));
+});
+
+gulp.task('createExtensionFiles',['createExtensionAsset','createExtensionStandAlone','createExtensionZipAsset','replaceDemoData','createExtensionLibrary'], function() {
+    return null;
+});
+
+gulp.task('buildAll',['buildLightMin','buildLight','buildFullMin','buildFull','createExtensionFiles'], function() {
+});
