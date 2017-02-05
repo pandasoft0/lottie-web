@@ -42,7 +42,6 @@ TrimModifier.prototype.initModifierProperties = function(elem,data){
     this.s = PropertyFactory.getProp(elem,data.s,0,0.01,this.dynamicProperties);
     this.e = PropertyFactory.getProp(elem,data.e,0,0.01,this.dynamicProperties);
     this.o = PropertyFactory.getProp(elem,data.o,0,0,this.dynamicProperties);
-    this.m = data.m;
     if(!this.dynamicProperties.length){
         this.getValue(true);
     }
@@ -65,56 +64,6 @@ TrimModifier.prototype.getSegmentsLength = function(keyframes){
         totalLength += lengths[i].addedLength;
     }
     return {lengths:lengths,totalLength:totalLength};
-}
-
-TrimModifier.prototype.calculateShapeEdges = function(s, e, shapeLength, addedLength, totalModifierLength) {
-    var segments = []
-    if(e <= 1){
-        segments.push({
-            s: s,
-            e: e
-        })
-    }else if(s >= 1){
-        segments.push({
-            s: s - 1,
-            e: e - 1
-        })
-    }else{
-        segments.push({
-            s: s,
-            e: 1
-        })
-        segments.push({
-            s: 0,
-            e: e - 1
-        })
-    }
-    var shapeSegments = [];
-    var i, len = segments.length, segmentOb;
-    for(i = 0; i < len; i += 1) {
-        segmentOb = segments[i];
-        if (segmentOb.e * totalModifierLength < addedLength || segmentOb.s * totalModifierLength > addedLength + shapeLength) {
-            
-        } else {
-            var shapeS, shapeE;
-            if(segmentOb.s * totalModifierLength <= addedLength) {
-                shapeS = 0;
-            } else {
-                shapeS = (segmentOb.s * totalModifierLength - addedLength) / shapeLength;
-            }
-            if(segmentOb.e * totalModifierLength >= addedLength + shapeLength) {
-                shapeE = 1;
-            } else {
-                shapeE = ((segmentOb.e * totalModifierLength - addedLength) / shapeLength);
-            }
-            shapeSegments.push([shapeS, shapeE]);
-        }
-    }
-    //console.log(shapeSegments);
-    if(!shapeSegments.length){
-        shapeSegments.push([0,0]);
-    }
-    return shapeSegments;
 }
 
 TrimModifier.prototype.processShapes = function(firstFrame){
@@ -143,7 +92,7 @@ TrimModifier.prototype.processShapes = function(firstFrame){
         var segments = [], shapeData, newShapes;
         for(i=0;i<len;i+=1){
             shapeData = this.shapes[i];
-            if(!shapeData.shape.mdf && !this.mdf && !firstFrame && this.m !== 2){
+            if(!shapeData.shape.mdf && !this.mdf && !firstFrame){
                 shapeData.shape.paths = shapeData.last;
             } else {
                 shapePaths = shapeData.shape.paths;
@@ -163,67 +112,51 @@ TrimModifier.prototype.processShapes = function(firstFrame){
                 }
 
                 totalModifierLength += totalShapeLength;
-                shapeData.shape.mdf = true;
+            shapeData.shape.mdf = true;
             }
         }
-        var shapeS = s, shapeE = e, addedLength = 0;
-        var j, jLen;
-        for(i = len - 1; i >= 0; i -= 1){
+        for(i=0;i<len;i+=1){
             newShapes = [];
             shapeData = this.shapes[i];
-            if (shapeData.shape.mdf) {
-                if(this.m === 2 && len > 1) {
-                    var edges = this.calculateShapeEdges(s, e, shapeData.totalShapeLength, addedLength, totalModifierLength);
-                    addedLength += shapeData.totalShapeLength;
-                } else {
-                    edges = [[shapeS, shapeE]]
+            if(shapeData.shape.mdf){
+                segments.length = 0;
+                if(e <= 1){
+                    segments.push({
+                        s:shapeData.totalShapeLength*s,
+                        e:shapeData.totalShapeLength*e
+                    })
+                }else if(s >= 1){
+                    segments.push({
+                        s:shapeData.totalShapeLength*(s-1),
+                        e:shapeData.totalShapeLength*(e-1)
+                    })
+                }else{
+                    segments.push({
+                        s:shapeData.totalShapeLength*s,
+                        e:shapeData.totalShapeLength
+                    })
+                    segments.push({
+                        s:0,
+                        e:shapeData.totalShapeLength*(e-1)
+                    })
                 }
-                jLen = edges.length;
-                for (j = 0; j < jLen; j += 1) {
-                    shapeS = edges[j][0];
-                    shapeE = edges[j][1];
-                    segments.length = 0;
-                    if(shapeE <= 1){
-                        segments.push({
-                            s:shapeData.totalShapeLength * shapeS,
-                            e:shapeData.totalShapeLength * shapeE
-                        })
-                    }else if(shapeS >= 1){
-                        segments.push({
-                            s:shapeData.totalShapeLength * (shapeS - 1),
-                            e:shapeData.totalShapeLength * (shapeE - 1)
-                        })
-                    }else{
-                        segments.push({
-                            s:shapeData.totalShapeLength * shapeS,
-                            e:shapeData.totalShapeLength
-                        })
-                        segments.push({
-                            s:0,
-                            e:shapeData.totalShapeLength*(shapeE - 1)
-                        })
-                    }
-                    var newShapeData = this.addShapes(shapeData,segments[0]);
-                    if (segments[0].s !== segments[0].e) {
-                        var lastPos;
-                        newShapes.push(newShapeData);
-                        if(segments.length > 1){
-                            if(shapeData.shape.v.c){
-                                this.addShapes(shapeData,segments[1], newShapeData);
-                            } else {
-                                newShapeData.i[0] = [newShapeData.v[0][0],newShapeData.v[0][1]];
-                                lastPos = newShapeData.v.length-1;
-                                newShapeData.o[lastPos] = [newShapeData.v[lastPos][0],newShapeData.v[lastPos][1]];
-                                newShapeData = this.addShapes(shapeData,segments[1]);
-                                newShapes.push(newShapeData);
-                            }
-                        }
+                var newShapeData = this.addShapes(shapeData,segments[0]);
+                var lastPos;
+                newShapes.push(newShapeData);
+                if(segments.length > 1){
+                    if(shapeData.shape.v.c){
+                        this.addShapes(shapeData,segments[1], newShapeData);
+                    } else {
                         newShapeData.i[0] = [newShapeData.v[0][0],newShapeData.v[0][1]];
                         lastPos = newShapeData.v.length-1;
                         newShapeData.o[lastPos] = [newShapeData.v[lastPos][0],newShapeData.v[lastPos][1]];
+                        newShapeData = this.addShapes(shapeData,segments[1]);
+                        newShapes.push(newShapeData);
                     }
-                    
                 }
+                newShapeData.i[0] = [newShapeData.v[0][0],newShapeData.v[0][1]];
+                lastPos = newShapeData.v.length-1;
+                newShapeData.o[lastPos] = [newShapeData.v[lastPos][0],newShapeData.v[lastPos][1]];
                 shapeData.last = newShapes;
                 shapeData.shape.paths = newShapes;
             }
