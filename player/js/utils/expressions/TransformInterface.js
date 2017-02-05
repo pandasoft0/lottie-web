@@ -31,7 +31,13 @@ var TransformExpressionInterface = (function (){
         });
         Object.defineProperty(_thisFunction, "scale", {
             get: function () {
-                return transform.scale;
+                var s = transform.scale;
+                var i, len = s.length;
+                var transformedS = Array.apply(null,{length:len});
+                for(i=0;i<len;i+=1){
+                    transformedS[i] = s[i]*100;
+                }
+                return transformedS;
             }
         });
 
@@ -61,7 +67,7 @@ var TransformExpressionInterface = (function (){
 
         Object.defineProperty(_thisFunction, "opacity", {
             get: function () {
-                return transform.opacity;
+                return transform.opacity*100;
             }
         });
 

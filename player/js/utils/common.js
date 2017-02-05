@@ -37,7 +37,7 @@ BMMath.abs = function(val){
     return Math.abs(val);
 
 }
-var defaultCurveSegments = 150;
+var defaultCurveSegments = 75;
 var degToRads = Math.PI/180;
 var roundCorner = 0.5519;
 
