@@ -24,11 +24,9 @@ HTextElement.prototype.createElements = function(){
     var parent = document.createElement('div');
     styleDiv(parent);
     this.layerElement = parent;
-    this.transformedElement = parent;
     if(this.isMasked){
         this.renderType = 'svg';
         var cont = document.createElementNS(svgNS,'svg');
-        styleDiv(cont);
         this.cont = cont;
         this.compW = this.comp.data ? this.comp.data.w : this.globalData.compSize.w;
         this.compH = this.comp.data ? this.comp.data.h : this.globalData.compSize.h;
@@ -45,7 +43,6 @@ HTextElement.prototype.createElements = function(){
     }
     this.baseElement = parent;
 
-    this.checkParenting();
 
 };
 
@@ -103,7 +100,7 @@ HTextElement.prototype.buildNewText = function(){
             if(!this.isMasked){
                 if(this.textSpans[cnt]){
                     tParent = this.textSpans[cnt];
-                    tCont = tParent.children[0];
+                    tCont = tParent.children()[0];
                 } else {
 
                     tParent = document.createElement('div');
@@ -182,7 +179,6 @@ HTextElement.prototype.buildNewText = function(){
         }else{
             this.textSpans[cnt] = tSpan;
         }
-        this.textSpans[cnt].style.display = 'block';
         this.textPaths[cnt] = tSpan;
         cnt += 1;
     }

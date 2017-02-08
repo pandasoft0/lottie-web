@@ -38,6 +38,7 @@ SVGBaseElement.prototype.createElements = function(){
                 gg.appendChild(this.layerElement);
                 layerElementParent = gg;
                 masker.appendChild(gg);
+                console.log('eee');
                 gg.setAttribute('filter','url(#'+filId+')');
             }
         }else if(this.data.td == 2){
