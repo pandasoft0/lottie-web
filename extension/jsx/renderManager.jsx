@@ -106,18 +106,17 @@ var bm_renderManager = (function () {
         pendingLayers.length = 0;
         pendingComps.length = 0;
         var exportData = {
-            v : '4.5.4',
-            fr : comp.frameRate,
-            ip : comp.workAreaStart * comp.frameRate,
-            op : (comp.workAreaStart + comp.workAreaDuration) * comp.frameRate,
-            w : comp.width,
-            h : comp.height,
-            ddd : 0,
             assets : [],
             comps : [],
             fonts : [],
-            layers : []
-            
+            layers : [],
+            v : '4.4.28',
+            ddd : 0,
+            ip : comp.workAreaStart * comp.frameRate,
+            op : (comp.workAreaStart + comp.workAreaDuration) * comp.frameRate,
+            fr : comp.frameRate,
+            w : comp.width,
+            h : comp.height
         };
         currentExportedComps.push(currentCompID);
         ob.renderData.exportData = exportData;

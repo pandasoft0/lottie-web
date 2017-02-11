@@ -13,7 +13,6 @@ HImageElement.prototype.createElements = function(){
         var parent = document.createElement('div');
         styleDiv(parent);
         var cont = document.createElementNS(svgNS,'svg');
-        styleDiv(cont);
         cont.setAttribute('width',this.assetData.w);
         cont.setAttribute('height',this.assetData.h);
         parent.appendChild(cont);
@@ -23,7 +22,6 @@ HImageElement.prototype.createElements = function(){
         this.imageElem.setAttributeNS('http://www.w3.org/1999/xlink','href',assetPath);
         cont.appendChild(this.imageElem);
         this.layerElement = parent;
-        this.transformedElement = parent;
         this.baseElement = parent;
         this.innerElem = parent;
         this.maskedElement = this.imageElem;
@@ -32,7 +30,6 @@ HImageElement.prototype.createElements = function(){
         this.layerElement = img;
         this.baseElement = img;
         this.innerElem = img;
-        this.transformedElement = img;
     }
     img.src = assetPath;
     if(this.data.ln){

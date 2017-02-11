@@ -25,7 +25,6 @@ HShapeElement.prototype.createElements = function(){
     var parent = document.createElement('div');
     styleDiv(parent);
     var cont = document.createElementNS(svgNS,'svg');
-    styleDiv(cont);
     var size = this.comp.data ? this.comp.data : this.globalData.compSize;
     cont.setAttribute('width',size.w);
     cont.setAttribute('height',size.h);
@@ -53,7 +52,6 @@ HShapeElement.prototype.createElements = function(){
     this.searchShapes(this.shapesData,this.viewData,this.layerElement,this.dynamicProperties,0);
     this.buildExpressionInterface();
     this.layerElement = parent;
-    this.transformedElement = parent;
     this.shapeCont = cont;
     if(this.data.bm !== 0){
         this.setBlendMode();
@@ -67,10 +65,8 @@ HShapeElement.prototype.renderFrame = function(parentMatrix){
         this.hide();
         return;
     }
-    if(this.hidden){
-        this.layerElement.style.display = 'block';
-        this.hidden = false;
-    }
+
+    this.hidden = false;
     this.renderModifiers();
     this.addedTransforms.mdf = this.finalTransform.matMdf;
     this.addedTransforms.mats.length = 1;
