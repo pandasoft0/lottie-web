@@ -10,8 +10,6 @@ var bm_main = (function () {
         var openFileData = f.openDlg();
         if (openFileData !== null) {
             bm_eventDispatcher.sendEvent('bm:file:uri', openFileData.fsName);
-        } else {
-            bm_eventDispatcher.sendEvent('bm:file:cancel');
         }
 
     }
