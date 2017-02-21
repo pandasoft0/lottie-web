@@ -34,8 +34,8 @@ var animationManager = (function(){
             i+=1;
         }
         var animItem = new AnimationItem();
-        setupAnimation(animItem, element);
         animItem.setData(element, animationData);
+        setupAnimation(animItem, element);
         return animItem;
     }
 
