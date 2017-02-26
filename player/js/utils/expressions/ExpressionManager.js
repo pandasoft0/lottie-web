@@ -648,7 +648,7 @@ var ExpressionManager = (function(){
             this.frameExpressionId = elem.globalData.frameId;
             var i,len;
             if(this.mult){
-                if(typeof this.v === 'number' || typeof this.v === 'string'){
+                if(typeof this.v === 'number'){
                     this.v *= this.mult;
                 }else{
                     len = this.v.length;
@@ -664,7 +664,7 @@ var ExpressionManager = (function(){
             /*if(!this.v){
                 console.log(val);
             }*/
-            if(typeof this.v === 'number' || typeof this.v === 'string'){
+            if(typeof this.v === 'number'){
                 if(this.lastValue !== this.v){
                     this.lastValue = this.v;
                     this.mdf = true;

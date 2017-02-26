@@ -1,30 +1,33 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "mn": {
-      "title": "Match Name",
+  "properties": [
+    {
       "description": "After Effect's Match Name. Used for expressions.",
+      "extendedName": "Match Name",
+      "name": "mn",
       "type": "string"
     },
-    "nm": {
-      "title": "Name",
+    {
       "description": "After Effect's Name. Used for expressions.",
+      "extendedName": "Name",
+      "name": "nm",
       "type": "string"
     },
-    "d": {
-      "title": "Direction",
+    {
       "description": "After Effect's Direction. Direction how the shape is drawn. Used for trim path for example.",
+      "extendedName": "Direction",
+      "name": "d",
       "type": "number"
     },
-    "ty": {
-      "title": "Type",
+    {
       "description": "Shape content type. Value: rc",
+      "extendedName": "Type",
+      "name": "ty",
       "type": "string"
     },
-    "p": {
-      "title": "Position",
+    {
       "description": "Rect's position",
+      "extendedName": "Position",
+      "name": "p",
       "oneOf": [
         {
           "$ref": "#/properties/multiDimensional"
@@ -35,9 +38,10 @@
       ],
       "type": "object"
     },
-    "s": {
-      "title": "Size",
+    {
       "description": "Rect's size",
+      "extendedName": "Size",
+      "name": "s",
       "oneOf": [
         {
           "$ref": "#/properties/multiDimensional"
@@ -48,9 +52,10 @@
       ],
       "type": "object"
     },
-    "r": {
-      "title": "Rounded corners",
+    {
       "description": "Rect's rounded corners",
+      "extendedName": "Rounded corners",
+      "name": "r",
       "oneOf": [
         {
           "$ref": "#/properties/Value"
@@ -61,5 +66,5 @@
       ],
       "type": "object"
     }
-  }
+  ]
 }

@@ -1,25 +1,27 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "mn": {
-      "title": "Match Name",
+  "properties": [
+    {
       "description": "After Effect's Match Name. Used for expressions.",
+      "extendedName": "Match Name",
+      "name": "mn",
       "type": "string"
     },
-    "nm": {
-      "title": "Name",
+    {
       "description": "After Effect's Name. Used for expressions.",
+      "extendedName": "Name",
+      "name": "nm",
       "type": "string"
     },
-    "ty": {
-      "title": "Type",
+    {
       "description": "Shape content type. Value: fl",
+      "extendedName": "Type",
+      "name": "ty",
       "type": "string"
     },
-    "o": {
-      "title": "Opacity",
+    {
       "description": "Fill Opacity",
+      "extendedName": "Opacity",
+      "name": "o",
       "oneOf": [
         {
           "$ref": "#/properties/Value"
@@ -30,9 +32,10 @@
       ],
       "type": "object"
     },
-    "c": {
-      "title": "Color",
+    {
       "description": "Fill Color",
+      "extendedName": "Color",
+      "name": "c",
       "oneOf": [
         {
           "$ref": "#/properties/multiDimensional"
@@ -43,5 +46,5 @@
       ],
       "type": "object"
     }
-  }
+  ]
 }
