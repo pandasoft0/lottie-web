@@ -106,7 +106,7 @@ var bm_renderManager = (function () {
         pendingLayers.length = 0;
         pendingComps.length = 0;
         var exportData = {
-            v : '4.5.5',
+            v : '4.5.8',
             fr : comp.frameRate,
             ip : comp.workAreaStart * comp.frameRate,
             op : (comp.workAreaStart + comp.workAreaDuration) * comp.frameRate,
@@ -252,12 +252,7 @@ var bm_renderManager = (function () {
     }
     
     function setChars(chars) {
-        //bm_eventDispatcher.sendEvent('bm:render:chars', {type: 'save', compId: currentCompID, chars: chars});
-        var i, len = chars.length;
-        for (i = 0; i < len; i += 1) {
-            delete chars[i].font;
-        }
-        setCharsData(chars)
+        bm_eventDispatcher.sendEvent('bm:render:chars', {type: 'save', compId: currentCompID, chars: chars});
     }
     
     function setFontData(fontData) {

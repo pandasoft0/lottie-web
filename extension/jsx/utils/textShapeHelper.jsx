@@ -121,7 +121,7 @@ var bm_textShapeHelper = (function () {
         dupl.enabled = true;
         dupl.selected = true;
         if (ch !== ' ') {
-            app.executeCommand(3781);
+            app.executeCommand(cmdID);
         }
         dupl.selected = false;
         var doubleSize, singleSize;

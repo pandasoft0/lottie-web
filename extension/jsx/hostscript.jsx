@@ -4,15 +4,12 @@ var bm_main = (function () {
     'use strict';
     var ob = {};
     
-    function browseFile(path) {
+    function browseFile() {
         //openDlg()
-        path = path ? path : Folder.desktop.absoluteURI
-        var f = new File(path);
+        var f = new File(Folder.desktop.absoluteURI);
         var openFileData = f.openDlg();
         if (openFileData !== null) {
             bm_eventDispatcher.sendEvent('bm:file:uri', openFileData.fsName);
-        } else {
-            bm_eventDispatcher.sendEvent('bm:file:cancel');
         }
 
     }
