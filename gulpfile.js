@@ -15,6 +15,7 @@ var cheerio = require('gulp-cheerio');
 var fs = require('fs');
 var htmlreplace = require('gulp-html-replace');
 var eventstream = require("event-stream");
+var jslint = require('gulp-jslint');
 
 var bm_version = '4.6.0';
 
@@ -34,10 +35,16 @@ gulp.task('gzipFile', function(){
     .pipe(gulp.dest('demo/'));
 });
 
+gulp.task('lint-code', function () {
+    return gulp.src(['.player/js/**/*'])
+            .pipe(jslint({ /* this object represents the JSLint directives being passed down */ }))
+            .pipe(jslint.reporter( 'my-reporter' ));
+});
+
 gulp.task('buildPlayer', function(){
     gulp.src('./player/index.html')
         .pipe(usemin({
-            js: [uglify()]
+            js: [uglify(uglifyOptions)]
         }))
         //.pipe(wrap('(function(window){"use strict";<%= contents %>}(window));'))
         .pipe(wrap(moduleWrap))
@@ -54,7 +61,7 @@ gulp.task('buildUnminifiedPlayer', function(){
 gulp.task('zipPlayer',['buildPlayer','buildUnminifiedPlayer'], function(){
     gulp.src('./player/index.html')
         .pipe(usemin({
-            js: [uglify()]
+            js: [uglify(uglifyOptions)]
         }))
         //.pipe(wrap('(function(window){"use strict";<%= contents %>}(window));'))
         .pipe(wrap(moduleWrap))
@@ -63,6 +70,10 @@ gulp.task('zipPlayer',['buildPlayer','buildUnminifiedPlayer'], function(){
 });
 
 var srcs = [];
+
+var demoBuiltData = '';
+var uglifyOptions = {output: {ascii_only:true}};
+
 
 gulp.task('getBuildSources', function(cb) {
     srcs.length = 0;
@@ -124,7 +135,7 @@ gulp.task('buildLightMin',['buildLightSources'], function() {
     return gulp.src(srcs)
         .pipe(concat('bodymovin_light.min.js'))
         .pipe(wrap(moduleWrap))
-        .pipe(uglify())
+        .pipe(uglify(uglifyOptions))
         .pipe(gulp.dest('build/player/'));
 });
 
@@ -132,7 +143,7 @@ gulp.task('buildFullMin',['buildSources'], function() {
     return gulp.src(srcs)
         .pipe(concat('bodymovin.min.js'))
         .pipe(wrap(moduleWrap))
-        .pipe(uglify())
+        .pipe(uglify(uglifyOptions))
         .pipe(gulp.dest('build/player/'));
 });
 
