@@ -9,6 +9,7 @@ var TransformExpressionInterface = (function (){
                 case "rotation":
                 case "Rotation":
                 case "ADBE Rotation":
+                case "ADBE Rotate Z":
                     return _thisFunction.rotation;
                 case "position":
                 case "Position":
@@ -16,7 +17,6 @@ var TransformExpressionInterface = (function (){
                     return transform.position;
                 case "anchorPoint":
                 case "AnchorPoint":
-                case "Anchor Point":
                 case "ADBE AnchorPoint":
                     return _thisFunction.anchorPoint;
                 case "opacity":
