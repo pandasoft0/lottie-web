@@ -682,7 +682,7 @@ var ExpressionManager = (function(){
                     }
                 }
             }
-            
+
             if(this.v.length === 1){
                 this.v = this.v[0];
             }

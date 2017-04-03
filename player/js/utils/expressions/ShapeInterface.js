@@ -129,6 +129,7 @@ var ShapeExpressionInterface = (function(){
            };
            interfaces = iterateElements(shape.it, view.it, interfaceFunction.propertyGroup);
            interfaceFunction.numProperties = interfaces.length;
+           interfaceFunction.propertyIndex = shape.cix;
 
            return interfaceFunction;
        }
@@ -187,7 +188,8 @@ var ShapeExpressionInterface = (function(){
                 }
             });
             //interfaceFunction.content = interfaceFunction;
-            interfaceFunction.numProperties = 1;
+            interfaceFunction.numProperties = shape.np;
+            interfaceFunction.propertyIndex = shape.ix;
             interfaceFunction.nm = shape.nm;
             interfaceFunction.mn = shape.mn;
             return interfaceFunction;
@@ -246,9 +248,6 @@ var ShapeExpressionInterface = (function(){
                     }
                 });
             }
-            view.c.setGroupProperty(_propertyGroup);
-            view.o.setGroupProperty(_propertyGroup);
-            view.w.setGroupProperty(_propertyGroup);
             var i, len = shape.d ? shape.d.length : 0;
             var dashOb = {}
             for (i = 0; i < len; i += 1) {
@@ -288,8 +287,9 @@ var ShapeExpressionInterface = (function(){
             Object.defineProperty(interfaceFunction, '_name', { value: shape.nm });
             Object.defineProperty(interfaceFunction, 'mn', { value: shape.mn });
 
-            view.c.setGroupProperty(propertyGroup);
-            view.o.setGroupProperty(propertyGroup);
+            view.c.setGroupProperty(_propertyGroup);
+            view.o.setGroupProperty(_propertyGroup);
+            view.w.setGroupProperty(_propertyGroup);
             return interfaceFunction;
         }
     }());
@@ -310,7 +310,7 @@ var ShapeExpressionInterface = (function(){
             view.o.setGroupProperty(_propertyGroup);
 
             function interfaceFunction(val){
-                if(val === shape.e.ix){
+                if(val === shape.e.ix || val === 'End' || val === 'end'){
                     return interfaceFunction.end;
                 }
                 if(val === shape.s.ix){
@@ -400,7 +400,7 @@ var ShapeExpressionInterface = (function(){
                 if(value === 'Scale') {
                     return interfaceFunction.scale;
                 }
-                if(value === 'Rotation') {
+                if(value === 'Rotation' || value === 'ADBE Vector Rotation') {
                     return interfaceFunction.rotation;
                 }
                 if(value === 'Skew') {
