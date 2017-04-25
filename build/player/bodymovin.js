@@ -4746,7 +4746,7 @@ SVGRenderer.prototype.configAnimation = function(animData){
     maskElement.setAttribute('id', maskId);
     maskElement.appendChild(rect);
     var maskedElement = document.createElementNS(svgNS,'g');
-    maskedElement.setAttribute("clip-path", "url(#"+maskId+")");
+    maskedElement.setAttribute("clip-path", "url(" + location.href + "#"+maskId+")");
     this.layerElement.appendChild(maskedElement);
     defs.appendChild(maskElement);
     this.layerElement = maskedElement;
@@ -4994,7 +4994,7 @@ function MaskElement(data,element,globalData) {
             mask.setAttribute('id',layerId+'_'+count);
             mask.appendChild(path);
             defs.appendChild(mask);
-            g.setAttribute('mask','url(#'+layerId+'_'+count+')');
+            g.setAttribute('mask','url(' + location.href + '#'+layerId+'_'+count+')');
 
             currentMasks.length = 0;
             currentMasks.push(g);
@@ -5027,7 +5027,7 @@ function MaskElement(data,element,globalData) {
 
     this.maskElement.setAttribute('id', layerId);
     if(count > 0){
-        this.element.maskedElement.setAttribute(maskRef, "url(#" + layerId + ")");
+        this.element.maskedElement.setAttribute(maskRef, "url(" + location.href + "#" + layerId + ")");
     }
 
     defs.appendChild(this.maskElement);
@@ -5064,7 +5064,7 @@ MaskElement.prototype.renderFrame = function (finalMat) {
                 if(this.storedData[i].x.v < 0){
                     if(this.storedData[i].lastOperator !== 'erode'){
                         this.storedData[i].lastOperator = 'erode';
-                        this.storedData[i].elem.setAttribute('filter','url(#'+this.storedData[i].filterId+')');
+                        this.storedData[i].elem.setAttribute('filter','url(' + location.href + '#'+this.storedData[i].filterId+')');
                     }
                     feMorph.setAttribute('radius',-this.storedData[i].x.v);
                 }else{
@@ -5427,7 +5427,7 @@ SVGBaseElement.prototype.createElements = function(){
                 gg.appendChild(this.layerElement);
                 layerElementParent = gg;
                 masker.appendChild(gg);
-                gg.setAttribute('filter','url(#'+filId+')');
+                gg.setAttribute('filter','url(' +location.href+ '#'+filId+')');
             }
         }else if(this.data.td == 2){
             var maskGroup = document.createElementNS(svgNS,'mask');
@@ -5461,7 +5461,7 @@ SVGBaseElement.prototype.createElements = function(){
             alphaRect.setAttribute('y','0');
             alphaRect.setAttribute('fill','#ffffff');
             alphaRect.setAttribute('opacity','0');
-            maskGrouper.setAttribute('filter','url(#'+filId+')');
+            maskGrouper.setAttribute('filter','url(' +location.href+ '#'+filId+')');
             maskGrouper.appendChild(alphaRect);
             maskGrouper.appendChild(this.layerElement);
             layerElementParent = maskGrouper;
@@ -5506,7 +5506,7 @@ SVGBaseElement.prototype.createElements = function(){
             this.globalData.defs.appendChild(cp);
         if(this.checkMasks()){
             var cpGroup = document.createElementNS(svgNS,'g');
-            cpGroup.setAttribute('clip-path','url(#'+clipId+')');
+            cpGroup.setAttribute('clip-path','url(' + location.href + '#'+clipId+')');
             cpGroup.appendChild(this.layerElement);
             this.transformedElement = cpGroup;
             if(layerElementParent){
@@ -5515,7 +5515,7 @@ SVGBaseElement.prototype.createElements = function(){
                 this.baseElement = this.transformedElement;
             }
         } else {
-            this.layerElement.setAttribute('clip-path','url(#'+clipId+')');
+            this.layerElement.setAttribute('clip-path','url(' + location.href + '#'+clipId+')');
         }
         
     }
@@ -5674,14 +5674,14 @@ SVGBaseElement.prototype.setMatte = function(id){
     if(!this.matteElement){
         return;
     }
-    this.matteElement.setAttribute("mask", "url(#" + id + ")");
+    this.matteElement.setAttribute("mask", "url(" + location.href + "#" + id + ")");
 };
 
 SVGBaseElement.prototype.setMatte = function(id){
     if(!this.matteElement){
         return;
     }
-    this.matteElement.setAttribute("mask", "url(#" + id + ")");
+    this.matteElement.setAttribute("mask", "url(" + location.href + "#" + id + ")");
 };
 
 SVGBaseElement.prototype.hide = function(){
@@ -6576,7 +6576,7 @@ SVGStrokeEffect.prototype.initialize = function(){
         mask.appendChild(groupPath);
         this.elem.globalData.defs.appendChild(mask);
         var g = document.createElementNS(svgNS,'g');
-        g.setAttribute('mask','url(#'+id+')');
+        g.setAttribute('mask','url(' +location.href+ '#'+id+')');
         if(elemChildren[0]){
             g.appendChild(elemChildren[0]);
         }
@@ -6909,7 +6909,7 @@ function SVGEffects(elem){
     }
     if(count){
         elem.globalData.defs.appendChild(fil);
-        elem.layerElement.setAttribute('filter','url(#'+filId+')');
+        elem.layerElement.setAttribute('filter','url(' + location.href + '#'+filId+')');
     }
 }
 
@@ -13375,4 +13375,4 @@ GroupEffect.prototype.init = function(data,element,dynamicProperties){
                 break;
         }
     }
-};var bodymovinjs = {}; function play(animation){ animationManager.play(animation); } function pause(animation){ animationManager.pause(animation); } function togglePause(animation){ animationManager.togglePause(animation); } function setSpeed(value,animation){ animationManager.setSpeed(value, animation); } function setDirection(value,animation){ animationManager.setDirection(value, animation); } function stop(animation){ animationManager.stop(animation); } function moveFrame(value){ animationManager.moveFrame(value); } function searchAnimations(){ if(standalone === true){ animationManager.searchAnimations(animationData,standalone, renderer); }else{ animationManager.searchAnimations(); } } function registerAnimation(elem){ return animationManager.registerAnimation(elem); } function resize(){ animationManager.resize(); } function start(){ animationManager.start(); } function goToAndStop(val,isFrame, animation){ animationManager.goToAndStop(val,isFrame, animation); } function setSubframeRendering(flag){ subframeEnabled = flag; } function loadAnimation(params){ if(standalone === true){ params.animationData = JSON.parse(animationData); } return animationManager.loadAnimation(params); } function destroy(animation){ return animationManager.destroy(animation); } function setQuality(value){ if(typeof value === 'string'){ switch(value){ case 'high': defaultCurveSegments = 200; break; case 'medium': defaultCurveSegments = 50; break; case 'low': defaultCurveSegments = 10; break; } }else if(!isNaN(value) && value > 1){ defaultCurveSegments = value; } if(defaultCurveSegments >= 50){ roundValues(false); }else{ roundValues(true); } } function installPlugin(type,plugin){ if(type==='expressions'){ expressionsPlugin = plugin; } } function getFactory(name){ switch(name){ case "propertyFactory": return PropertyFactory;case "shapePropertyFactory": return ShapePropertyFactory; case "matrix": return Matrix; } } bodymovinjs.play = play; bodymovinjs.pause = pause; bodymovinjs.togglePause = togglePause; bodymovinjs.setSpeed = setSpeed; bodymovinjs.setDirection = setDirection; bodymovinjs.stop = stop; bodymovinjs.moveFrame = moveFrame; bodymovinjs.searchAnimations = searchAnimations; bodymovinjs.registerAnimation = registerAnimation; bodymovinjs.loadAnimation = loadAnimation; bodymovinjs.setSubframeRendering = setSubframeRendering; bodymovinjs.resize = resize; bodymovinjs.start = start; bodymovinjs.goToAndStop = goToAndStop; bodymovinjs.destroy = destroy; bodymovinjs.setQuality = setQuality; bodymovinjs.installPlugin = installPlugin; bodymovinjs.__getFactory = getFactory; bodymovinjs.version = '4.6.7'; function checkReady(){ if (document.readyState === "complete") { clearInterval(readyStateCheckInterval); searchAnimations(); } } function getQueryVariable(variable) { var vars = queryString.split('&'); for (var i = 0; i < vars.length; i++) { var pair = vars[i].split('='); if (decodeURIComponent(pair[0]) == variable) { return decodeURIComponent(pair[1]); } } } var standalone = '__[STANDALONE]__'; var animationData = '__[ANIMATIONDATA]__'; var renderer = ''; if(standalone) { var scripts = document.getElementsByTagName('script'); var index = scripts.length - 1; var myScript = scripts[index] || { src: '' }; var queryString = myScript.src.replace(/^[^\?]+\??/,''); renderer = getQueryVariable('renderer'); } var readyStateCheckInterval = setInterval(checkReady, 100); return bodymovinjs; }));  
+};var bodymovinjs = {}; function play(animation){ animationManager.play(animation); } function pause(animation){ animationManager.pause(animation); } function togglePause(animation){ animationManager.togglePause(animation); } function setSpeed(value,animation){ animationManager.setSpeed(value, animation); } function setDirection(value,animation){ animationManager.setDirection(value, animation); } function stop(animation){ animationManager.stop(animation); } function moveFrame(value){ animationManager.moveFrame(value); } function searchAnimations(){ if(standalone === true){ animationManager.searchAnimations(animationData,standalone, renderer); }else{ animationManager.searchAnimations(); } } function registerAnimation(elem){ return animationManager.registerAnimation(elem); } function resize(){ animationManager.resize(); } function start(){ animationManager.start(); } function goToAndStop(val,isFrame, animation){ animationManager.goToAndStop(val,isFrame, animation); } function setSubframeRendering(flag){ subframeEnabled = flag; } function loadAnimation(params){ if(standalone === true){ params.animationData = JSON.parse(animationData); } return animationManager.loadAnimation(params); } function destroy(animation){ return animationManager.destroy(animation); } function setQuality(value){ if(typeof value === 'string'){ switch(value){ case 'high': defaultCurveSegments = 200; break; case 'medium': defaultCurveSegments = 50; break; case 'low': defaultCurveSegments = 10; break; } }else if(!isNaN(value) && value > 1){ defaultCurveSegments = value; } if(defaultCurveSegments >= 50){ roundValues(false); }else{ roundValues(true); } } function installPlugin(type,plugin){ if(type==='expressions'){ expressionsPlugin = plugin; } } function getFactory(name){ switch(name){ case "propertyFactory": return PropertyFactory;case "shapePropertyFactory": return ShapePropertyFactory; case "matrix": return Matrix; } } bodymovinjs.play = play; bodymovinjs.pause = pause; bodymovinjs.togglePause = togglePause; bodymovinjs.setSpeed = setSpeed; bodymovinjs.setDirection = setDirection; bodymovinjs.stop = stop; bodymovinjs.moveFrame = moveFrame; bodymovinjs.searchAnimations = searchAnimations; bodymovinjs.registerAnimation = registerAnimation; bodymovinjs.loadAnimation = loadAnimation; bodymovinjs.setSubframeRendering = setSubframeRendering; bodymovinjs.resize = resize; bodymovinjs.start = start; bodymovinjs.goToAndStop = goToAndStop; bodymovinjs.destroy = destroy; bodymovinjs.setQuality = setQuality; bodymovinjs.installPlugin = installPlugin; bodymovinjs.__getFactory = getFactory; bodymovinjs.version = '4.6.7'; function checkReady(){ if (document.readyState === "complete") { clearInterval(readyStateCheckInterval); searchAnimations(); } } function getQueryVariable(variable) { var vars = queryString.split('&'); for (var i = 0; i < vars.length; i++) { var pair = vars[i].split('='); if (decodeURIComponent(pair[0]) == variable) { return decodeURIComponent(pair[1]); } } } var standalone = '__[STANDALONE]__'; var animationData = '__[ANIMATIONDATA]__'; var renderer = ''; if(standalone) { var scripts = document.getElementsByTagName('script'); var index = scripts.length - 1; var myScript = scripts[index]; var queryString = myScript.src.replace(/^[^\?]+\??/,''); renderer = getQueryVariable('renderer'); } var readyStateCheckInterval = setInterval(checkReady, 100); return bodymovinjs; }));  
