@@ -1,8 +1,6 @@
 var ExpressionManager = (function(){
     var ob = {};
     var Math = BMMath;
-    var window = null;
-    var document = null;
 
     function duplicatePropertyValue(value, mult){
         mult = mult || 1;
@@ -64,7 +62,7 @@ var ExpressionManager = (function(){
             a[0] = a[0] + b;
             return a;
         }
-        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && b.constructor === Array){
+        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && b .constructor === Array){
             b[0] = a + b[0];
             return b;
         }
@@ -320,8 +318,6 @@ var ExpressionManager = (function(){
         elem.comp.frameDuration = 1/elem.comp.globalData.frameRate;
         var inPoint = elem.data.ip/elem.comp.globalData.frameRate;
         var outPoint = elem.data.op/elem.comp.globalData.frameRate;
-        var width = elem.data.sw ? elem.data.sw : 0;
-        var height = elem.data.sh ? elem.data.sh : 0;
         var thisLayer,thisComp;
         var fn = new Function();
         //var fnStr = 'var fn = function(){'+val+';this.v = $bm_rt;}';
