@@ -626,8 +626,8 @@ var ExpressionManager = (function(){
             if(!thisLayer){
                 thisLayer = elem.layerInterface;
                 thisComp = elem.comp.compInterface;
-                 toWorld = thisLayer.toWorld.bind(thisLayer);
-                 fromWorld = thisLayer.fromWorld.bind(thisLayer);
+                toWorld = thisLayer.toWorld.bind(thisLayer);
+                fromWorld = thisLayer.fromWorld.bind(thisLayer);
             }
             if(!transform){
                 transform = elem.layerInterface("ADBE Transform Group");
