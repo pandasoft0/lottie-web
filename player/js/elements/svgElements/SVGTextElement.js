@@ -150,6 +150,13 @@ SVGTextElement.prototype.buildNewText = function(){
     }
 }
 
+SVGTextElement.prototype.hide = function(){
+    if(!this.hidden){
+        this.layerElement.style.display = 'none';
+        this.hidden = true;
+    }
+};
+
 SVGTextElement.prototype.renderFrame = function(parentMatrix){
 
     var renderParent = this._parent.renderFrame.call(this,parentMatrix);
@@ -158,7 +165,8 @@ SVGTextElement.prototype.renderFrame = function(parentMatrix){
         return;
     }
     if(this.hidden){
-        this.show();
+        this.hidden = false;
+        this.layerElement.style.display = 'block';
     }
 
     if(this.data.singleShape){
