@@ -1,6 +1,10 @@
 # bodymovin
 After Effects plugin for exporting animations to svg/canvas/html + js
 
+## V 4.7.1
+- still images validation fix
+- expression for transform on separate dimensions fix
+
 ## V 4.7.0
 - hiding elements when opacity is at 0
 - colinear points fix
@@ -60,8 +64,12 @@ Skip directly to "Install third-party extensions"
 - Go to Edit > Preferences > General > and check on "Allow Scripts to Write Files and Access Network"
 
 # HTML player installation
-```node
+```bash
+# with npm
 npm install bodymovin
+
+# with bower
+bower install bodymovin
 ```  
 Or you can use the script file from here:  
 https://cdnjs.com/libraries/bodymovin  
