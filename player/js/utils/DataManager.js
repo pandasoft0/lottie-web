@@ -52,11 +52,7 @@ function dataFunctionManager(){
         var i = 0, len = comps.length;
         while(i<len){
             if(comps[i].id === id){
-                if(!comps[i].layers.__used) {
-                    comps[i].layers.__used = true;
-                    return comps[i].layers;
-                }
-                return JSON.parse(JSON.stringify(comps[i].layers));
+                return comps[i].layers;
             }
             i += 1;
         }
@@ -167,6 +163,28 @@ function dataFunctionManager(){
                 }
             }
         }
+    }())
+
+    var checkChars = (function() {
+        var minimumVersion = [4,7,99];
+        return function (animationData){
+            if(animationData.chars && !checkVersion(minimumVersion,animationData.v)){
+                var i, len = animationData.chars.length, j, jLen, k, kLen;
+                var pathData, paths;
+                for(i = 0; i < len; i += 1) {
+                    if(animationData.chars[i].data && animationData.chars[i].data.shapes) {
+                        paths = animationData.chars[i].data.shapes[0].it;
+                        jLen = paths.length;
+
+                        for(j = 0; j < jLen; j += 1) {
+                            pathData = paths[j].ks.k;
+                            convertPathsToAbsoluteValues(paths[j].ks.k);
+                        }
+                    }
+                }
+            }
+        }
+
     }())
 
     var checkColors = (function(){
@@ -465,6 +483,7 @@ function dataFunctionManager(){
         }
         checkColors(animationData);
         checkText(animationData);
+        checkChars(animationData);
         checkShapes(animationData);
         completeLayers(animationData.layers, animationData.assets, fontManager);
         animationData.__complete = true;
