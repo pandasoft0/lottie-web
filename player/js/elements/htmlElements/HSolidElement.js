@@ -35,7 +35,6 @@ HSolidElement.prototype.createElements = function(){
 
 
 
-HSolidElement.prototype.hide = SVGBaseElement.prototype.hide;
-HSolidElement.prototype.show = SVGBaseElement.prototype.show;
+HSolidElement.prototype.hide = IImageElement.prototype.hide;
 HSolidElement.prototype.renderFrame = IImageElement.prototype.renderFrame;
 HSolidElement.prototype.destroy = IImageElement.prototype.destroy;

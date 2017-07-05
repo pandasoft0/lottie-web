@@ -74,7 +74,6 @@ var LayerExpressionInterface = (function (){
                 case 2:
                     return _thisLayerFunction.shapeInterface;
                 case 1:
-                case 6:
                 case "Transform":
                 case "transform":
                 case "ADBE Transform Group":

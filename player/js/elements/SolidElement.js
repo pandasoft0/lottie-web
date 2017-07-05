@@ -23,5 +23,6 @@ ISolidElement.prototype.createElements = function(){
     }
 };
 
+ISolidElement.prototype.hide = IImageElement.prototype.hide;
 ISolidElement.prototype.renderFrame = IImageElement.prototype.renderFrame;
 ISolidElement.prototype.destroy = IImageElement.prototype.destroy;

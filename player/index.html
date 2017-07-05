@@ -12,8 +12,8 @@
 
         #bodymovin{
             background-color:#333;
-            width:100%;
-            height:100%;
+            width:1024px;
+            height:768px;
             /*width:800px;
             height:500px;*/
             display:block;
@@ -61,7 +61,6 @@
     <script src="js/mask.js"></script>
     <script src="js/elements/BaseElement.js"></script>
     <script src="js/elements/svgElements/SVGBaseElement.js"></script>
-    <script src="js/elements/ShapeElement.js"></script>
     <script src="js/elements/TextElement.js"></script>
     <script src="js/elements/svgElements/SVGTextElement.js"></script>
     <script src="js/elements/svgElements/effects/SVGTintEffect.js"></script>
@@ -73,6 +72,7 @@
     <script src="js/elements/svgElements/SVGEffects.js"></script>
     <script src="js/elements/CompElement.js"></script>
     <script src="js/elements/ImageElement.js"></script>
+    <script src="js/elements/ShapeElement.js"></script>
     <script src="js/elements/SolidElement.js"></script>
     <script src="js/elements/canvasElements/CVBaseElement.js" data-light-skip="true"></script>
     <script src="js/elements/canvasElements/CVCompElement.js" data-light-skip="true"></script>
@@ -128,6 +128,10 @@
         path: 'exports/render/data.json'
     };
     anim = bodymovin.loadAnimation(animData);
+    anim.addEventListener('complete', function(){
+        console.log('compeded');
+        anim.goToAndStop(0);
+    });
 
 </script>
 </body>

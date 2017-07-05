@@ -9,7 +9,6 @@ SVGTextElement.prototype.init = ITextElement.prototype.init;
 SVGTextElement.prototype.createPathShape = ITextElement.prototype.createPathShape;
 SVGTextElement.prototype.getMeasures = ITextElement.prototype.getMeasures;
 SVGTextElement.prototype.prepareFrame = ITextElement.prototype.prepareFrame;
-SVGTextElement.prototype.buildShapeString = ITextElement.prototype.buildShapeString;
 
 SVGTextElement.prototype.createElements = function(){
 
@@ -132,7 +131,7 @@ SVGTextElement.prototype.buildNewText = function(){
             }
         }
         if(singleShape) {
-            xPos += letters[i].l || 0;
+            xPos += letters[i].l;
             xPos += documentData.tr/1000*documentData.s;
         }
         //
@@ -151,6 +150,13 @@ SVGTextElement.prototype.buildNewText = function(){
     }
 }
 
+SVGTextElement.prototype.hide = function(){
+    if(!this.hidden){
+        this.layerElement.style.display = 'none';
+        this.hidden = true;
+    }
+};
+
 SVGTextElement.prototype.renderFrame = function(parentMatrix){
 
     var renderParent = this._parent.renderFrame.call(this,parentMatrix);
@@ -159,7 +165,8 @@ SVGTextElement.prototype.renderFrame = function(parentMatrix){
         return;
     }
     if(this.hidden){
-        this.show();
+        this.hidden = false;
+        this.layerElement.style.display = 'block';
     }
 
     if(this.data.singleShape){
