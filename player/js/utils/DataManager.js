@@ -52,11 +52,7 @@ function dataFunctionManager(){
         var i = 0, len = comps.length;
         while(i<len){
             if(comps[i].id === id){
-                if(!comps[i].layers.__used) {
-                    comps[i].layers.__used = true;
-                    return comps[i].layers;
-                }
-                return JSON.parse(JSON.stringify(comps[i].layers));
+                return comps[i].layers;
             }
             i += 1;
         }
