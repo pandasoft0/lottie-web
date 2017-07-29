@@ -740,7 +740,7 @@ var ShapeExpressionInterface = (function(){
             prop.setGroupProperty(_propertyGroup);
 
             function interfaceFunction(val){
-                if(val === 'Shape' || val === 'shape' || val === 'Path' || val === 'path' || val === 2){
+                if(val === 'Shape' || val === 'shape' || val === 'Path' || val === 'path'){
                     return interfaceFunction.path;
                 }
             }

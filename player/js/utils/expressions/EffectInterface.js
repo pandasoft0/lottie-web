@@ -56,11 +56,6 @@ var EffectsExpressionInterface = (function (){
                 }
             });
         }
-        Object.defineProperty(groupInterface, 'numProperties', {
-            get: function(){
-                return data.np;
-            }
-        });
         groupInterface.active = data.en !== 0;
         return groupInterface
     }

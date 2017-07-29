@@ -90,12 +90,6 @@ var ExpressionManager = (function(){
         var tOfA = typeof a;
         var tOfB = typeof b;
         if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )) {
-            if(tOfA === 'string') {
-                a = parseInt(a);
-            }
-            if(tOfB === 'string') {
-                b = parseInt(b);
-            }
             return a - b;
         }
         if( a.constructor === Array && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
@@ -176,15 +170,6 @@ var ExpressionManager = (function(){
         }
         return 0;
     }
-    function mod(a,b) {
-        if(typeof a === 'string') {
-            a = parseInt(a);
-        }
-        if(typeof b === 'string') {
-            b = parseInt(b);
-        }
-        return a % b;
-    }
 
     function clamp(num, min, max) {
         if(min > max){
@@ -208,7 +193,7 @@ var ExpressionManager = (function(){
     var helperLengthArray = [0,0,0,0,0,0];
 
     function length(arr1,arr2){
-        if(typeof arr1 === 'number' || arr1 instanceof Number){
+        if(typeof arr1 === "number"){
             arr2 = arr2 || 0;
             return Math.abs(arr1 - arr2);
         }
@@ -518,9 +503,7 @@ var ExpressionManager = (function(){
             return this.getValueAtTime(t, 0);
         }.bind(this);
 
-        var velocityAtTime = function velocityAtTime(t) {
-            return this.getVelocityAtTime(t);
-        }.bind(this);
+        var velocityAtTime = this.getVelocityAtTime.bind(this);
 
         var comp = elem.comp.globalData.projectInterface.bind(elem.comp.globalData.projectInterface);
 
@@ -605,7 +588,7 @@ var ExpressionManager = (function(){
         };
 
         function timeToFrames(t,fps){
-            if(!t && t !== 0){
+            if(!t){
                 t = time;
             }
             if(!fps){
@@ -687,6 +670,7 @@ var ExpressionManager = (function(){
                     }
                 }
             }
+
             if(this.v.length === 1){
                 this.v = this.v[0];
             }
