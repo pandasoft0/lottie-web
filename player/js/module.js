@@ -1,5 +1,4 @@
 (function (root, factory) {
-    console.log('---------------BODYMOVIN 1000');
     if(typeof define === "function" && define.amd) {
         define( factory);
     } else if(typeof module === "object" && module.exports) {
@@ -10,9 +9,6 @@
 }(window, function() {
     var bodymovinjs = {};
 
-    function setLocationHref (href) {
-        locationHref = href;
-    }
     function play(animation){
         animationManager.play(animation);
     }
@@ -91,7 +87,7 @@
     function inBrowser() {
         return typeof navigator !== "undefined";
     }
-
+    
     function installPlugin(type,plugin){
         if(type==='expressions'){
             expressionsPlugin = plugin;
@@ -111,7 +107,6 @@
 
     bodymovinjs.play = play;
     bodymovinjs.pause = pause;
-    bodymovinjs.setLocationHref = setLocationHref;
     bodymovinjs.togglePause = togglePause;
     bodymovinjs.setSpeed = setSpeed;
     bodymovinjs.setDirection = setDirection;
