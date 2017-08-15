@@ -1,8 +1,16 @@
+<<<<<<< HEAD
+(function (root, factory) {
+    console.log('---------------BODYMOVIN 1000');
+    if(typeof define === "function" && define.amd) {
+        define( factory);
+    } else if(typeof module === "object" && module.exports) {
+=======
 var window = (typeof window === "undefined") ? {} : window;
 (function(root, factory) {
     if (typeof define === "function" && define.amd) {
         define(factory);
     } else if (typeof module === "object" && module.exports) {
+>>>>>>> 26ac03d8c6f9e72f8e5ca8a05cf190191f11a86f
         module.exports = factory();
     } else {
         root.bodymovin = factory();
@@ -11,7 +19,14 @@ var window = (typeof window === "undefined") ? {} : window;
     /*<%= contents %>*/
     var bodymovinjs = {};
 
+<<<<<<< HEAD
+    function setLocationHref (href) {
+        locationHref = href;
+    }
+    function play(animation){
+=======
     function play(animation) {
+>>>>>>> 26ac03d8c6f9e72f8e5ca8a05cf190191f11a86f
         animationManager.play(animation);
     }
 
@@ -105,8 +120,13 @@ var window = (typeof window === "undefined") ? {} : window;
         return typeof navigator !== 'undefined';
     }
 
+<<<<<<< HEAD
+    function installPlugin(type,plugin){
+        if(type==='expressions'){
+=======
     function installPlugin(type, plugin) {
         if (type === 'expressions') {
+>>>>>>> 26ac03d8c6f9e72f8e5ca8a05cf190191f11a86f
             expressionsPlugin = plugin;
         }
     }
@@ -123,6 +143,7 @@ var window = (typeof window === "undefined") ? {} : window;
     }
     bodymovinjs.play = play;
     bodymovinjs.pause = pause;
+    bodymovinjs.setLocationHref = setLocationHref;
     bodymovinjs.togglePause = togglePause;
     bodymovinjs.setSpeed = setSpeed;
     bodymovinjs.setDirection = setDirection;
