@@ -218,7 +218,6 @@ AnimationItem.prototype.loadSegments = function() {
 };
 
 AnimationItem.prototype.configAnimation = function (animData) {
-    var _this = this;
     if(this.renderer && this.renderer.destroyed){
         return;
     }
@@ -247,11 +246,7 @@ AnimationItem.prototype.configAnimation = function (animData) {
     this.imagePreloader = new ImagePreloader();
     this.imagePreloader.setAssetsPath(this.assetsPath);
     this.imagePreloader.setPath(this.path);
-    this.imagePreloader.loadAssets(animData.assets, function(err) {
-        if(!err) {
-            _this.trigger('loaded_images');
-        }
-    });
+    this.imagePreloader.loadAssets(animData.assets);
     this.loadSegments();
     this.updaFrameModifier();
     if(this.renderer.globalData.fontManager){
