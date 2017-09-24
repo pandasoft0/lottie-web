@@ -15,7 +15,7 @@ IShapeElement.prototype.identityMatrix = new Matrix();
 IShapeElement.prototype.lcEnum = {
     '1': 'butt',
     '2': 'round',
-    '3': 'square'
+    '3': 'butt'
 }
 
 IShapeElement.prototype.ljEnum = {

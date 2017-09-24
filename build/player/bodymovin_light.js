@@ -9,9 +9,6 @@ var window = (typeof window === "undefined") ? {} : window;
     }
 }(window, function() {
     var svgNS = "http://www.w3.org/2000/svg";
-
-var locationHref = '';
-
 var subframeEnabled = true;
 var expressionsPlugin;
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -4912,7 +4909,7 @@ SVGRenderer.prototype.configAnimation = function(animData){
     maskElement.setAttribute('id', maskId);
     maskElement.appendChild(rect);
     var maskedElement = document.createElementNS(svgNS,'g');
-    maskedElement.setAttribute("clip-path", "url(" + locationHref + "#"+maskId+")");
+    maskedElement.setAttribute("clip-path", "url(#"+maskId+")");
     this.layerElement.appendChild(maskedElement);
     defs.appendChild(maskElement);
     this.layerElement = maskedElement;
@@ -5160,7 +5157,7 @@ function MaskElement(data,element,globalData) {
             mask.setAttribute('id',layerId+'_'+count);
             mask.appendChild(path);
             defs.appendChild(mask);
-            g.setAttribute('mask','url(' + locationHref + '#'+layerId+'_'+count+')');
+            g.setAttribute('mask','url(#'+layerId+'_'+count+')');
 
             currentMasks.length = 0;
             currentMasks.push(g);
@@ -5193,7 +5190,7 @@ function MaskElement(data,element,globalData) {
 
     this.maskElement.setAttribute('id', layerId);
     if(count > 0){
-        this.element.maskedElement.setAttribute(maskRef, "url(" + locationHref + "#" + layerId + ")");
+        this.element.maskedElement.setAttribute(maskRef, "url(#" + layerId + ")");
     }
 
     defs.appendChild(this.maskElement);
@@ -5230,7 +5227,7 @@ MaskElement.prototype.renderFrame = function (finalMat) {
                 if(this.storedData[i].x.v < 0){
                     if(this.storedData[i].lastOperator !== 'erode'){
                         this.storedData[i].lastOperator = 'erode';
-                        this.storedData[i].elem.setAttribute('filter','url(' + locationHref + '#'+this.storedData[i].filterId+')');
+                        this.storedData[i].elem.setAttribute('filter','url(#'+this.storedData[i].filterId+')');
                     }
                     feMorph.setAttribute('radius',-this.storedData[i].x.v);
                 }else{
@@ -5594,7 +5591,7 @@ SVGBaseElement.prototype.createElements = function(){
                 gg.appendChild(this.layerElement);
                 layerElementParent = gg;
                 masker.appendChild(gg);
-                gg.setAttribute('filter','url(' + locationHref + '#'+filId+')');
+                gg.setAttribute('filter','url(#'+filId+')');
             }
         }else if(this.data.td == 2){
             var maskGroup = document.createElementNS(svgNS,'mask');
@@ -5628,7 +5625,7 @@ SVGBaseElement.prototype.createElements = function(){
             alphaRect.setAttribute('y','0');
             alphaRect.setAttribute('fill','#ffffff');
             alphaRect.setAttribute('opacity','0');
-            maskGrouper.setAttribute('filter','url(' + locationHref + '#'+filId+')');
+            maskGrouper.setAttribute('filter','url(#'+filId+')');
             maskGrouper.appendChild(alphaRect);
             maskGrouper.appendChild(this.layerElement);
             layerElementParent = maskGrouper;
@@ -5673,7 +5670,7 @@ SVGBaseElement.prototype.createElements = function(){
             this.globalData.defs.appendChild(cp);
         if(this.checkMasks()){
             var cpGroup = document.createElementNS(svgNS,'g');
-            cpGroup.setAttribute('clip-path','url(' + locationHref + '#'+clipId+')');
+            cpGroup.setAttribute('clip-path','url(#'+clipId+')');
             cpGroup.appendChild(this.layerElement);
             this.transformedElement = cpGroup;
             if(layerElementParent){
@@ -5682,7 +5679,7 @@ SVGBaseElement.prototype.createElements = function(){
                 this.baseElement = this.transformedElement;
             }
         } else {
-            this.layerElement.setAttribute('clip-path','url(' + locationHref + '#'+clipId+')');
+            this.layerElement.setAttribute('clip-path','url(#'+clipId+')');
         }
         
     }
@@ -5850,7 +5847,7 @@ SVGBaseElement.prototype.setMatte = function(id){
     if(!this.matteElement){
         return;
     }
-    this.matteElement.setAttribute("mask", "url(" + locationHref + "#" + id + ")");
+    this.matteElement.setAttribute("mask", "url(#" + id + ")");
 };
 
 SVGBaseElement.prototype.hide = function(){
@@ -5884,7 +5881,7 @@ IShapeElement.prototype.identityMatrix = new Matrix();
 IShapeElement.prototype.lcEnum = {
     '1': 'butt',
     '2': 'round',
-    '3': 'square'
+    '3': 'butt'
 }
 
 IShapeElement.prototype.ljEnum = {
@@ -7421,7 +7418,7 @@ SVGStrokeEffect.prototype.initialize = function(){
         mask.appendChild(groupPath);
         this.elem.globalData.defs.appendChild(mask);
         var g = document.createElementNS(svgNS,'g');
-        g.setAttribute('mask','url(' + locationHref + '#'+id+')');
+        g.setAttribute('mask','url(#'+id+')');
         if(elemChildren[0]){
             g.appendChild(elemChildren[0]);
         }
@@ -7797,7 +7794,7 @@ function SVGEffects(elem){
     }
     if(count){
         elem.globalData.defs.appendChild(fil);
-        elem.layerElement.setAttribute('filter','url(' + locationHref + '#'+filId+')');
+        elem.layerElement.setAttribute('filter','url(#'+filId+')');
     }
 }
 
@@ -8864,10 +8861,7 @@ AnimationItem.prototype.triggerEvent = _triggerEvent;
 
     var bodymovinjs = {};
 
-    function setLocationHref (href) {
-        locationHref = href;
-    }
-    function play(animation){
+    function play(animation) {
         animationManager.play(animation);
     }
 
@@ -8979,7 +8973,6 @@ AnimationItem.prototype.triggerEvent = _triggerEvent;
     }
     bodymovinjs.play = play;
     bodymovinjs.pause = pause;
-    bodymovinjs.setLocationHref = setLocationHref;
     bodymovinjs.togglePause = togglePause;
     bodymovinjs.setSpeed = setSpeed;
     bodymovinjs.setDirection = setDirection;
@@ -8997,7 +8990,7 @@ AnimationItem.prototype.triggerEvent = _triggerEvent;
     bodymovinjs.inBrowser = inBrowser;
     bodymovinjs.installPlugin = installPlugin;
     bodymovinjs.__getFactory = getFactory;
-    bodymovinjs.version = '4.10.3';
+    bodymovinjs.version = '4.10.2';
 
     function checkReady() {
         if (document.readyState === "complete") {

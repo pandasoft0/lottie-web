@@ -1,8 +1,3 @@
-## V 4.10.3
-- fix for AE CC2014 when reopening App
-- line cap - projecting cap support
-- AVD fix for AE CC2014
-
 ## V 4.10.2
 - AVD fixes
 
