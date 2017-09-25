@@ -88,7 +88,6 @@ var LayerExpressionInterface = (function (){
         _thisLayerFunction.fromWorld = fromWorld;
         _thisLayerFunction.toComp = toWorld;
         _thisLayerFunction.fromComp = fromComp;
-        _thisLayerFunction.sourceRectAtTime = elem.sourceRectAtTime.bind(elem);
         _thisLayerFunction._elem = elem;
         Object.defineProperty(_thisLayerFunction, 'hasParent', {
             get: function(){

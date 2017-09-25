@@ -669,8 +669,7 @@ var PropertyFactory = (function(){
         var max = Math.max;
         var min = Math.min;
         var floor = Math.floor;
-        function updateRange(newCharsFlag){
-            this.mdf = newCharsFlag || false;
+        function updateRange(){
             if(this.dynamicProperties.length){
                 var i, len = this.dynamicProperties.length;
                 for(i=0;i<len;i+=1){
@@ -680,11 +679,8 @@ var PropertyFactory = (function(){
                     }
                 }
             }
-            var totalChars = this.elem.currentTextDocumentData.l.length;
-            if(newCharsFlag && this.data.r === 2) {
-                this.e.v = totalChars;
-            }
-            var divisor = this.data.r === 2 ? 1 : 100 / totalChars;
+            var totalChars = this.data.totalChars;
+            var divisor = this.data.r === 2 ? 1 : 100/totalChars;
             var o = this.o.v/divisor;
             var s = this.s.v/divisor + o;
             var e = (this.e.v/divisor) + o;
@@ -776,7 +772,6 @@ var PropertyFactory = (function(){
             this.dynamicProperties = [];
             this.getValue = updateRange;
             this.getMult = getMult;
-            this.elem = elem;
             this.comp = elem.comp;
             this.finalS = 0;
             this.finalE = 0;
@@ -784,7 +779,7 @@ var PropertyFactory = (function(){
             if('e' in data){
                 this.e = PropertyFactory.getProp(elem,data.e,0,0,this.dynamicProperties);
             }else{
-                this.e = {v:100};
+                this.e = {v:data.r === 2 ? data.totalChars : 100};
             }
             this.o = PropertyFactory.getProp(elem,data.o || {k:0},0,0,this.dynamicProperties);
             this.xe = PropertyFactory.getProp(elem,data.xe || {k:0},0,0,this.dynamicProperties);
