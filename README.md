@@ -1,5 +1,16 @@
 # bodymovin
-After Effects plugin for exporting animations to svg/canvas/html + js or natively on Android and iOS through [Lottie](https://medium.com/airbnb-engineering/introducing-lottie-4ff4a0afac0e)  
+After Effects plugin for exporting animations to svg/canvas/html + js or natively on Android and iOS through [Lottie](https://medium.com/airbnb-engineering/introducing-lottie-4ff4a0afac0e)
+
+## V 4.11.0
+- bodymovin.setLocationHref method to set base url for svg fragments
+- optional viewBox only settings on renderConfig
+- sourceRectAtTime support for text on svg renderer
+- text fixes and performance improvements
+
+## V 4.10.3
+- fix for AE CC2014 when reopening App
+- line cap - projecting cap support
+- AVD fix for AE CC2014
 
 ## V 4.10.2
 - AVD fixes
@@ -15,27 +26,20 @@ After Effects plugin for exporting animations to svg/canvas/html + js or nativel
 ## V 4.9.0
 - Full repeaters support
 - Keyframes interpolation fix for stretched layers
-- inBrowser method added 
-
-## V 4.8.0
-- Fonts fix for Lottie compatibility
-- fonts reduced exported filesize
-- fonts fix for non-zero width character
-- expressions transform separate dimensions fix
-- expression shape rectangle size support
+- inBrowser method added
 
 # Lottie + Bodymovin
 Lottie is the native engine that Airbnb's awesome team built. It uses Bodymovin as the animation exporter and is the ideal complement for getting animations to play natively everywhere.
-Follow these links to get each player:  
+Follow these links to get each player:
 - [Android's player](https://github.com/airbnb/lottie-android)
 - [iOS's player](https://github.com/airbnb/lottie-ios)
 - [React Native's wrapper](https://github.com/airbnb/lottie-react-native)
 
 ## Lottie and AVD
-Some animations can be exported for Android using the AVD format.  
-It can fit for some cases where you'll gain a performance improvement.  
-But Lottie brings much more features, a level of animation control and dynamic loading that couldn't be achieved with avd.  
-Here's a [link](http://airbnb.io/lottie/lottie-avd.html) with a full comparison of both technologies.  
+Some animations can be exported for Android using the AVD format.
+It can fit for some cases where you'll gain a performance improvement.
+But Lottie brings much more features, a level of animation control and dynamic loading that couldn't be achieved with avd.
+Here's a [link](http://airbnb.io/lottie/lottie-avd.html) with a full comparison of both technologies.
 
 # Plugin installation
 
@@ -44,8 +48,8 @@ Here's a [link](http://airbnb.io/lottie/lottie-avd.html) with a full comparison 
 http://aescripts.com/bodymovin/
 
 ### Option 2:
-**Or get it from the adobe store**  
-https://creative.adobe.com/addons/products/12557  
+**Or get it from the adobe store**
+https://creative.adobe.com/addons/products/12557
 CC 2014 and up.
 
 ## Other installation options:
@@ -78,7 +82,7 @@ open the file ~/Library/Preferences/com.adobe.CSXS.6.plist and add a row with ke
 ### Option 5:
 
 Install the zxp manually following the instructions here:
-https://helpx.adobe.com/x-productkb/global/installingextensionsandaddons.html  
+https://helpx.adobe.com/x-productkb/global/installingextensionsandaddons.html
 Skip directly to "Install third-party extensions"
 
 ### After installing
@@ -91,10 +95,10 @@ npm install bodymovin
 
 # with bower
 bower install bodymovin
-```  
-Or you can use the script file from here:  
-https://cdnjs.com/libraries/bodymovin  
-Or get it directly from the AE plugin clicking on Get Player  
+```
+Or you can use the script file from here:
+https://cdnjs.com/libraries/bodymovin
+Or get it directly from the AE plugin clicking on Get Player
 
 # Demo
 [See a basic implementation here.](https://codepen.io/airnan/project/editor/ZeNONO/) <br/>
@@ -126,7 +130,7 @@ It takes an object as a unique param with:
 - autoplay: true / false it will start playing as soon as it is ready
 - name: animation name for future reference
 - renderer: 'svg' / 'canvas' / 'html' to set the renderer
-- container: the dom element on which to render the animation  
+- container: the dom element on which to render the animation
 
 
 It returns the animation instance you can control with play, pause, setSpeed, etc.
@@ -142,14 +146,15 @@ bodymovin.loadAnimation({
 ```
 
 #### Composition Settings:
-Check this wiki page for an explanation for each setting.  
-https://github.com/bodymovin/bodymovin/wiki/Composition-Settings  
+Check this wiki page for an explanation for each setting.
+https://github.com/bodymovin/bodymovin/wiki/Composition-Settings
 
 ## Usage
 animation instances have these main methods:
 **anim.play()** <br/>
 **anim.stop()** <br/>
 **anim.pause()** <br/>
+**anim.setLocationHref(locationHref)** -- one param usually pass as `location.href`. Its useful when you experience mask issue in safari where your url does not have `#` symbol. <br/>
 **anim.setSpeed(speed)** -- one param speed (1 is normal speed) <br/>
 **anim.goToAndStop(value, isFrame)** first param is a numeric value. second param is a boolean that defines time or frames for first param <br/>
 **anim.goToAndPlay(value, isFrame)** first param is a numeric value. second param is a boolean that defines time or frames for first param <br/>
@@ -224,7 +229,7 @@ Or you can call bodymovin.searchAnimations() after page load and it will search 
  . a "data-name" attribute to specify a name to target play controls specifically
  <br/>
  **Example**
- <br/> 
+ <br/>
 ```html
  <div style="width:1067px;height:600px" class="bodymovin" data-animation-path="animation/" data-anim-loop="true" data-name="ninja"></div>
 ```
@@ -232,7 +237,7 @@ Or you can call bodymovin.searchAnimations() after page load and it will search 
 
 
 
-## Preview  
+## Preview
 You can preview or take an svg snapshot of the animation to use as poster. After you render your animation, you can take a snapshot of any frame in the animation and save it to your disk. I recommend to pass the svg through an svg optimizer like https://jakearchibald.github.io/svgomg/ and play around with their settings.<br/>
 
 ## Recommendations
@@ -254,17 +259,22 @@ my email is **hernantorrisi@gmail.com**
 
 
 ## AE Feature Support
-- The script supports precomps, shapes, solids, images, null objects, texts  
-- It supports masks and inverted masks. Maybe other modes will come but it has a huge performance hit.  
-- It supports time remapping  
-- The script supports shapes, rectangles, ellipses and stars.  
-- Expressions. Check the wiki page for [more info.](https://github.com/bodymovin/bodymovin/wiki/Expressions)  
-- Not supported: image sequences, videos and audio are not supported  
+- The script supports precomps, shapes, solids, images, null objects, texts
+- It supports masks and inverted masks. Maybe other modes will come but it has a huge performance hit.
+- It supports time remapping
+- The script supports shapes, rectangles, ellipses and stars.
+- Expressions. Check the wiki page for [more info.](https://github.com/bodymovin/bodymovin/wiki/Expressions)
+- Not supported: image sequences, videos and audio are not supported
 - **No  negative layer stretching**! No idea why, but stretching a layer messes with all the data.
+
+## Development
+`npm install` or `bower install` first
+`npm start`
 
 ## Notes
 - If you want to modify the parser or the player, there are some gulp commands that can simplify the task
 - look at the great animations exported on codepen [See examples on codepen.](http://codepen.io/collection/nVYWZR/)
 - gzipping the animation jsons and the player have a huge reduction on the filesize. I recommend doing it if you use it for a project.
 
-
+## Issues
+- For missing mask in Safari browser, please anim.setLocationHref(locationHref) before animation is generated. It usually caused by usage of base tag in html. (see above for description of setLocationHref)

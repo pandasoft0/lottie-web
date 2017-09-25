@@ -40,7 +40,7 @@ SVGBaseElement.prototype.createElements = function(){
                 gg.appendChild(this.layerElement);
                 layerElementParent = gg;
                 masker.appendChild(gg);
-                gg.setAttribute('filter','url(#'+filId+')');
+                gg.setAttribute('filter','url(' + locationHref + '#'+filId+')');
             }
         }else if(this.data.td == 2){
             var maskGroup = document.createElementNS(svgNS,'mask');
@@ -74,7 +74,7 @@ SVGBaseElement.prototype.createElements = function(){
             alphaRect.setAttribute('y','0');
             alphaRect.setAttribute('fill','#ffffff');
             alphaRect.setAttribute('opacity','0');
-            maskGrouper.setAttribute('filter','url(#'+filId+')');
+            maskGrouper.setAttribute('filter','url(' + locationHref + '#'+filId+')');
             maskGrouper.appendChild(alphaRect);
             maskGrouper.appendChild(this.layerElement);
             layerElementParent = maskGrouper;
@@ -119,7 +119,7 @@ SVGBaseElement.prototype.createElements = function(){
             this.globalData.defs.appendChild(cp);
         if(this.checkMasks()){
             var cpGroup = document.createElementNS(svgNS,'g');
-            cpGroup.setAttribute('clip-path','url(#'+clipId+')');
+            cpGroup.setAttribute('clip-path','url(' + locationHref + '#'+clipId+')');
             cpGroup.appendChild(this.layerElement);
             this.transformedElement = cpGroup;
             if(layerElementParent){
@@ -128,7 +128,7 @@ SVGBaseElement.prototype.createElements = function(){
                 this.baseElement = this.transformedElement;
             }
         } else {
-            this.layerElement.setAttribute('clip-path','url(#'+clipId+')');
+            this.layerElement.setAttribute('clip-path','url(' + locationHref + '#'+clipId+')');
         }
         
     }
@@ -296,7 +296,7 @@ SVGBaseElement.prototype.setMatte = function(id){
     if(!this.matteElement){
         return;
     }
-    this.matteElement.setAttribute("mask", "url(#" + id + ")");
+    this.matteElement.setAttribute("mask", "url(" + locationHref + "#" + id + ")");
 };
 
 SVGBaseElement.prototype.hide = function(){
