@@ -182,10 +182,7 @@ function dataFunctionManager(){
 
                         for(j = 0; j < jLen; j += 1) {
                             pathData = paths[j].ks.k;
-                            if(!pathData.__converted) {
-                                convertPathsToAbsoluteValues(paths[j].ks.k);
-                                pathData.__converted = true;
-                            }
+                            convertPathsToAbsoluteValues(paths[j].ks.k);
                         }
                     }
                 }
@@ -517,20 +514,18 @@ function dataFunctionManager(){
 
             var fWeight = 'normal', fStyle = 'normal';
             len = styles.length;
-            var styleName;
             for(i=0;i<len;i+=1){
-                styleName = styles[i].toLowerCase();
-                if (styleName === 'italic') {
+                if (styles[i].toLowerCase() === 'italic') {
                     fStyle = 'italic';
-                }else if (styleName === 'bold') {
+                }else if (styles[i].toLowerCase() === 'bold') {
                     fWeight = '700';
-                } else if (styleName === 'black') {
+                } else if (styles[i].toLowerCase() === 'black') {
                     fWeight = '900';
-                } else if (styleName === 'medium') {
+                } else if (styles[i].toLowerCase() === 'medium') {
                     fWeight = '500';
-                } else if (styleName === 'regular' || styleName === 'normal') {
+                } else if (styles[i].toLowerCase() === 'regular' || styles[i].toLowerCase() === 'normal') {
                     fWeight = '400';
-                } else if (styleName === 'light' || styleName === 'thin') {
+                } else if (styles[i].toLowerCase() === 'light' || styles[i].toLowerCase() === 'thin') {
                     fWeight = '200';
                 }
             }

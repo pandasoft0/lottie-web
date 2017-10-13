@@ -671,7 +671,7 @@ var Matrix = (function(){
     }
 
     function to2dCSS() {
-        return "matrix(" + roundTo2Decimals(this.props[0]) + ',' + roundTo2Decimals(this.props[1]) + ',' + roundTo2Decimals(this.props[4]) + ',' + roundTo2Decimals(this.props[5]) + ',' + roundTo2Decimals(this.props[12]) + ',' + roundTo2Decimals(this.props[13]) + ")";
+        return "matrix(" + this.props[0] + ',' + this.props[1] + ',' + this.props[4] + ',' + this.props[5] + ',' + this.props[12] + ',' + this.props[13] + ")";
     }
 
     function toString() {
@@ -1580,10 +1580,7 @@ function dataFunctionManager(){
 
                         for(j = 0; j < jLen; j += 1) {
                             pathData = paths[j].ks.k;
-                            if(!pathData.__converted) {
-                                convertPathsToAbsoluteValues(paths[j].ks.k);
-                                pathData.__converted = true;
-                            }
+                            convertPathsToAbsoluteValues(paths[j].ks.k);
                         }
                     }
                 }
@@ -1915,20 +1912,18 @@ function dataFunctionManager(){
 
             var fWeight = 'normal', fStyle = 'normal';
             len = styles.length;
-            var styleName;
             for(i=0;i<len;i+=1){
-                styleName = styles[i].toLowerCase();
-                if (styleName === 'italic') {
+                if (styles[i].toLowerCase() === 'italic') {
                     fStyle = 'italic';
-                }else if (styleName === 'bold') {
+                }else if (styles[i].toLowerCase() === 'bold') {
                     fWeight = '700';
-                } else if (styleName === 'black') {
+                } else if (styles[i].toLowerCase() === 'black') {
                     fWeight = '900';
-                } else if (styleName === 'medium') {
+                } else if (styles[i].toLowerCase() === 'medium') {
                     fWeight = '500';
-                } else if (styleName === 'regular' || styleName === 'normal') {
+                } else if (styles[i].toLowerCase() === 'regular' || styles[i].toLowerCase() === 'normal') {
                     fWeight = '400';
-                } else if (styleName === 'light' || styleName === 'thin') {
+                } else if (styles[i].toLowerCase() === 'light' || styles[i].toLowerCase() === 'thin') {
                     fWeight = '200';
                 }
             }
@@ -2713,6 +2708,7 @@ var PropertyFactory = (function(){
                     this.v.translate(this.p.v[0],this.p.v[1],-this.p.v[2]);
                 }
             }
+            //console.log(this.v.to2dCSS())
             this.frameId = this.elem.globalData.frameId;
         }
 
@@ -4732,7 +4728,7 @@ TextAnimatorProperty.prototype.getMeasures = function(documentData, lettersChang
     var firstLine = true;
     var animatorProps, animatorSelector;
     var j, jLen;
-    var letterValue;
+    var lettersValue = Array.apply(null,{length:len}), letterValue;
 
     jLen = animators.length;
     if (lettersChangedFlag) {
@@ -4768,8 +4764,7 @@ TextAnimatorProperty.prototype.getMeasures = function(documentData, lettersChang
                 partialLength = currentPoint.partialLength;
                 segmentLength = 0;
             }
-            letterO = letterSw = letterFc = letterM = '';
-            letterP = this.defaultPropsArray;
+            lettersValue[i] = this.emptyProp;
         }else{
             if(this._hasMaskedPath) {
                 if(currentLine !== letters[i].line){
@@ -4982,6 +4977,8 @@ TextAnimatorProperty.prototype.getMeasures = function(documentData, lettersChang
                                 fc[k] = fc[k] + (animatorProps.fc.v[k] - fc[k])*mult[0];
                             } else {
                                 fc[k] = fc[k] + (animatorProps.fc.v[k] - fc[k])*mult;
+                                //console.log('mult',mult);
+                                //console.log(Math.round(fc[k] + (animatorProps.fc.v[k] - fc[k])*mult));
                             }
                         }
                     }
@@ -5087,16 +5084,16 @@ TextAnimatorProperty.prototype.getMeasures = function(documentData, lettersChang
                 letterP = [matrixHelper.props[0],matrixHelper.props[1],matrixHelper.props[2],matrixHelper.props[3],matrixHelper.props[4],matrixHelper.props[5],matrixHelper.props[6],matrixHelper.props[7],matrixHelper.props[8],matrixHelper.props[9],matrixHelper.props[10],matrixHelper.props[11],matrixHelper.props[12],matrixHelper.props[13],matrixHelper.props[14],matrixHelper.props[15]];
             }
             letterO = elemOpacity;
-        }
 
-        if(renderedLettersCount <= i) {
-            letterValue = new LetterProps(letterO,letterSw,letterSc,letterFc,letterM,letterP);
-            this.renderedLetters.push(letterValue);
-            renderedLettersCount += 1;
-            this.lettersChangedFlag = true;
-        } else {
-            letterValue = this.renderedLetters[i];
-            this.lettersChangedFlag = letterValue.update(letterO, letterSw, letterSc, letterFc, letterM, letterP) || this.lettersChangedFlag;
+            if(renderedLettersCount <= i) {
+                letterValue = new LetterProps(letterO,letterSw,letterSc,letterFc,letterM,letterP);
+                this.renderedLetters.push(letterValue);
+                renderedLettersCount += 1;
+                this.lettersChangedFlag = true;
+            } else {
+                letterValue = this.renderedLetters[i];
+                this.lettersChangedFlag = letterValue.update(letterO, letterSw, letterSc, letterFc, letterM, letterP) || this.lettersChangedFlag;
+            }
         }
     }
 }
@@ -5168,6 +5165,7 @@ LetterProps.prototype.update = function(o, sw, sc, fc, m, p) {
 		updated = true;
 	}
 	if(p.length && (this.p[0] !== p[0] || this.p[1] !== p[1] || this.p[4] !== p[4] || this.p[5] !== p[5] || this.p[12] !== p[12] || this.p[13] !== p[13])) {
+
 		this.p = p;
 		this.mdf.p = true;
 		updated = true;
@@ -7420,7 +7418,7 @@ SVGTextElement.prototype.renderLetters = function(){
         this.textAnimator.getMeasures(this.currentTextDocumentData, this.lettersChangedFlag);
         if(this.lettersChangedFlag || this.textAnimator.lettersChangedFlag){
             this._sizeChanged = true;
-            var  i,len;
+            var  i,len,count=0;
             var renderedLetters = this.textAnimator.renderedLetters;
 
             var letters = this.currentTextDocumentData.l;
@@ -7431,7 +7429,8 @@ SVGTextElement.prototype.renderLetters = function(){
                 if(letters[i].n){
                     continue;
                 }
-                renderedLetter = renderedLetters[i];
+                renderedLetter = renderedLetters[count];
+                count += 1;
                 if(renderedLetter.mdf.m) {
                     this.textSpans[i].setAttribute('transform',renderedLetter.m);
                 }
@@ -10700,7 +10699,7 @@ CVTextElement.prototype.renderFrame = function(parentMatrix){
         this.textAnimator.getMeasures(this.currentTextDocumentData, this.lettersChangedFlag);
     }
 
-    var  i,len, j, jLen, k, kLen;
+    var  i,len, j, jLen, k, kLen,count=0;
     var renderedLetters = this.textAnimator.renderedLetters;
 
     var letters = this.currentTextDocumentData.l;
@@ -10712,7 +10711,8 @@ CVTextElement.prototype.renderFrame = function(parentMatrix){
         if(letters[i].n){
             continue;
         }
-        renderedLetter = renderedLetters[i];
+        renderedLetter = renderedLetters[count];
+        count += 1;
         if(renderedLetter){
             this.globalData.renderer.save();
             this.globalData.renderer.ctxTransform(renderedLetter.p);
@@ -11492,7 +11492,6 @@ HImageElement.prototype.createElements = function(){
     this.checkParenting();
 };
 
-HImageElement.prototype.show = HSolidElement.prototype.show;
 HImageElement.prototype.hide = HSolidElement.prototype.hide;
 HImageElement.prototype.renderFrame = HSolidElement.prototype.renderFrame;
 HImageElement.prototype.destroy = HSolidElement.prototype.destroy;
@@ -12254,7 +12253,7 @@ var ExpressionManager = (function(){
         var outPoint = elem.data.op/elem.comp.globalData.frameRate;
         var width = elem.data.sw ? elem.data.sw : 0;
         var height = elem.data.sh ? elem.data.sh : 0;
-        var toWorld,fromWorld,fromComp,anchorPoint,thisLayer,thisComp;
+        var toWorld,fromWorld,anchorPoint,thisLayer,thisComp;
         var fn = new Function();
         //var fnStr = 'var fn = function(){'+val+';this.v = $bm_rt;}';
         //eval(fnStr);
@@ -12566,7 +12565,6 @@ var ExpressionManager = (function(){
                 thisComp = elem.comp.compInterface;
                 toWorld = thisLayer.toWorld.bind(thisLayer);
                 fromWorld = thisLayer.fromWorld.bind(thisLayer);
-                fromComp = thisLayer.fromComp.bind(thisLayer);
             }
             if(!transform){
                 transform = elem.layerInterface("ADBE Transform Group");
@@ -14110,7 +14108,7 @@ GroupEffect.prototype.init = function(data,element,dynamicProperties){
     bodymovinjs.inBrowser = inBrowser;
     bodymovinjs.installPlugin = installPlugin;
     bodymovinjs.__getFactory = getFactory;
-    bodymovinjs.version = '4.11.2';
+    bodymovinjs.version = '4.11.1';
 
     function checkReady() {
         if (document.readyState === "complete") {

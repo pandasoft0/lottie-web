@@ -1,8 +1,3 @@
-## V 4.11.2
-- new line text fix
-- expression fromComp support
-- rounding to decimals shapes to prevent exponential values
-
 ## V 4.11.1
 - 3d and 2d layers html renderer fix
 - text new lines fix
