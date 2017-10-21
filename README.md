@@ -1,6 +1,11 @@
 # bodymovin
 After Effects plugin for exporting animations to svg/canvas/html + js or natively on Android and iOS through [Lottie](https://medium.com/airbnb-engineering/introducing-lottie-4ff4a0afac0e)
 
+## V 4.11.2
+- new line text fix
+- expression fromComp support
+- rounding to decimals shapes to prevent exponential values
+
 ## V 4.11.1
 - 3d and 2d layers html renderer fix
 - text new lines fix
@@ -209,8 +214,7 @@ bodymovin.loadAnimation({
     scaleMode: 'noScale',
     clearCanvas: false,
     progressiveLoad: false, // Boolean, only svg renderer, loads dom elements when needed. Might speed up initialization for large number of elements.
-    hideOnTransparent: true, //Boolean, only svg renderer, hides elements when opacity reaches 0 (defaults to true)
-    className: 'some-css-class-name'
+    hideOnTransparent: true //Boolean, only svg renderer, hides elements when opacity reaches 0 (defaults to true)
   }
 });
 ```
