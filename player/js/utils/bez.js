@@ -75,7 +75,7 @@ function bezFunction(){
             var point = [],lastPoint = [];
             var lengthData = {
                 addedLength: 0,
-                segments: Array.apply(null,{length:curveSegments})
+                segments: []
             };
             len = pt3.length;
             for(k=0;k<curveSegments;k+=1){
@@ -93,7 +93,7 @@ function bezFunction(){
                     ptDistance = bm_sqrt(ptDistance);
                     addedLength += ptDistance;
                 }
-                lengthData.segments[k] = new Segment(addedLength,perc);
+                lengthData.segments.push(new Segment(addedLength,perc));
             }
             lengthData.addedLength = addedLength;
             return lengthData;

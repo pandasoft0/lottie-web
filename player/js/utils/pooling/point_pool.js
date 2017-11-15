@@ -14,7 +14,7 @@ var point_pool = (function(){
 			_length -= 1;
 			point = pool[_length];
 		} else {
-			point = createTypedArray('float32', 2);
+			point = [0.1,0.1];
 		}
 		return point;
 	}

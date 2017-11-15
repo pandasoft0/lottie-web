@@ -45,11 +45,11 @@ CVShapeElement.prototype.createStyleElement = function(data, dynamicProperties){
             styleElem.wi = elementData.w.v;
         }
         if(data.d){
-            var d = new DashProperty(this,data.d,'canvas',dynamicProperties);
+            var d = PropertyFactory.getDashProp(this,data.d,'canvas',dynamicProperties);
             elementData.d = d;
             if(!elementData.d.k){
-                styleElem.da = elementData.d.dashArray;
-                styleElem.do = elementData.d.dashoffset[0];
+                styleElem.da = elementData.d.dasharray;
+                styleElem.do = elementData.d.dashoffset;
             }
         }
 
@@ -78,8 +78,7 @@ CVShapeElement.prototype.createTransformElement = function(data, dynamicProperti
             matMdf:false,
             opMdf:false,
             op: PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties),
-            //mProps: PropertyFactory.getProp(this,data,2,null,dynamicProperties)
-            mProps: TransformPropertyFactory.getTransformProperty(this,data,dynamicProperties)
+            mProps: PropertyFactory.getProp(this,data,2,null,dynamicProperties)
         },
         elements: []
     };
@@ -419,9 +418,10 @@ CVShapeElement.prototype.renderStroke = function(styleData,itemData, groupTransf
     var styleElem = itemData.style;
     //TODO fix dashes
     var d = itemData.d;
+    var dasharray,dashoffset;
     if(d && (d.mdf  || this.firstFrame)){
-        styleElem.da = d.dashArray;
-        styleElem.do = d.dashoffset[0];
+        styleElem.da = d.dasharray;
+        styleElem.do = d.dashoffset;
     }
     if(itemData.c.mdf || this.firstFrame){
         styleElem.co = 'rgb('+bm_floor(itemData.c.v[0])+','+bm_floor(itemData.c.v[1])+','+bm_floor(itemData.c.v[2])+')';
