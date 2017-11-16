@@ -178,13 +178,6 @@ var LayerExpressionInterface = (function (){
             }
         });
 
-        Object.defineProperty(_thisLayerFunction, "startTime", {
-
-            get: function(){
-                return elem.data.st;
-            }
-        });
-
         _thisLayerFunction.registerMaskInterface = _registerMaskInterface;
         _thisLayerFunction.registerEffectsInterface = _registerEffectsInterface;
         return _thisLayerFunction;

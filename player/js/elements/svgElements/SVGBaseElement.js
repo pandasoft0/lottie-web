@@ -1,26 +1,30 @@
-function SVGBaseElement(data,parentContainer,globalData,comp, placeholder){
-    this.globalData = globalData;
+function SVGBaseElement(data,parentContainer,globalData,comp){
+    /*this.globalData = globalData;
     this.comp = comp;
     this.data = data;
     this.matteElement = null;
     this.transformedElement = null;
     this.isTransparent = false;
     this.parentContainer = parentContainer;
-    this.layerId = placeholder ? placeholder.layerId : 'ly_'+randomString(10);
-    this.placeholder = placeholder;
     this._sizeChanged = false;
-    this.init();
+    this.init();*/
 };
 
-createElement(BaseElement, SVGBaseElement);
+//createElement(BaseElement, SVGBaseElement);
 
-SVGBaseElement.prototype.createElements = function(){
+SVGBaseElement.prototype.initSvgElement = function(parentContainer) {
+    this.matteElement = document.createElementNS(svgNS,'g');
     this.layerElement = document.createElementNS(svgNS,'g');
     this.transformedElement = this.layerElement;
-    if(this.data.hasMask){
-        this.maskedElement = this.layerElement;
-    }
+    this._sizeChanged = false;
+    this.parentContainer = parentContainer;
+}
+
+SVGBaseElement.prototype.createContainerElements = function(){
+    this.transformedElement = this.layerElement;
+    this.maskedElement = this.layerElement;
     var layerElementParent = null;
+    //If this layer acts as a mask for the following layer
     if(this.data.td){
         if(this.data.td == 3 || this.data.td == 1){
             var masker = document.createElementNS(svgNS,'mask');
@@ -29,7 +33,7 @@ SVGBaseElement.prototype.createElements = function(){
             masker.appendChild(this.layerElement);
             layerElementParent = masker;
             this.globalData.defs.appendChild(masker);
-            ////// This is only for IE and Edge when mask if of type alpha
+            // This is only for IE and Edge when mask if of type alpha
             if(!featureSupport.maskType && this.data.td == 1){
                 masker.setAttribute('mask-type','luminance');
                 var filId = randomString(10);
@@ -89,15 +93,10 @@ SVGBaseElement.prototype.createElements = function(){
             }
             this.globalData.defs.appendChild(maskGroup);
         }
-    }else if(this.data.hasMask || this.data.tt){
-        if(this.data.tt){
-            this.matteElement = document.createElementNS(svgNS,'g');
-            this.matteElement.appendChild(this.layerElement);
-            layerElementParent = this.matteElement;
-            this.baseElement = this.matteElement;
-        }else{
-            this.baseElement = this.layerElement;
-        }
+    }else if(this.data.tt){
+        this.matteElement.appendChild(this.layerElement);
+        layerElementParent = this.matteElement;
+        this.baseElement = this.matteElement;
     }else{
         this.baseElement = this.layerElement;
     }
@@ -109,14 +108,15 @@ SVGBaseElement.prototype.createElements = function(){
             this.layerElement.setAttribute('class',this.data.cl);
         }
     }
+    //Clipping compositions to hide content that exceeds boundaries. If collapsed transformations is on, component should not be clipped
     if(this.data.ty === 0){
-            var cp = document.createElementNS(svgNS, 'clipPath');
-            var pt = document.createElementNS(svgNS,'path');
-            pt.setAttribute('d','M0,0 L'+this.data.w+',0'+' L'+this.data.w+','+this.data.h+' L0,'+this.data.h+'z');
-            var clipId = 'cp_'+randomString(8);
-            cp.setAttribute('id',clipId);
-            cp.appendChild(pt);
-            this.globalData.defs.appendChild(cp);
+        var cp = document.createElementNS(svgNS, 'clipPath');
+        var pt = document.createElementNS(svgNS,'path');
+        pt.setAttribute('d','M0,0 L'+this.data.w+',0'+' L'+this.data.w+','+this.data.h+' L0,'+this.data.h+'z');
+        var clipId = 'cp_'+randomString(8);
+        cp.setAttribute('id',clipId);
+        cp.appendChild(pt);
+        this.globalData.defs.appendChild(cp);
         if(this.checkMasks()){
             var cpGroup = document.createElementNS(svgNS,'g');
             cpGroup.setAttribute('clip-path','url(' + locationHref + '#'+clipId+')');
@@ -135,133 +135,29 @@ SVGBaseElement.prototype.createElements = function(){
     if(this.data.bm !== 0){
         this.setBlendMode();
     }
-    if(this.layerElement !== this.parentContainer){
-        this.placeholder = null;
-    }
-    /* Todo performance killer
-    if(this.data.sy){
-        var filterID = 'st_'+randomString(10);
-        var c = this.data.sy[0].c.k;
-        var r = this.data.sy[0].s.k;
-        var expansor = document.createElementNS(svgNS,'filter');
-        expansor.setAttribute('id',filterID);
-        var feFlood = document.createElementNS(svgNS,'feFlood');
-        this.feFlood = feFlood;
-        if(!c[0].e){
-            feFlood.setAttribute('flood-color','rgb('+c[0]+','+c[1]+','+c[2]+')');
-        }
-        feFlood.setAttribute('result','base');
-        expansor.appendChild(feFlood);
-        var feMorph = document.createElementNS(svgNS,'feMorphology');
-        feMorph.setAttribute('operator','dilate');
-        feMorph.setAttribute('in','SourceGraphic');
-        feMorph.setAttribute('result','bigger');
-        this.feMorph = feMorph;
-        if(!r.length){
-            feMorph.setAttribute('radius',this.data.sy[0].s.k);
-        }
-        expansor.appendChild(feMorph);
-        var feColorMatrix = document.createElementNS(svgNS,'feColorMatrix');
-        feColorMatrix.setAttribute('result','mask');
-        feColorMatrix.setAttribute('in','bigger');
-        feColorMatrix.setAttribute('type','matrix');
-        feColorMatrix.setAttribute('values','0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0');
-        expansor.appendChild(feColorMatrix);
-        var feComposite = document.createElementNS(svgNS,'feComposite');
-        feComposite.setAttribute('result','drop');
-        feComposite.setAttribute('in','base');
-        feComposite.setAttribute('in2','mask');
-        feComposite.setAttribute('operator','in');
-        expansor.appendChild(feComposite);
-        var feBlend = document.createElementNS(svgNS,'feBlend');
-        feBlend.setAttribute('in','SourceGraphic');
-        feBlend.setAttribute('in2','drop');
-        feBlend.setAttribute('mode','normal');
-        expansor.appendChild(feBlend);
-        this.globalData.defs.appendChild(expansor);
-        var cont = document.createElementNS(svgNS,'g');
-        if(this.layerElement === this.parentContainer){
-            this.layerElement = cont;
-        }else{
-            cont.appendChild(this.layerElement);
-        }
-        cont.setAttribute('filter','url(#'+filterID+')');
-        if(this.data.td){
-            cont.setAttribute('data-td',this.data.td);
-        }
-        if(this.data.td == 3){
-            this.globalData.defs.appendChild(cont);
-        }else if(this.data.td == 2){
-            maskGrouper.appendChild(cont);
-        }else if(this.data.td == 1){
-            masker.appendChild(cont);
-        }else{
-            if(this.data.hasMask && this.data.tt){
-                this.matteElement.appendChild(cont);
-            }else{
-                this.appendNodeToParent(cont);
-            }
-        }
-    }*/
-    if(this.data.ef){
-        this.effectsManager = new SVGEffects(this);
-    }
+    this.effectsManager = new SVGEffects(this);
     this.checkParenting();
 };
 
 
 SVGBaseElement.prototype.setBlendMode = BaseElement.prototype.setBlendMode;
 
-SVGBaseElement.prototype.renderFrame = function(parentTransform){
-    if(this.data.ty === 3 || this.data.hd || !this.isVisible){
+SVGBaseElement.prototype.renderElement = function(){
+    //If this layer is of type null (ty === 3) no need to render
+    //If it is exported as hidden (data.hd === true) no need to render
+    //If it is not visible no need to render
+    if(this.data.ty === 3 || this.data.hd || this.hidden){
         return false;
     }
 
     this.lastNum = this.currentFrameNum;
-    this.finalTransform.opMdf = this.firstFrame || this.finalTransform.op.mdf;
-    this.finalTransform.matMdf = this.firstFrame || this.finalTransform.mProp.mdf;
-    this.finalTransform.opacity = this.finalTransform.op.v;
 
-    var mat;
-    var finalMat = this.finalTransform.mat;
-
-    if(this.hierarchy){
-        var i = 0, len = this.hierarchy.length;
-        if(!this.finalTransform.matMdf) {
-            while(i < len) {
-                if(this.hierarchy[i].finalTransform.mProp.mdf) {
-                    this.finalTransform.matMdf = true;
-                    break;
-                }
-                i += 1;
-            }
-        }
-        
-        if(this.finalTransform.matMdf) {
-            mat = this.finalTransform.mProp.v.props;
-            finalMat.cloneFromProps(mat);
-            for(i=0;i<len;i+=1){
-                mat = this.hierarchy[i].finalTransform.mProp.v.props;
-                finalMat.transform(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5],mat[6],mat[7],mat[8],mat[9],mat[10],mat[11],mat[12],mat[13],mat[14],mat[15]);
-            }
-        }
-        
-    }else if(this.isVisible){
-        finalMat = this.finalTransform.mProp.v;
-    }
+    var finalMat = this.finalMat;
+    
     if(this.finalTransform.matMdf && this.layerElement){
         this.transformedElement.setAttribute('transform',finalMat.to2dCSS());
     }
     if(this.finalTransform.opMdf && this.layerElement){
-        if(this.finalTransform.op.v <= 0) {
-            if(!this.isTransparent && this.globalData.renderConfig.hideOnTransparent){
-                this.isTransparent = true;
-                this.hide();
-            }
-        } else if(this.hidden && this.isTransparent){
-            this.isTransparent = false;
-            this.show();
-        }
         this.transformedElement.setAttribute('opacity',this.finalTransform.op.v);
     }
 
@@ -288,8 +184,8 @@ SVGBaseElement.prototype.destroy = function(){
 SVGBaseElement.prototype.getBaseElement = function(){
     return this.baseElement;
 };
-SVGBaseElement.prototype.addMasks = function(data){
-    this.maskManager = new MaskElement(data,this,this.globalData);
+SVGBaseElement.prototype.addMasks = function(){
+    this.maskManager = new MaskElement(this.data,this,this.globalData);
 };
 
 SVGBaseElement.prototype.setMatte = function(id){
@@ -300,7 +196,7 @@ SVGBaseElement.prototype.setMatte = function(id){
 };
 
 SVGBaseElement.prototype.hide = function(){
-    if(!this.hidden){
+    if(!this.hidden && (!this.isVisible || this.isTransparent)){
         this.layerElement.style.display = 'none';
         this.hidden = true;
     }
