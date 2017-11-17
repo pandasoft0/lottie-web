@@ -14,13 +14,13 @@ BaseElement.prototype.checkMasks = function(){
     return false;
 }
 
-/****BaseElement.prototype.checkParenting = function(){
+BaseElement.prototype.checkParenting = function(){
     if(this.data.parent !== undefined){
         this.comp.buildElementParenting(this, this.data.parent);
     }
-}****/
+}
 
-/****BaseElement.prototype.prepareFrame = function(num){
+BaseElement.prototype.prepareFrame = function(num){
     if(this.data.ip - this.data.st <= num && this.data.op - this.data.st > num)
     {
         if(this.isVisible !== true){
@@ -52,11 +52,24 @@ BaseElement.prototype.checkMasks = function(){
     if(this.data.hasMask && this.isVisible){
         this.maskManager.prepareFrame(num*this.data.sr);
     }
+    
+    /* TODO check this
+    if(this.data.sy){
+        if(this.data.sy[0].renderedData[num]){
+            if(this.data.sy[0].renderedData[num].c){
+                this.feFlood.setAttribute('flood-color','rgb('+Math.round(this.data.sy[0].renderedData[num].c[0])+','+Math.round(this.data.sy[0].renderedData[num].c[1])+','+Math.round(this.data.sy[0].renderedData[num].c[2])+')');
+            }
+            if(this.data.sy[0].renderedData[num].s){
+                this.feMorph.setAttribute('radius',this.data.sy[0].renderedData[num].s);
+            }
+        }
+    }
+    */
 
 
     this.currentFrameNum = num*this.data.sr;
     return this.isVisible;
-};****/
+};
 
 BaseElement.prototype.globalToLocal = function(pt){
     var transforms = [];
@@ -155,32 +168,66 @@ BaseElement.prototype.setBlendMode = function(){
     elem.style['mix-blend-mode'] = blendModeValue;
 }
 
-BaseElement.prototype.initBaseData = function(data, globalData, comp){
-    this.globalData = globalData;
-    this.comp = comp;
-    this.data = data;
-    this.layerId = 'ly_'+randomString(10);
-    
-    //Stretch factor for old animations.
+BaseElement.prototype.init = function(){
     if(!this.data.sr){
         this.data.sr = 1;
     }
-    /****this.dynamicProperties = this.dynamicProperties || [];*/
+    this.dynamicProperties = this.dynamicProperties || [];
     if(this.data.ef){
         this.effects = new EffectsManager(this.data,this,this.dynamicProperties);
+        //this.effect = this.effectsManager.bind(this.effectsManager);
     }
-    this.initFrame();
-    /*****this.hidden = false;
+    //this.elemInterface = buildLayerExpressionInterface(this);
+    this.hidden = false;
     this.firstFrame = true;
     this.isVisible = false;
     this._isParent = false;
     this.currentFrameNum = -99999;
     this.lastNum = -99999;
-    this.elemMdf = false;*****/
-    
+    if(this.data.ks){
+        this.finalTransform = {
+            mProp: TransformPropertyFactory.getTransformProperty(this,this.data.ks,this.dynamicProperties),
+            //mProp: PropertyFactory.getProp(this,this.data.ks,2,null,this.dynamicProperties),
+            matMdf: false,
+            opMdf: false,
+            mat: new Matrix(),
+            opacity: 1
+        };
+        if(this.data.ao){
+            this.finalTransform.mProp.autoOriented = true;
+        }
+        this.finalTransform.op = this.finalTransform.mProp.o;
+        this.transform = this.finalTransform.mProp;
+        if(this.data.ty !== 11){
+            this.createElements();
+        }
+        if(this.data.hasMask){
+            this.addMasks(this.data);
+        }
+    }
+    this.elemMdf = false;
 };
 BaseElement.prototype.getType = function(){
     return this.type;
+};
+
+BaseElement.prototype.resetHierarchy = function(){
+    if(!this.hierarchy){
+        this.hierarchy = [];
+    }else{
+        this.hierarchy.length = 0;
+    }
+};
+
+BaseElement.prototype.getHierarchy = function(){
+    if(!this.hierarchy){
+        this.hierarchy = [];
+    }
+    return this.hierarchy;
+};
+
+BaseElement.prototype.setHierarchy = function(hierarchy){
+    this.hierarchy = hierarchy;
 };
 
 BaseElement.prototype.getLayerSize = function(){
@@ -205,6 +252,3 @@ BaseElement.prototype.sourceRectAtTime = function(){
 };
 
 BaseElement.prototype.mHelper = new Matrix();
-
-extendPrototype(HierarchyElement, BaseElement);
-extendPrototype(FrameElement, BaseElement);
