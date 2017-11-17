@@ -10,7 +10,7 @@
             overflow-y: auto;
         }
 
-        #lottie{
+        #bodymovin{
             background-color:#000;
             width:100%;
             height:100%;
@@ -28,7 +28,7 @@
         }
 
     </style>
-    <!-- build:js lottie.js -->
+    <!-- build:js bodymovin.js -->
      <script src="js/main.js"></script>
     <script src="js/utils/common.js"></script>
     <script src="js/utils/helpers/arrays.js"></script>
@@ -67,7 +67,12 @@
     <script src="js/renderers/CanvasRenderer.js" data-light-skip="true"></script>
     <script src="js/renderers/HybridRenderer.js" data-light-skip="true"></script>
     <script src="js/mask.js"></script>
+    <script src="js/elements/helpers/HierarchyElement.js"></script>
+    <script src="js/elements/helpers/FrameElement.js"></script>
+    <script src="js/elements/helpers/TransformElement.js"></script>
+    <script src="js/elements/helpers/RenderableElement.js"></script>
     <script src="js/elements/BaseElement.js"></script>
+    <script src="js/elements/NullElement.js"></script>
     <script src="js/elements/svgElements/SVGBaseElement.js"></script>
     <script src="js/elements/ShapeElement.js"></script>
     <script src="js/elements/TextElement.js"></script>
@@ -123,23 +128,27 @@
 
 </head>
 <body>
-<div id="lottie"></div>
+<div id="bodymovin"></div>
 
 <script>
 
     var anim;
-    var elem = document.getElementById('lottie')
+    var elem = document.getElementById('bodymovin')
     var animData = {
         container: elem,
         renderer: 'svg',
-        loop: false,
+        loop: true,
         autoplay: true,
         rendererSettings: {
-            progressiveLoad:false
+            progressiveLoad:true
         },
         path: 'exports/render/data.json'
     };
-    anim = lottie.loadAnimation(animData);
+    //anim = bodymovin.loadAnimation(animData);
+    setTimeout(function(){
+        bodymovin.loadAnimation(animData);
+        // document.getElementById("bodymovin").style['background-color'] = 'darkblue';
+    }, 1)
 
 </script>
 </body>
