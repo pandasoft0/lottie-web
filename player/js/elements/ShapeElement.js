@@ -1,14 +1,35 @@
-function IShapeElement(data,parentContainer,globalData,comp, placeholder){
+function IShapeElement(data,parentContainer,globalData,comp){
+    //List of drawable elements
     this.shapes = [];
+    // Full shape data
     this.shapesData = data.shapes;
+    //List of styles that will be applied to shapes
     this.stylesList = [];
-    this.itemsData = [];
-    this.prevViewData = [];
+    //List of modifiers that will be applied to shapes
     this.shapeModifiers = [];
+    //List of items in shape tree
+    this.itemsData = [];
+    //List of items in previous shape tree
+    this.prevViewData = [];
+    // List of elements that have been created
     this.processedElements = [];
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
+    this.initElement(data,parentContainer,globalData,comp);
 }
-createElement(SVGBaseElement, IShapeElement);
+
+extendPrototype2([BaseElement,TransformElement,SVGBaseElement,HierarchyElement,FrameElement,RenderableElement], IShapeElement);
+
+IShapeElement.prototype.initElement = function(data,parentContainer,globalData,comp) {
+    
+    this.initBaseData(data, globalData, comp);
+    this.initTransform(data, globalData, comp);
+    this.initHierarchy();
+    this.initRenderable();
+    this.initSvgElement(parentContainer);
+    this.createContainerElements();
+    this.addMasks();
+    this.createContent();
+    this.hide();
+}
 
 IShapeElement.prototype.identityMatrix = new Matrix();
 
@@ -25,12 +46,12 @@ IShapeElement.prototype.ljEnum = {
 }
 
 IShapeElement.prototype.searchProcessedElement = function(elem){
-    var i = this.processedElements.length;
+    var i = 0, len = this.processedElements.length;
     while(i){
-        i -= 1;
         if(this.processedElements[i].elem === elem){
             return this.processedElements[i].pos;
         }
+        i += 1;
     }
     return 0;
 };
@@ -45,22 +66,14 @@ IShapeElement.prototype.addProcessedElement = function(elem, pos){
         }
     }
     if(i === 0){
-        this.processedElements.push({
-            elem: elem,
-            pos: pos
-        })
+        this.processedElements.push(new ProcessedElement(elem, pos));
     }
 };
 
 IShapeElement.prototype.buildExpressionInterface = function(){};
 
-IShapeElement.prototype.createElements = function(){
-    //TODO check if I can use symbol so i can set its viewBox
-    this._parent.createElements.call(this);
+IShapeElement.prototype.createContent = function(){
     this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.layerElement,this.dynamicProperties, 0, [], true);
-    if(!this.data.hd || this.data.td){
-        styleUnselectableDiv(this.layerElement);
-    }
 };
 
 IShapeElement.prototype.setGradientData = function(pathElement,arr,data){
@@ -68,9 +81,9 @@ IShapeElement.prototype.setGradientData = function(pathElement,arr,data){
     var gradientId = 'gr_'+randomString(10);
     var gfill;
     if(arr.t === 1){
-        gfill = document.createElementNS(svgNS,'linearGradient');
+        gfill = createNS('linearGradient');
     } else {
-        gfill = document.createElementNS(svgNS,'radialGradient');
+        gfill = createNS('radialGradient');
     }
     gfill.setAttribute('id',gradientId);
     gfill.setAttribute('spreadMethod','pad');
@@ -79,7 +92,7 @@ IShapeElement.prototype.setGradientData = function(pathElement,arr,data){
     var stop, j, jLen;
     jLen = arr.g.p*4;
     for(j=0;j<jLen;j+=4){
-        stop = document.createElementNS(svgNS,'stop');
+        stop = createNS('stop');
         gfill.appendChild(stop);
         stops.push(stop);
     }
@@ -93,16 +106,16 @@ IShapeElement.prototype.setGradientOpacity = function(arr, data, styleOb){
     if((arr.g.k.k[0].s && arr.g.k.k[0].s.length > arr.g.p*4) || arr.g.k.k.length > arr.g.p*4){
         var opFill;
         var stop, j, jLen;
-        var mask = document.createElementNS(svgNS,"mask");
-        var maskElement = document.createElementNS(svgNS, 'path');
+        var mask = createNS("mask");
+        var maskElement = createNS( 'path');
         mask.appendChild(maskElement);
         var opacityId = 'op_'+randomString(10);
         var maskId = 'mk_'+randomString(10);
         mask.setAttribute('id',maskId);
         if(arr.t === 1){
-            opFill = document.createElementNS(svgNS,'linearGradient');
+            opFill = createNS('linearGradient');
         } else {
-            opFill = document.createElementNS(svgNS,'radialGradient');
+            opFill = createNS('radialGradient');
         }
         opFill.setAttribute('id',opacityId);
         opFill.setAttribute('spreadMethod','pad');
@@ -110,7 +123,7 @@ IShapeElement.prototype.setGradientOpacity = function(arr, data, styleOb){
         jLen = arr.g.k.k[0].s ? arr.g.k.k[0].s.length : arr.g.k.k.length;
         var stops = [];
         for(j=arr.g.p*4;j<jLen;j+=2){
-            stop = document.createElementNS(svgNS,'stop');
+            stop = createNS('stop');
             stop.setAttribute('stop-color','rgb(255,255,255)');
             //stop.setAttribute('offset',Math.round(arr.y[j][0]*100)+'%');
             //stop.setAttribute('style','stop-color:rgb(255,255,255);stop-opacity:'+arr.y[j][1]);
@@ -130,16 +143,9 @@ IShapeElement.prototype.setGradientOpacity = function(arr, data, styleOb){
 IShapeElement.prototype.createStyleElement = function(data, level, dynamicProperties){
     var elementData = {
     };
-    var styleOb = {
-        data: data,
-        type: data.ty,
-        d: '',
-        ld: '',
-        lvl: level,
-        mdf: false,
-        closed: false
-    };
-    var pathElement = document.createElementNS(svgNS, "path");
+    var styleOb = new SVGStyleData(data, level);
+
+    var pathElement = styleOb.pElem;
     elementData.o = PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties);
     if(data.ty == 'st' || data.ty == 'gs') {
         pathElement.setAttribute('stroke-linecap', this.lcEnum[data.lc] || 'round');
@@ -194,7 +200,6 @@ IShapeElement.prototype.createStyleElement = function(data, level, dynamicProper
     if(data.cl){
         pathElement.setAttribute('class',data.cl);
     }
-    styleOb.pElem = pathElement;
     this.stylesList.push(styleOb);
     elementData.style = styleOb;
     return elementData;
@@ -205,7 +210,7 @@ IShapeElement.prototype.createGroupElement = function(data) {
         it: [],
         prevViewData: []
     };
-    var g = document.createElementNS(svgNS,'g');
+    var g = createNS('g');
     elementData.gr = g;
     if(data.ln){
         elementData.gr.setAttribute('id',data.ln);
@@ -382,17 +387,16 @@ IShapeElement.prototype.renderModifiers = function() {
     }
 };
 
+IShapeElement.prototype.prepareFrame = function(num) {
+    this.prepareRenderableFrame(num);
+    this.prepareProperties(num, this.isVisible);
+};
+
 IShapeElement.prototype.renderFrame = function(parentMatrix){
-    //this.reloadShapes();
-    var renderParent = this._parent.renderFrame.call(this,parentMatrix);
-    if(renderParent===false){
-        this.hide();
-        return;
-    }
-    if(this.hidden){
-        this.layerElement.style.display = 'block';
-        this.hidden = false;
-    }
+    this.renderTransform();
+    this.renderRenderable();
+    this.renderElement();
+
     this.renderModifiers();
     var i, len = this.stylesList.length;
     for(i=0;i<len;i+=1){
@@ -402,11 +406,6 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
     this.renderShape(this.shapesData,this.itemsData, null);
 
     for (i = 0; i < len; i += 1) {
-        if (this.stylesList[i].ld === '0') {
-            this.stylesList[i].ld = '1';
-            this.stylesList[i].pElem.style.display = 'block';
-            //this.stylesList[i].parent.appendChild(this.stylesList[i].pElem);
-        }
         if (this.stylesList[i].mdf || this.firstFrame) {
             this.stylesList[i].pElem.setAttribute('d', this.stylesList[i].d);
             if(this.stylesList[i].msElem){
@@ -419,23 +418,9 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
     }
 };
 
-IShapeElement.prototype.hide = function(){
-    if(!this.hidden){
-        this.layerElement.style.display = 'none';
-        var i, len = this.stylesList.length;
-        for(i=len-1;i>=0;i-=1){
-            if(this.stylesList[i].ld !== '0'){
-                this.stylesList[i].ld = '0';
-                this.stylesList[i].pElem.style.display = 'none';
-                if(this.stylesList[i].pElem.parentNode){
-                    this.stylesList[i].parent = this.stylesList[i].pElem.parentNode;
-                    //this.stylesList[i].pElem.parentNode.removeChild(this.stylesList[i].pElem);
-                }
-            }
-        }
-        this.hidden = true;
-    }
-};
+IShapeElement.prototype.hide = IShapeElement.prototype.hideElement;
+IShapeElement.prototype.show = IShapeElement.prototype.showElement;
+
 
 IShapeElement.prototype.renderShape = function(items,data, container){
     var i, len = items.length - 1;
@@ -660,5 +645,4 @@ IShapeElement.prototype.destroy = function(){
     this.shapeData = null;
     this.itemsData = null;
     this.parentContainer = null;
-    this.placeholder = null;
 };

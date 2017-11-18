@@ -32,6 +32,7 @@
      <script src="js/main.js"></script>
     <script src="js/utils/common.js"></script>
     <script src="js/utils/helpers/arrays.js"></script>
+    <script src="js/utils/helpers/svg_elements.js"></script>
     <script src="js/3rd_party/transformation-matrix.js"></script>
     <script src="js/3rd_party/seedrandom.js"></script>
     <script src="js/3rd_party/BezierEaser.js"></script>
@@ -67,7 +68,14 @@
     <script src="js/renderers/CanvasRenderer.js" data-light-skip="true"></script>
     <script src="js/renderers/HybridRenderer.js" data-light-skip="true"></script>
     <script src="js/mask.js"></script>
+    <script src="js/elements/helpers/HierarchyElement.js"></script>
+    <script src="js/elements/helpers/FrameElement.js"></script>
+    <script src="js/elements/helpers/TransformElement.js"></script>
+    <script src="js/elements/helpers/RenderableElement.js"></script>
+    <script src="js/elements/helpers/shapes/ProcessedElement.js"></script>
+    <script src="js/elements/helpers/shapes/SVGStyleData.js"></script>
     <script src="js/elements/BaseElement.js"></script>
+    <script src="js/elements/NullElement.js"></script>
     <script src="js/elements/svgElements/SVGBaseElement.js"></script>
     <script src="js/elements/ShapeElement.js"></script>
     <script src="js/elements/TextElement.js"></script>
@@ -132,14 +140,18 @@
     var animData = {
         container: elem,
         renderer: 'svg',
-        loop: false,
+        loop: true,
         autoplay: true,
         rendererSettings: {
-            progressiveLoad:false
+            progressiveLoad:true
         },
         path: 'exports/render/data.json'
     };
-    anim = lottie.loadAnimation(animData);
+    //anim = bodymovin.loadAnimation(animData);
+    setTimeout(function(){
+        lottie.loadAnimation(animData);
+        // document.getElementById("bodymovin").style['background-color'] = 'darkblue';
+    }, 1)
 
 </script>
 </body>
