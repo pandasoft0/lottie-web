@@ -92,7 +92,7 @@ var LayerExpressionInterface = (function (){
         _thisLayerFunction._elem = elem;
         Object.defineProperty(_thisLayerFunction, 'hasParent', {
             get: function(){
-                return elem.hierarchy.length;
+                return !!elem.hierarchy;
             }
         });
         Object.defineProperty(_thisLayerFunction, 'parent', {
@@ -114,6 +114,12 @@ var LayerExpressionInterface = (function (){
         Object.defineProperty(_thisLayerFunction, "position", {
             get: function () {
                 return transformInterface.position;
+            }
+        });
+
+        Object.defineProperty(_thisLayerFunction, "opacity", {
+            get: function () {
+                return transformInterface.opacity;
             }
         });
 
@@ -175,6 +181,13 @@ var LayerExpressionInterface = (function (){
         Object.defineProperty(_thisLayerFunction, "text", {
             get: function(){
                 return _thisLayerFunction.textInterface;
+            }
+        });
+
+        Object.defineProperty(_thisLayerFunction, "startTime", {
+
+            get: function(){
+                return elem.data.st;
             }
         });
 
