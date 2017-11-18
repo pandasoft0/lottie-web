@@ -23,8 +23,6 @@ BaseRenderer.prototype.createItem = function(layer){
             return this.createComp(layer);
         case 1:
             return this.createSolid(layer);
-        case 3:
-            return this.createNull(layer);
         case 4:
             return this.createShape(layer);
         case 5:
