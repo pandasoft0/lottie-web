@@ -248,6 +248,7 @@ var PropertyFactory = (function(){
     }
 
     function KeyframedMultidimensionalProperty(elem, data, mult){
+        this.propType = 'multidimensional';
         var i, len = data.k.length;
         var s, e,to,ti;
         for(i=0;i<len-1;i+=1){
@@ -262,7 +263,6 @@ var PropertyFactory = (function(){
                 }
             }
         }
-        this.propType = 'multidimensional';
         this.keyframes = data.k;
         this.offsetTime = elem.data.st;
         this.k = true;
