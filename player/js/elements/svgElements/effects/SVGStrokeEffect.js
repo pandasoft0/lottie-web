@@ -16,23 +16,23 @@ SVGStrokeEffect.prototype.initialize = function(){
         i = this.filterManager.effectElements[0].p.v - 1;
         len = i + 1;
     }
-    groupPath = createNS('g'); 
+    groupPath = document.createElementNS(svgNS,'g'); 
     groupPath.setAttribute('fill','none');
     groupPath.setAttribute('stroke-linecap','round');
     groupPath.setAttribute('stroke-dashoffset',1);
     for(i;i<len;i+=1){
-        path = createNS('path');
+        path = document.createElementNS(svgNS,'path');
         groupPath.appendChild(path);
         this.paths.push({p:path,m:i});
     }
     if(this.filterManager.effectElements[10].p.v === 3){
-        var mask = createNS('mask');
+        var mask = document.createElementNS(svgNS,'mask');
         var id = 'stms_' + randomString(10);
         mask.setAttribute('id',id);
         mask.setAttribute('mask-type','alpha');
         mask.appendChild(groupPath);
         this.elem.globalData.defs.appendChild(mask);
-        var g = createNS('g');
+        var g = document.createElementNS(svgNS,'g');
         g.setAttribute('mask','url(' + locationHref + '#'+id+')');
         if(elemChildren[0]){
             g.appendChild(elemChildren[0]);

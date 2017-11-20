@@ -1,5 +1,5 @@
-function HCompElement(data,parentContainer,globalData,comp){
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp);
+function HCompElement(data,parentContainer,globalData,comp, placeholder){
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
     this.layers = data.layers;
     this.supports3d = true;
     this.completeLayers = false;
@@ -27,11 +27,11 @@ HCompElement.prototype.createElements = function(){
     }
     divElement.style.clip = 'rect(0px, '+this.data.w+'px, '+this.data.h+'px, 0px)';
     if(this.data.hasMask){
-        var compSvg = createNS('svg');
+        var compSvg = document.createElementNS(svgNS,'svg');
         styleDiv(compSvg);
         compSvg.setAttribute('width',this.data.w);
         compSvg.setAttribute('height',this.data.h);
-        var g = createNS('g');
+        var g = document.createElementNS(svgNS,'g');
         compSvg.appendChild(g);
         divElement.appendChild(compSvg);
         this.maskedElement = g;

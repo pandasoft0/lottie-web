@@ -1,10 +1,11 @@
-function HBaseElement(data,parentContainer,globalData,comp){
+function HBaseElement(data,parentContainer,globalData,comp, placeholder){
     this.globalData = globalData;
     this.comp = comp;
     this.data = data;
     this.matteElement = null;
     this.parentContainer = parentContainer;
-    this.layerId = 'ly_'+randomString(10);
+    this.layerId = placeholder ? placeholder.layerId : 'ly_'+randomString(10);
+    this.placeholder = placeholder;
     this.init();
 };
 
@@ -14,13 +15,27 @@ HBaseElement.prototype.checkBlendMode = function(){
 };
 HBaseElement.prototype.setBlendMode = BaseElement.prototype.setBlendMode;
 
+/*HBaseElement.prototype.appendNodeToParent = function(node) {
+    if(this.data.hd){
+        return;
+    }
+    if(this.placeholder){
+        var g = this.placeholder.phElement;
+        g.parentNode.insertBefore(node, g);
+        //g.parentNode.removeChild(g);
+    }else{
+        this.parentContainer.appendChild(node);
+    }
+};*/
+
+
 HBaseElement.prototype.getBaseElement = function(){
     return this.baseElement;
 };
 
 HBaseElement.prototype.createElements = function(){
     if(this.data.hasMask){
-        this.layerElement = createNS('svg');
+        this.layerElement = document.createElementNS(svgNS,'svg');
         styleDiv(this.layerElement);
         //this.appendNodeToParent(this.layerElement);
         this.baseElement = this.layerElement;
@@ -31,13 +46,16 @@ HBaseElement.prototype.createElements = function(){
     this.transformedElement = this.layerElement;
     if(this.data.ln && (this.data.ty === 4 || this.data.ty === 0)){
         if(this.layerElement === this.parentContainer){
-            this.layerElement = createNS('g');
+            this.layerElement = document.createElementNS(svgNS,'g');
             //this.appendNodeToParent(this.layerElement);
             this.baseElement = this.layerElement;
         }
         this.layerElement.setAttribute('id',this.data.ln);
     }
     this.setBlendMode();
+    if(this.layerElement !== this.parentContainer){
+        this.placeholder = null;
+    }
     this.checkParenting();
 };
 

@@ -1,4 +1,4 @@
-function HTextElement(data,parentContainer,globalData,comp){
+function HTextElement(data,parentContainer,globalData,comp, placeholder){
     this.textSpans = [];
     this.textPaths = [];
     this.currentBBox = {
@@ -9,7 +9,7 @@ function HTextElement(data,parentContainer,globalData,comp){
     }
     this.renderType = 'svg';
     this.isMasked = false;
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 
 }
 createElement(HBaseElement, HTextElement);
@@ -24,14 +24,14 @@ HTextElement.prototype.createElements = function(){
     this.transformedElement = parent;
     if(this.isMasked){
         this.renderType = 'svg';
-        var cont = createNS('svg');
+        var cont = document.createElementNS(svgNS,'svg');
         styleDiv(cont);
         this.cont = cont;
         this.compW = this.comp.data.w;
         this.compH = this.comp.data.h;
         cont.setAttribute('width',this.compW);
         cont.setAttribute('height',this.compH);
-        var g = createNS('g');
+        var g = document.createElementNS(svgNS,'g');
         cont.appendChild(g);
         parent.appendChild(cont);
         this.maskedElement = g;
@@ -79,7 +79,7 @@ HTextElement.prototype.buildNewText = function(){
     for (i = 0;i < len ;i += 1) {
         if(this.globalData.fontManager.chars){
             if(!this.textPaths[cnt]){
-                tSpan = createNS('path');
+                tSpan = document.createElementNS(svgNS,'path');
                 tSpan.setAttribute('stroke-linecap', 'butt');
                 tSpan.setAttribute('stroke-linejoin','round');
                 tSpan.setAttribute('stroke-miterlimit','4');
@@ -93,7 +93,7 @@ HTextElement.prototype.buildNewText = function(){
                 } else {
 
                     tParent = document.createElement('div');
-                    tCont = createNS('svg');
+                    tCont = document.createElementNS(svgNS,'svg');
                     tCont.appendChild(tSpan);
                     styleDiv(tParent);
                 }
@@ -111,7 +111,7 @@ HTextElement.prototype.buildNewText = function(){
                     tParent.appendChild(tSpan);
                 }
             } else {
-                tSpan = this.textPaths[cnt] ? this.textPaths[cnt] : createNS('text');
+                tSpan = this.textPaths[cnt] ? this.textPaths[cnt] : document.createElementNS(svgNS,'text');
             }
         }
         //tSpan.setAttribute('visibility', 'hidden');

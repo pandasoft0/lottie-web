@@ -33,74 +33,54 @@ var TransformExpressionInterface = (function (){
 
         Object.defineProperty(_thisFunction, "rotation", {
             get: function(){
-                if(transform.r) {
-                    return ExpressionValue(transform.r, 1/degToRads);
-                } else {
-                    return ExpressionValue(transform.rz, 1/degToRads);
-                }
+                return transform.rotation;
             }
         });
         Object.defineProperty(_thisFunction, "scale", {
             get: function () {
-                return ExpressionValue(transform.s, 100);
+                return transform.scale;
             }
         });
 
         Object.defineProperty(_thisFunction, "position", {
             get: function () {
-                if(transform.p) {
-                    return ExpressionValue(transform.p);
-                } else {
-                    return [transform.px.v, transform.py.v, transform.pz ? transform.pz.v : 0];
-                };
+                return transform.position;
             }
         });
 
         Object.defineProperty(_thisFunction, "xPosition", {
             get: function () {
-                return ExpressionValue(transform.px);
+                return transform.xPosition;
             }
         });
 
         Object.defineProperty(_thisFunction, "yPosition", {
             get: function () {
-                return ExpressionValue(transform.py);
-            }
-        });
-
-        Object.defineProperty(_thisFunction, "zPosition", {
-            get: function () {
-                return ExpressionValue(transform.pz);
+                return transform.yPosition;
             }
         });
 
         Object.defineProperty(_thisFunction, "anchorPoint", {
             get: function () {
-                return ExpressionValue(transform.a);
+                return transform.anchorPoint;
             }
         });
 
         Object.defineProperty(_thisFunction, "opacity", {
             get: function () {
-                return ExpressionValue(transform.o, 100);
+                return transform.opacity;
             }
         });
 
         Object.defineProperty(_thisFunction, "skew", {
             get: function () {
-                return ExpressionValue(transform.sk);
+                return transform.skew;
             }
         });
 
         Object.defineProperty(_thisFunction, "skewAxis", {
             get: function () {
-                return ExpressionValue(transform.sa);
-            }
-        });
-
-        Object.defineProperty(_thisFunction, "orientation", {
-            get: function () {
-                return ExpressionValue(transform.or);
+                return transform.skewAxis;
             }
         });
 

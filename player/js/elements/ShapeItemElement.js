@@ -1,6 +1,7 @@
-function ShapeItemElement(data,parentElement,parentContainer,dynamicProperties,globalData){
+function ShapeItemElement(data,parentElement,parentContainer,placeholder,dynamicProperties,globalData){
     this.shape = parentElement;
     this.parentContainer = parentContainer;
+    this.placeholder = placeholder;
 
     this.lcEnum = {
         '1': 'butt',
@@ -19,6 +20,7 @@ function ShapeItemElement(data,parentElement,parentContainer,dynamicProperties,g
     this.globalData = globalData;
     this.firstFrame = true;
     this.searchShapes(this.data,this.viewData,dynamicProperties,[]);
+    styleUnselectableDiv(this.shape);
 }
 
 ShapeItemElement.prototype.appendNodeToParent = SVGBaseElement.prototype.appendNodeToParent;
@@ -35,7 +37,7 @@ ShapeItemElement.prototype.searchShapes = function(arr,data,dynamicProperties,ad
             data[i].c = PropertyFactory.getProp(this.elemData,arr[i].c,1,null,dynamicProperties);
             data[i].o = PropertyFactory.getProp(this.elemData,arr[i].o,0,0.01,dynamicProperties);
             if(arr[i].ty == 'st') {
-                pathElement = createNS( "g");
+                pathElement = document.createElementNS(svgNS, "g");
                 ////pathElement.setAttribute('stroke-linecap', this.lcEnum[arr[i].lc] || 'round');
                 pathElement.style.strokeLinecap = this.lcEnum[arr[i].lc] || 'round';
                 ////pathElement.setAttribute('stroke-linejoin',this.ljEnum[arr[i].lj] || 'round');
@@ -72,7 +74,7 @@ ShapeItemElement.prototype.searchShapes = function(arr,data,dynamicProperties,ad
                 }
 
             }else{
-                pathElement = createNS( "path");
+                pathElement = document.createElementNS(svgNS, "path");
                 if(!data[i].c.k) {
                     ////pathElement.setAttribute('fill','rgb('+data[i].c.v[0]+','+data[i].c.v[1]+','+data[i].c.v[2]+')');
                     pathElement.style.fill = 'rgb('+data[i].c.v[0]+','+data[i].c.v[1]+','+data[i].c.v[2]+')';
@@ -132,7 +134,7 @@ ShapeItemElement.prototype.searchShapes = function(arr,data,dynamicProperties,ad
                 if(!this.stylesList[j].closed){
                     if(this.stylesList[j].type === 'st'){
                         hasStrokes = true;
-                        element = createNS( "path");
+                        element = document.createElementNS(svgNS, "path");
                         this.stylesList[j].pathElement.appendChild(element);
                         data[i].elements.push({
                             ty:this.stylesList[j].type,
@@ -393,4 +395,5 @@ ShapeItemElement.prototype.destroy = function(items, data){
     this.data = null;
     this.viewData = null;
     this.parentContainer = null;
+    this.placeholder = null;
 };

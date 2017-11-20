@@ -1,6 +1,6 @@
-function HImageElement(data,parentContainer,globalData,comp){
+function HImageElement(data,parentContainer,globalData,comp, placeholder){
     this.assetData = globalData.getAssetData(data.refId);
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 }
 createElement(HBaseElement, HImageElement);
 
@@ -12,12 +12,12 @@ HImageElement.prototype.createElements = function(){
     if(this.data.hasMask){
         var parent = document.createElement('div');
         styleDiv(parent);
-        var cont = createNS('svg');
+        var cont = document.createElementNS(svgNS,'svg');
         styleDiv(cont);
         cont.setAttribute('width',this.assetData.w);
         cont.setAttribute('height',this.assetData.h);
         parent.appendChild(cont);
-        this.imageElem = createNS('image');
+        this.imageElem = document.createElementNS(svgNS,'image');
         this.imageElem.setAttribute('width',this.assetData.w+"px");
         this.imageElem.setAttribute('height',this.assetData.h+"px");
         this.imageElem.setAttributeNS('http://www.w3.org/1999/xlink','href',assetPath);

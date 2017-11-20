@@ -1,12 +1,12 @@
-function HSolidElement(data,parentContainer,globalData,comp){
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp);
+function HSolidElement(data,parentContainer,globalData,comp, placeholder){
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 }
 createElement(HBaseElement, HSolidElement);
 
 HSolidElement.prototype.createElements = function(){
     var parent = document.createElement('div');
     styleDiv(parent);
-    var cont = createNS('svg');
+    var cont = document.createElementNS(svgNS,'svg');
     styleDiv(cont);
     cont.setAttribute('width',this.data.sw);
     cont.setAttribute('height',this.data.sh);
@@ -22,7 +22,7 @@ HSolidElement.prototype.createElements = function(){
     if(this.data.bm !== 0){
         this.setBlendMode();
     }
-    var rect = createNS('rect');
+    var rect = document.createElementNS(svgNS,'rect');
     rect.setAttribute('width',this.data.sw);
     rect.setAttribute('height',this.data.sh);
     rect.setAttribute('fill',this.data.sc);
