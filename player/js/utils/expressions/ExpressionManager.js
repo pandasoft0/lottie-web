@@ -12,13 +12,17 @@ var ExpressionManager = (function(){
         }else if(value.i){
             return JSON.parse(JSON.stringify(value));
         }else{
-            var arr = Array.apply(null,{length:value.length});
+            var arr = createTypedArray('int16', value.length);
             var i, len = value.length;
             for(i=0;i<len;i+=1){
                 arr[i]=value[i]*mult;
             }
             return arr;
         }
+    }
+
+    function isTypeOfArray(arr) {
+        return arr.constructor === Array || arr.constructor === Float32Array;
     }
 
     function shapesEqual(shape1, shape2) {
@@ -41,7 +45,7 @@ var ExpressionManager = (function(){
         if(tOfA === 'number' || tOfA === 'boolean'  || a instanceof Number ){
             return -a;
         }
-        if(a.constructor === Array){
+        if(isTypeOfArray(a)){
             var i, lenA = a.length;
             var retArr = [];
             for(i=0;i<lenA;i+=1){
@@ -60,15 +64,15 @@ var ExpressionManager = (function(){
         if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string'  || b instanceof Number)) {
             return a + b;
         }
-        if(a.constructor === Array && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
+        if(isTypeOfArray(a) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
             a[0] = a[0] + b;
             return a;
         }
-        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && b.constructor === Array){
+        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && isTypeOfArray(b)){
             b[0] = a + b[0];
             return b;
         }
-        if(a.constructor === Array && b.constructor === Array){
+        if(isTypeOfArray(a) && isTypeOfArray(b)){
             
             var i = 0, lenA = a.length, lenB = b.length;
             var retArr = [];
@@ -98,15 +102,15 @@ var ExpressionManager = (function(){
             }
             return a - b;
         }
-        if( a.constructor === Array && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
+        if( isTypeOfArray(a) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
             a[0] = a[0] - b;
             return a;
         }
-        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) &&  b.constructor === Array){
+        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) &&  isTypeOfArray(b)){
             b[0] = a - b[0];
             return b;
         }
-        if(a.constructor === Array && b.constructor === Array){
+        if(isTypeOfArray(a) && isTypeOfArray(b)){
             var i = 0, lenA = a.length, lenB = b.length;
             var retArr = [];
             while(i<lenA || i < lenB){
@@ -131,17 +135,17 @@ var ExpressionManager = (function(){
         }
 
         var i, len;
-        if(a.constructor === Array && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
+        if(isTypeOfArray(a) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number )){
             len = a.length;
-            arr = Array.apply(null,{length:len});
+            arr = createTypedArray('float32', len);
             for(i=0;i<len;i+=1){
                 arr[i] = a[i] * b;
             }
             return arr;
         }
-        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && b.constructor === Array){
+        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && isTypeOfArray(b)){
             len = b.length;
-            arr = Array.apply(null,{length:len});
+            arr = createTypedArray('float32', len);
             for(i=0;i<len;i+=1){
                 arr[i] = a * b[i];
             }
@@ -158,17 +162,17 @@ var ExpressionManager = (function(){
             return a / b;
         }
         var i, len;
-        if(a.constructor === Array && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number  )){
+        if(isTypeOfArray(a) && (tOfB === 'number' || tOfB === 'boolean' || tOfB === 'string' || b instanceof Number  )){
             len = a.length;
-            arr = Array.apply(null,{length:len});
+            arr = createTypedArray('float32', len);
             for(i=0;i<len;i+=1){
                 arr[i] = a[i] / b;
             }
             return arr;
         }
-        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && b.constructor === Array){
+        if((tOfA === 'number' || tOfA === 'boolean' || tOfA === 'string' || a instanceof Number ) && isTypeOfArray(b)){
             len = b.length;
-            arr = Array.apply(null,{length:len});
+            arr = createTypedArray('float32', len);
             for(i=0;i<len;i+=1){
                 arr[i] = a / b[i];
             }
@@ -290,7 +294,7 @@ var ExpressionManager = (function(){
             return value1 + (value2-value1)*perc;
         }
         var i, len = value1.length;
-        var arr = Array.apply( null, { length: len } );
+        var arr = createTypedArray('float32', len);
         for(i=0;i<len;i+=1){
             arr[i] = value1[i] + (value2[i]-value1[i])*perc;
         }
@@ -309,9 +313,9 @@ var ExpressionManager = (function(){
         if(max.length){
             var i, len = max.length;
             if(!min){
-                min = Array.apply(null,{length:len});
+                min = createTypedArray('float32', len);
             }
-            var arr = Array.apply(null,{length:len});
+            var arr = createTypedArray('float32', len);
             var rnd = BMMath.random();
             for(i=0;i<len;i+=1){
                 arr[i] = min[i] + rnd*(max[i]-min[i])
@@ -362,10 +366,7 @@ var ExpressionManager = (function(){
 
         var wiggle = function wiggle(freq,amp){
             var i,j, len = this.pv.length ? this.pv.length : 1;
-            var addedAmps = Array.apply(null,{len:len});
-            for(j=0;j<len;j+=1){
-                addedAmps[j] = 0;
-            }
+            var addedAmps = createTypedArray('float32', len);
             freq = 5;
             var iterations = Math.floor(time*freq);
             i = 0;
@@ -381,7 +382,7 @@ var ExpressionManager = (function(){
             //var rnd2 = BMMath.random();
             var periods = time*freq;
             var perc = periods - Math.floor(periods);
-            var arr = Array.apply({length:len});
+            var arr = createTypedArray('float32', len);
             if(len>1){
                 for(j=0;j<len;j+=1){
                     arr[j] = this.pv[j] + addedAmps[j] + (-amp + amp*2*BMMath.random())*perc;
