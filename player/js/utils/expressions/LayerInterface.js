@@ -92,10 +92,9 @@ var LayerExpressionInterface = (function (){
         _thisLayerFunction._elem = elem;
         Object.defineProperty(_thisLayerFunction, 'hasParent', {
             get: function(){
-                return elem.hierarchy.length;
+                return !!elem.hierarchy;
             }
         });
-
         Object.defineProperty(_thisLayerFunction, 'parent', {
             get: function(){
                 return elem.hierarchy[0].layerInterface;

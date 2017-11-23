@@ -1,4 +1,4 @@
-function HTextElement(data,parentContainer,globalData,comp){
+function HTextElement(data,parentContainer,globalData,comp, placeholder){
     this.textSpans = [];
     this.textPaths = [];
     this.currentBBox = {
@@ -9,7 +9,7 @@ function HTextElement(data,parentContainer,globalData,comp){
     }
     this.renderType = 'svg';
     this.isMasked = false;
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 
 }
 createElement(HBaseElement, HTextElement);
