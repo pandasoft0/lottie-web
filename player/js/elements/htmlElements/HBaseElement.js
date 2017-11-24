@@ -1,11 +1,9 @@
-function HBaseElement(data,parentContainer,globalData,comp, placeholder){
+function HBaseElement(data,globalData,comp){
     this.globalData = globalData;
     this.comp = comp;
     this.data = data;
     this.matteElement = null;
-    this.parentContainer = parentContainer;
-    this.layerId = placeholder ? placeholder.layerId : 'ly_'+randomString(10);
-    this.placeholder = placeholder;
+    this.layerId = 'ly_'+randomString(10);
     this.init();
 };
 
@@ -14,20 +12,6 @@ HBaseElement.prototype.checkBlendMode = function(){
 
 };
 HBaseElement.prototype.setBlendMode = BaseElement.prototype.setBlendMode;
-
-/*HBaseElement.prototype.appendNodeToParent = function(node) {
-    if(this.data.hd){
-        return;
-    }
-    if(this.placeholder){
-        var g = this.placeholder.phElement;
-        g.parentNode.insertBefore(node, g);
-        //g.parentNode.removeChild(g);
-    }else{
-        this.parentContainer.appendChild(node);
-    }
-};*/
-
 
 HBaseElement.prototype.getBaseElement = function(){
     return this.baseElement;
@@ -53,9 +37,6 @@ HBaseElement.prototype.createElements = function(){
         this.layerElement.setAttribute('id',this.data.ln);
     }
     this.setBlendMode();
-    if(this.layerElement !== this.parentContainer){
-        this.placeholder = null;
-    }
     this.checkParenting();
 };
 
@@ -125,7 +106,6 @@ HBaseElement.prototype.renderFrame = function(parentTransform){
 HBaseElement.prototype.destroy = function(){
     this.layerElement = null;
     this.transformedElement = null;
-    this.parentContainer = null;
     if(this.matteElement) {
         this.matteElement = null;
     }

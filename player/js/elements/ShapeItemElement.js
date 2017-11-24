@@ -1,7 +1,5 @@
-function ShapeItemElement(data,parentElement,parentContainer,placeholder,dynamicProperties,globalData){
+function ShapeItemElement(data,parentElement,dynamicProperties,globalData){
     this.shape = parentElement;
-    this.parentContainer = parentContainer;
-    this.placeholder = placeholder;
 
     this.lcEnum = {
         '1': 'butt',
@@ -20,7 +18,6 @@ function ShapeItemElement(data,parentElement,parentContainer,placeholder,dynamic
     this.globalData = globalData;
     this.firstFrame = true;
     this.searchShapes(this.data,this.viewData,dynamicProperties,[]);
-    styleUnselectableDiv(this.shape);
 }
 
 ShapeItemElement.prototype.appendNodeToParent = SVGBaseElement.prototype.appendNodeToParent;
@@ -395,5 +392,4 @@ ShapeItemElement.prototype.destroy = function(items, data){
     this.data = null;
     this.viewData = null;
     this.parentContainer = null;
-    this.placeholder = null;
 };
