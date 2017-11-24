@@ -27,14 +27,15 @@ ShapeModifier.prototype.addShape = function(data){
     }
 }
 ShapeModifier.prototype.init = function(elem,data,dynamicProperties){
-    this.dynamicProperties = [];
-    this.shapes = [];
     this.elem = elem;
-    this.initModifierProperties(elem,data);
-    this.frameId = initialDefaultFrame;
+    this.frameId = -1;
+    this.shapes = [];
+    this.dynamicProperties = [];
     this.mdf = false;
     this.closed = false;
     this.k = false;
+    this.comp = elem.comp;
+    this.initModifierProperties(elem,data);
     if(this.dynamicProperties.length){
         this.k = true;
         dynamicProperties.push(this);
