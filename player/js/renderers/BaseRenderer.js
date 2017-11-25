@@ -23,6 +23,8 @@ BaseRenderer.prototype.createItem = function(layer){
             return this.createComp(layer);
         case 1:
             return this.createSolid(layer);
+        case 3:
+            return this.createNull(layer);
         case 4:
             return this.createShape(layer);
         case 5:
@@ -72,27 +74,24 @@ BaseRenderer.prototype.initItems = function(){
         this.buildAllItems();
     }
 };
-BaseRenderer.prototype.buildElementParenting = function(element, parentName, hierarchy){
-    hierarchy = hierarchy || [];
+BaseRenderer.prototype.buildElementParenting = function(element, parentName, hierarchy) {
     var elements = this.elements;
     var layers = this.layers;
     var i=0, len = layers.length;
-    while(i<len){
-        if(layers[i].ind == parentName){
-            if(!elements[i] || elements[i] === true){
+    while (i < len) {
+        if (layers[i].ind == parentName) {
+            if (!elements[i] || elements[i] === true) {
                 this.buildItem(i);
                 this.addPendingElement(element);
-            } else if(layers[i].parent !== undefined){
+            } else if(layers[i].parent !== undefined) {
                 hierarchy.push(elements[i]);
                 elements[i]._isParent = true;
-                this.buildElementParenting(element,layers[i].parent, hierarchy);
+                this.buildElementParenting(element, layers[i].parent, hierarchy);
             } else {
                 hierarchy.push(elements[i]);
                 elements[i]._isParent = true;
                 element.setHierarchy(hierarchy);
             }
-
-
         }
         i += 1;
     }

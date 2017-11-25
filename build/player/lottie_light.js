@@ -299,7 +299,7 @@ var createTypedArray = (function(){
 			return new Uint8ClampedArray(len);
 		}
 	}
-	if(typeof Uint8ClampedArray === 'function' && typeof Float32Array === 'function') {
+	if(typeof Float32Array === 'function') {
 		return createTypedArray
 	} else {
 		return createRegularArray
@@ -1884,11 +1884,6 @@ var dataManager = dataFunctionManager();
 var FontManager = (function(){
 
     var maxWaitingTime = 5000;
-    var emptyChar = {
-        w: 0,
-        size:0,
-        shapes:[]
-    }
 
     function setUpNode(font, family){
         var parentNode = document.createElement('span');
@@ -2062,10 +2057,6 @@ var FontManager = (function(){
             }
             i+= 1;
         }
-        if(console && console.warn) {
-            console.warn('Missing character from exported characters list: ', char, style, font);
-        }
-        return emptyChar;
     }
 
     function measureText(char, fontName, size){
@@ -4064,11 +4055,13 @@ GradientProperty.prototype.getValue = function(forceRender){
 }
 var ImagePreloader = (function(){
 
+    var imagesLoadedCb;
+
     function imageLoaded(){
         this.loadedAssets += 1;
         if(this.loadedAssets === this.totalImages){
-            if(this.imagesLoadedCb) {
-                this.imagesLoadedCb(null);
+            if(imagesLoadedCb) {
+                imagesLoadedCb(null);
             }
         }
     }
@@ -4096,7 +4089,7 @@ var ImagePreloader = (function(){
         img.src = path;
     }
     function loadAssets(assets, cb){
-        this.imagesLoadedCb = cb;
+        imagesLoadedCb = cb;
         this.totalAssets = assets.length;
         var i;
         for(i=0;i<this.totalAssets;i+=1){
@@ -4115,21 +4108,15 @@ var ImagePreloader = (function(){
         this.assetsPath = path || '';
     }
 
-    function destroy() {
-        this.imagesLoadedCb = null;
-    }
-
     return function ImagePreloader(){
         this.loadAssets = loadAssets;
         this.setAssetsPath = setAssetsPath;
         this.setPath = setPath;
-        this.destroy = destroy;
         this.assetsPath = '';
         this.path = '';
         this.totalAssets = 0;
         this.totalImages = 0;
         this.loadedAssets = 0;
-        this.imagesLoadedCb = null;
     }
 }());
 var featureSupport = (function(){
@@ -7096,8 +7083,7 @@ IShapeElement.prototype.renderPath = function(pathData,itemData){
     for(l=0;l<lLen;l+=1){
         if(itemData.elements[l].data._render){
             redraw = itemData.sh.mdf || this.firstFrame;
-            //M0 0 is needed for IE and Edge bug. If it's missing, and shape has a mask with a gradient fill, it won't show up. :/
-            pathStringTransformed = 'M0 0';
+            pathStringTransformed = '';
             var paths = itemData.sh.paths;
             jLen = paths._length;
 
@@ -8922,7 +8908,6 @@ AnimationItem.prototype.destroy = function (name) {
     this.trigger('destroy');
     this._cbs = null;
     this.onEnterFrame = this.onLoopComplete = this.onComplete = this.onSegmentStart = this.onDestroy = null;
-    this.renderer = null;
 };
 
 AnimationItem.prototype.setCurrentRawFrameValue = function(value){
@@ -9206,7 +9191,7 @@ AnimationItem.prototype.triggerEvent = _triggerEvent;
     lottiejs.inBrowser = inBrowser;
     lottiejs.installPlugin = installPlugin;
     lottiejs.__getFactory = getFactory;
-    lottiejs.version = '5.0.3';
+    lottiejs.version = '5.0.2';
 
     function checkReady() {
         if (document.readyState === "complete") {

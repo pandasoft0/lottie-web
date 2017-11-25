@@ -299,7 +299,7 @@ var createTypedArray = (function(){
 			return new Uint8ClampedArray(len);
 		}
 	}
-	if(typeof Uint8ClampedArray === 'function' && typeof Float32Array === 'function') {
+	if(typeof Float32Array === 'function') {
 		return createTypedArray
 	} else {
 		return createRegularArray
@@ -1884,11 +1884,6 @@ var dataManager = dataFunctionManager();
 var FontManager = (function(){
 
     var maxWaitingTime = 5000;
-    var emptyChar = {
-        w: 0,
-        size:0,
-        shapes:[]
-    }
 
     function setUpNode(font, family){
         var parentNode = document.createElement('span');
@@ -2062,10 +2057,6 @@ var FontManager = (function(){
             }
             i+= 1;
         }
-        if(console && console.warn) {
-            console.warn('Missing character from exported characters list: ', char, style, font);
-        }
-        return emptyChar;
     }
 
     function measureText(char, fontName, size){
@@ -2323,7 +2314,7 @@ var PropertyFactory = (function(){
         this.pv = createTypedArray('float32', data.k.length);
         this.lastValue = createTypedArray('float32', data.k.length);
         var arr = createTypedArray('float32', data.k.length);
-        this.vel = createTypedArray('float32', data.k.length);
+        this.vel = arr.map(function () { return 0 });
         var i, len = data.k.length;
         for(i = 0;i<len;i+=1){
             this.v[i] = mult ? data.k[i] * mult : data.k[i];
@@ -4064,11 +4055,13 @@ GradientProperty.prototype.getValue = function(forceRender){
 }
 var ImagePreloader = (function(){
 
+    var imagesLoadedCb;
+
     function imageLoaded(){
         this.loadedAssets += 1;
         if(this.loadedAssets === this.totalImages){
-            if(this.imagesLoadedCb) {
-                this.imagesLoadedCb(null);
+            if(imagesLoadedCb) {
+                imagesLoadedCb(null);
             }
         }
     }
@@ -4096,7 +4089,7 @@ var ImagePreloader = (function(){
         img.src = path;
     }
     function loadAssets(assets, cb){
-        this.imagesLoadedCb = cb;
+        imagesLoadedCb = cb;
         this.totalAssets = assets.length;
         var i;
         for(i=0;i<this.totalAssets;i+=1){
@@ -4115,21 +4108,15 @@ var ImagePreloader = (function(){
         this.assetsPath = path || '';
     }
 
-    function destroy() {
-        this.imagesLoadedCb = null;
-    }
-
     return function ImagePreloader(){
         this.loadAssets = loadAssets;
         this.setAssetsPath = setAssetsPath;
         this.setPath = setPath;
-        this.destroy = destroy;
         this.assetsPath = '';
         this.path = '';
         this.totalAssets = 0;
         this.totalImages = 0;
         this.loadedAssets = 0;
-        this.imagesLoadedCb = null;
     }
 }());
 var featureSupport = (function(){
@@ -7096,8 +7083,7 @@ IShapeElement.prototype.renderPath = function(pathData,itemData){
     for(l=0;l<lLen;l+=1){
         if(itemData.elements[l].data._render){
             redraw = itemData.sh.mdf || this.firstFrame;
-            //M0 0 is needed for IE and Edge bug. If it's missing, and shape has a mask with a gradient fill, it won't show up. :/
-            pathStringTransformed = 'M0 0';
+            pathStringTransformed = '';
             var paths = itemData.sh.paths;
             jLen = paths._length;
 
@@ -8922,7 +8908,6 @@ AnimationItem.prototype.destroy = function (name) {
     this.trigger('destroy');
     this._cbs = null;
     this.onEnterFrame = this.onLoopComplete = this.onComplete = this.onSegmentStart = this.onDestroy = null;
-    this.renderer = null;
 };
 
 AnimationItem.prototype.setCurrentRawFrameValue = function(value){
@@ -11655,7 +11640,6 @@ expressionsPlugin = Expressions;
         if(!this.k || !this.keyframes){
             return this.pv;
         }
-        type = type.toLowerCase();
         var currentFrame = this.comp.renderedFrame;
         var keyframes = this.keyframes;
         var lastKeyFrame = keyframes[keyframes.length - 1].t;
@@ -11677,11 +11661,12 @@ expressionsPlugin = Expressions;
                 }
                 firstKeyFrame = lastKeyFrame - cycleDuration;
             }
+            var offsetTime = this.offsetTime || 0;
             var i, len, ret;
-            if(type === 'pingpong') {
+            if(type.toLowerCase() === 'pingpong') {
                 var iterations = Math.floor((currentFrame - firstKeyFrame)/cycleDuration);
                 if(iterations % 2 !== 0){
-                    return this.getValueAtTime(((cycleDuration - (currentFrame - firstKeyFrame) % cycleDuration +  firstKeyFrame)) / this.comp.globalData.frameRate, 0);
+                    return this.getValueAtTime(((cycleDuration - (currentFrame - firstKeyFrame) % cycleDuration +  firstKeyFrame) - offsetTime) / this.comp.globalData.frameRate, 0);
                 }
             } else if(type === 'offset'){
                 var initV = this.getValueAtTime(firstKeyFrame / this.comp.globalData.frameRate, 0);
@@ -11710,7 +11695,7 @@ expressionsPlugin = Expressions;
                 }
                 return lastValue + (lastValue-nextLastValue)*(((currentFrame - lastKeyFrame))/0.001);
             }
-            return this.getValueAtTime((((currentFrame - firstKeyFrame) % cycleDuration +  firstKeyFrame)) / this.comp.globalData.frameRate, 0);
+            return this.getValueAtTime((((currentFrame - firstKeyFrame) % cycleDuration +  firstKeyFrame) - offsetTime) / this.comp.globalData.frameRate, 0);
         }
     }
 
@@ -11718,10 +11703,10 @@ expressionsPlugin = Expressions;
         if(!this.k){
             return this.pv;
         }
-        type = type.toLowerCase();
         var currentFrame = this.comp.renderedFrame;
         var keyframes = this.keyframes;
         var firstKeyFrame = keyframes[0].t;
+        var offsetTime = this.offsetTime || 0;
         if(currentFrame>=firstKeyFrame){
             return this.pv;
         }else{
@@ -11744,7 +11729,7 @@ expressionsPlugin = Expressions;
             if(type === 'pingpong') {
                 var iterations = Math.floor((firstKeyFrame - currentFrame)/cycleDuration);
                 if(iterations % 2 === 0){
-                    return this.getValueAtTime((((firstKeyFrame - currentFrame)%cycleDuration +  firstKeyFrame)) / this.comp.globalData.frameRate, 0);
+                    return this.getValueAtTime((((firstKeyFrame - currentFrame)%cycleDuration +  firstKeyFrame) - offsetTime) / this.comp.globalData.frameRate, 0);
                 }
             } else if(type === 'offset'){
                 var initV = this.getValueAtTime(firstKeyFrame / this.comp.globalData.frameRate, 0);
@@ -11773,7 +11758,8 @@ expressionsPlugin = Expressions;
                 }
                 return firstValue + (firstValue-nextFirstValue)*(firstKeyFrame - currentFrame)/0.001;
             }
-            return this.getValueAtTime(((cycleDuration - (firstKeyFrame - currentFrame) % cycleDuration +  firstKeyFrame)) / this.comp.globalData.frameRate, 0);
+
+            return this.getValueAtTime(((cycleDuration - (firstKeyFrame - currentFrame) % cycleDuration +  firstKeyFrame) - offsetTime) / this.comp.globalData.frameRate, 0);
         }
     }
 
@@ -11781,6 +11767,7 @@ expressionsPlugin = Expressions;
         if(!this._cachingAtTime) {
             this._cachingAtTime = {lastValue:-99999,lastIndex:0};
         }
+        //console.log('this._cachingAtTime', JSON.parse(JSON.stringify(this._cachingAtTime)))
         if(frameNum !== this._cachingAtTime.lastFrame) {
             frameNum *= this.elem.globalData.frameRate;
             frameNum -= this.offsetTime;
@@ -11834,7 +11821,7 @@ expressionsPlugin = Expressions;
     }
 
     function getTransformValueAtTime(time) {
-        //console.log('time:', time)
+        console.log('time:', time)
     }
 
     function getTransformStaticValueAtTime(time) {
@@ -13783,7 +13770,7 @@ var ProjectInterface = (function (){
             while(i<len){
                 if(this.compositions[i].data && this.compositions[i].data.nm === name){
                     if(this.compositions[i].prepareFrame) {
-                        this.compositions[i].prepareFrame(this.compositions[i].data.xt ? this.currentFrame : this.compositions[i].currentFrameNum);
+                        this.compositions[i].prepareFrame(this.currentFrame);
                     }
                     return this.compositions[i].compInterface;
                 }
@@ -14216,7 +14203,7 @@ GroupEffect.prototype.init = function(data,element,dynamicProperties){
     lottiejs.inBrowser = inBrowser;
     lottiejs.installPlugin = installPlugin;
     lottiejs.__getFactory = getFactory;
-    lottiejs.version = '5.0.3';
+    lottiejs.version = '5.0.1';
 
     function checkReady() {
         if (document.readyState === "complete") {
