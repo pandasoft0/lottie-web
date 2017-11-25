@@ -1,7 +1,7 @@
-function SVGTextElement(data,globalData,comp){
+function SVGTextElement(data,parentContainer,globalData,comp, placeholder){
     this.textSpans = [];
     this.renderType = 'svg';
-    this._parent.constructor.call(this,data,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 }
 createElement(SVGBaseElement, SVGTextElement);
 

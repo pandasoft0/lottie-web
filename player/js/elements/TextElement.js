@@ -1,4 +1,4 @@
-function ITextElement(data, animationItem,globalData){
+function ITextElement(data, animationItem,parentContainer,globalData){
 }
 ITextElement.prototype.init = function(){
     this.lettersChangedFlag = true;

@@ -1,5 +1,5 @@
 var TransformPropertyFactory = (function() {
-
+    
     function applyToMatrix(mat) {
         var i, len = this.dynamicProperties.length;
         for(i = 0; i < len; i += 1) {
@@ -151,7 +151,6 @@ var TransformPropertyFactory = (function() {
         if(data.s) {
             this.s = PropertyFactory.getProp(elem,data.s,1,0.01,this.dynamicProperties);
         }
-        // Opacity is not part of the transform properties, that's why it won't use this.dynamicProperties. That way transforms won't get updated if opacity changes.
         if(data.o){
             this.o = PropertyFactory.getProp(elem,data.o,0,0.01,arr);
         } else {

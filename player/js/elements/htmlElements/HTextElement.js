@@ -1,4 +1,4 @@
-function HTextElement(data,globalData,comp){
+function HTextElement(data,parentContainer,globalData,comp, placeholder){
     this.textSpans = [];
     this.textPaths = [];
     this.currentBBox = {
@@ -9,7 +9,7 @@ function HTextElement(data,globalData,comp){
     }
     this.renderType = 'svg';
     this.isMasked = false;
-    this._parent.constructor.call(this,data,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 
 }
 createElement(HBaseElement, HTextElement);
@@ -243,9 +243,7 @@ HTextElement.prototype.renderFrame = function(parentMatrix){
             textPath.style.color = renderedLetter.fc;
         }
     }
-
-    //TODO: this also needs to be recalculated every time a property changes. Check how canvas renderer uses globalData.mdf. Also would be great to calculate size from shapes and not from DOM.
-    if(this.isVisible && (this.firstFrame)){
+    if(this.isVisible && (this.elemMdf || this.firstFrame)){
         if(this.innerElem.getBBox){
             var boundingBox = this.innerElem.getBBox();
 
