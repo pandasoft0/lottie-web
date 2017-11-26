@@ -292,7 +292,7 @@ var Matrix = (function(){
 
     function applyToPointArray(x,y,z,dimensions){
         if(dimensions && dimensions === 2) {
-            var arr = point_pool.newElement();
+            var arr = point_pool.newPoint();
             arr[0] = x * this.props[0] + y * this.props[4] + z * this.props[8] + this.props[12]; 
             arr[1] = x * this.props[1] + y * this.props[5] + z * this.props[9] + this.props[13]; 
             return arr;    
@@ -326,6 +326,7 @@ var Matrix = (function(){
     function to2dCSS() {
         //Doesn't make much sense to add this optimization. If it is an identity matrix, it's very likely this will get called only once since it won't be keyframed.
         /*if(this.isIdentity()) {
+            console.log(new Error().stack)
             return '';
         }*/
         var v = 10000;

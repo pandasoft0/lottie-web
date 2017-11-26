@@ -1,7 +1,33 @@
 var point_pool = (function(){
-
-	function create() {
-		return createTypedArray('float32', 2);
+	var ob = {
+		newPoint: newPoint,
+		release: release
 	}
-	return pool_factory(8, create);
+
+	var _length = 0;
+	var _maxLength = 8;
+	var pool = Array.apply(null,{length:_maxLength});
+
+	function newPoint(){
+		var point;
+		if(_length){
+			_length -= 1;
+			point = pool[_length];
+		} else {
+			point = createTypedArray('float32', 2);
+		}
+		return point;
+	}
+
+	function release(point) {
+		if(_length === _maxLength) {
+			pool = pooling.double(pool);
+			_maxLength = _maxLength*2;
+		}
+		pool[_length] = point;
+		_length += 1;
+	}
+
+
+	return ob;
 }());
