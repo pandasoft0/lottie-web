@@ -1,4 +1,4 @@
-function HShapeElement(data,parentContainer,globalData,comp, placeholder){
+function HShapeElement(data,globalData,comp){
     this.shapes = [];
     this.shapesData = data.shapes;
     this.stylesList = [];
@@ -6,7 +6,7 @@ function HShapeElement(data,parentContainer,globalData,comp, placeholder){
     this.prevViewData = [];
     this.shapeModifiers = [];
     this.processedElements = [];
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
+    this._parent.constructor.call(this,data,globalData,comp);
     this.currentBBox = {
         x:999999,
         y: -999999,
@@ -42,7 +42,6 @@ HShapeElement.prototype.createElements = function(){
         this.layerElement.appendChild(this.shapesContainer);
     }
     if(!this.data.hd){
-        //this.parentContainer.appendChild(parent);
         this.baseElement = parent;
     }
     this.innerElem = parent;
@@ -65,7 +64,8 @@ HShapeElement.prototype.renderFrame = function(parentMatrix){
     var firstFrame = this.firstFrame;
     this._renderShapeFrame();
 
-    if(this.isVisible && (this.elemMdf || firstFrame)){
+    //TODO: this also needs to be recalculated every time a property changes. Check how canvas renderer uses globalData.mdf. Also would be great to calculate size from shapes and not from DOM.
+    if(this.isVisible && firstFrame){
         var boundingBox = this.shapeCont.getBBox();
         var changed = false;
         if(this.currentBBox.w !== boundingBox.width){
