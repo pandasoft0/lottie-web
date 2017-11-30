@@ -1,5 +1,5 @@
-function HCompElement(data,globalData,comp){
-    this._parent.constructor.call(this,data,globalData,comp);
+function HCompElement(data,parentContainer,globalData,comp, placeholder){
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
     this.layers = data.layers;
     this.supports3d = true;
     this.completeLayers = false;

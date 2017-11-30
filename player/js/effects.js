@@ -1,5 +1,5 @@
 function EffectsManager(data,element,dynamicProperties){
-    var effects = data.ef || [];
+    var effects = data.ef;
     this.effectElements = [];
     var i,len = effects.length;
     var effectItem;
@@ -68,7 +68,6 @@ GroupEffect.prototype.init = function(data,element,dynamicProperties){
                 this.effectElements.push(eff);
                 break;
             case 6:
-            default:
                 eff = new NoValueEffect(effects[i],element,dynamicProperties);
                 this.effectElements.push(eff);
                 break;
