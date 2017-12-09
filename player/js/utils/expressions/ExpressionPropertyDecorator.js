@@ -131,15 +131,16 @@
     }
 
     function getValueAtTime(frameNum) {
-        //TODO this shouldn't be necessary anymore
         if(!this._cachingAtTime) {
-            this._cachingAtTime = {lastValue:initialDefaultFrame,lastIndex:0};
+            this._cachingAtTime = {lastValue:-99999,lastIndex:0};
         }
         if(frameNum !== this._cachingAtTime.lastFrame) {
             frameNum *= this.elem.globalData.frameRate;
             frameNum -= this.offsetTime;
-            this._cachingAtTime.lastIndex = this._cachingAtTime.lastFrame < frameNum ? this._cachingAtTime.lastIndex : 0;
-            this._cachingAtTime.value = this.interpolateValue(frameNum, this.pv, this._cachingAtTime);
+            var i = this._caching.lastFrame < frameNum ? this._caching.lastIndex : 0;
+            var interpolationResult = this.interpolateValue(frameNum, i, this.pv, this._cachingAtTime);
+            this._cachingAtTime.lastIndex = interpolationResult.iterationIndex;
+            this._cachingAtTime.value = interpolationResult.value;
             this._cachingAtTime.lastFrame = frameNum;
         }
         return this._cachingAtTime.value;
@@ -181,9 +182,7 @@
             if(prop.getValue) {
                 prop.getPreValue = prop.getValue;
             }
-
-            prop.initiateExpression = ExpressionManager.initiateExpression;
-            prop.getValue = prop.initiateExpression(elem,data,prop);
+            prop.getValue = ExpressionManager.initiateExpression.bind(prop)(elem,data,prop);
         }
     }
 
@@ -209,7 +208,7 @@
             this.comp = elem.comp;
             this.elem = elem;
             this.mult = .01;
-            this.propType = 'textSelector';
+            this.type = 'textSelector';
             this.textTotal = data.totalChars;
             this.selectorValue = 100;
             this.lastValue = [1,1,1];
@@ -255,7 +254,6 @@
         prop.numKeys = data.a === 1 ? data.k.length : 0;
         var isAdded = prop.k;
         prop.propertyIndex = data.ix;
-        prop._cachingAtTime={lastFrame:initialDefaultFrame,lastIndex:0,value:type === 0 ? 0 : createTypedArray('float32', 3)}
         searchExpressions(elem,data,prop);
         if(!isAdded && prop.x){
             arr.push(prop);
@@ -265,20 +263,18 @@
     }
 
     function getShapeValueAtTime(frameNum) {
-        //TODO test this
-        if (!this._cachingAtTime) {
-            this._cachingAtTime = {
-                shapeValue: shape_pool.clone(this.pv),
-                lastIndex: 0,
-                lastTime: initialDefaultFrame
-            }
+        if (!this._shapeValueAtTime) {
+            this._lastIndexAtTime = 0;
+            this._lastTimeAtTime = -999999;
+            this._shapeValueAtTime = shape_pool.clone(this.pv);
         }
-        if(frameNum !== this._cachingAtTime.lastTime) {
-            this._cachingAtTime.lastTime = frameNum;
+        if(frameNum !== this._lastTimeAtTime) {
+            this._lastTimeAtTime = frameNum;
             frameNum *= this.elem.globalData.frameRate;
-            this.interpolateShape(frameNum, this._cachingAtTime.shapeValue, false, this._cachingAtTime);
+            var interpolationResult = this.interpolateShape(frameNum, this._lastIndexAtTime, this._shapeValueAtTime, false);
+            this._lastIndexAtTime = interpolationResult.iterationIndex;
         }
-        return this._cachingAtTime.shapeValue;
+        return this._shapeValueAtTime;
     }
 
     var ShapePropertyConstructorFunction = ShapePropertyFactory.getConstructorFunction();
@@ -335,8 +331,10 @@
         var i = 0, len = lengths.length;
         var j = 0, jLen;
         var accumulatedLength = 0;
+        var segments;
         while(i < len) {
             if(accumulatedLength + lengths[i].addedLength > lengthPos) {
+                segments = lengths[i].segments;
                 var initIndex = i;
                 var endIndex = (shapePath.c && i === len - 1) ? 0 : i + 1;
                 var segmentPerc = (lengthPos - accumulatedLength)/lengths[i].addedLength;
@@ -387,14 +385,12 @@
     KeyframedShapePropertyConstructorFunction.prototype.normalOnPath = ShapePropertyConstructorFunction.prototype.normalOnPath;
     KeyframedShapePropertyConstructorFunction.prototype.setGroupProperty = ShapePropertyConstructorFunction.prototype.setGroupProperty;
     KeyframedShapePropertyConstructorFunction.prototype.getValueAtTime = getShapeValueAtTime;
-    KeyframedShapePropertyConstructorFunction.prototype.initiateExpression = ExpressionManager.initiateExpression;
 
     var propertyGetShapeProp = ShapePropertyFactory.getShapeProp;
     ShapePropertyFactory.getShapeProp = function(elem,data,type, arr, trims){
         var prop = propertyGetShapeProp(elem,data,type, arr, trims);
         var isAdded = prop.k;
         prop.propertyIndex = data.ix;
-        prop.lock = false;
         if(type === 3){
             searchExpressions(elem,data.pt,prop);
         } else if(type === 4){
