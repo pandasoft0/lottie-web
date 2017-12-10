@@ -18,13 +18,10 @@ RoundCornersModifier.prototype.processKeys = function(forceRender){
 RoundCornersModifier.prototype.initModifierProperties = function(elem,data){
     this.getValue = this.processKeys;
     this.rd = PropertyFactory.getProp(elem,data.r,0,null,this.dynamicProperties);
-    if(!this.dynamicProperties.length){
-        this.getValue(true);
-    }
 };
 
 RoundCornersModifier.prototype.processPath = function(path, round){
-    var cloned_path = shape_pool.newShape();
+    var cloned_path = shape_pool.newElement();
     cloned_path.c = path.c;
     var i, len = path._length;
     var currentV,currentI,currentO,closerV, newV,newO,newI,distance,newPosPerc,index = 0;
