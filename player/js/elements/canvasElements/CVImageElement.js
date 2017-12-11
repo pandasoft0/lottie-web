@@ -1,65 +1,70 @@
 function CVImageElement(data, comp,globalData){
-    this.failed = false;
-    this.img = new Image();
     this.assetData = globalData.getAssetData(data.refId);
-    this.initElement(data,globalData,comp);
+    this._parent.constructor.call(this,data, comp,globalData);
     this.globalData.addPendingElement();
 }
-extendPrototype2([BaseElement, TransformElement, CVBaseElement, HierarchyElement, FrameElement, RenderableElement], CVImageElement);
+createElement(CVBaseElement, CVImageElement);
 
-CVImageElement.prototype.initElement = IShapeElement.prototype.initElement;
-CVImageElement.prototype.prepareFrame = IImageElement.prototype.prepareFrame;
+CVImageElement.prototype.createElements = function(){
+    var imageLoaded = function(){
+        this.globalData.elementLoaded();
+        if(this.assetData.w !== this.img.width || this.assetData.h !== this.img.height){
+            var canvas = document.createElement('canvas');
+            canvas.width = this.assetData.w;
+            canvas.height = this.assetData.h;
+            var ctx = canvas.getContext('2d');
 
-CVImageElement.prototype.imageLoaded = function() {
-    this.globalData.elementLoaded();
-    if(this.assetData.w !== this.img.width || this.assetData.h !== this.img.height){
-        var canvas = document.createElement('canvas');
-        canvas.width = this.assetData.w;
-        canvas.height = this.assetData.h;
-        var ctx = canvas.getContext('2d');
-        document.body.appendChild(canvas)
-
-        var imgW = this.img.width;
-        var imgH = this.img.height;
-        var imgRel = imgW / imgH;
-        var canvasRel = this.assetData.w/this.assetData.h;
-        var widthCrop, heightCrop;
-        if(imgRel>canvasRel){
-            heightCrop = imgH;
-            widthCrop = heightCrop*canvasRel;
-        } else {
-            widthCrop = imgW;
-            heightCrop = widthCrop/canvasRel;
+            var imgW = this.img.width;
+            var imgH = this.img.height;
+            var imgRel = imgW / imgH;
+            var canvasRel = this.assetData.w/this.assetData.h;
+            var widthCrop, heightCrop;
+            if(imgRel>canvasRel){
+                heightCrop = imgH;
+                widthCrop = heightCrop*canvasRel;
+            } else {
+                widthCrop = imgW;
+                heightCrop = widthCrop/canvasRel;
+            }
+            ctx.drawImage(this.img,(imgW-widthCrop)/2,(imgH-heightCrop)/2,widthCrop,heightCrop,0,0,this.assetData.w,this.assetData.h);
+            this.img = canvas;
         }
-        ctx.drawImage(this.img,(imgW-widthCrop)/2,(imgH-heightCrop)/2,widthCrop,heightCrop,0,0,this.assetData.w,this.assetData.h);
-        this.img = canvas;
-    }
-}
+    }.bind(this);
+    var imageFailed = function(){
+        this.failed = true;
+        this.globalData.elementLoaded();
+    }.bind(this);
 
-CVImageElement.prototype.imageFailed = function() {
-    this.failed = true;
-    this.globalData.elementLoaded();
-}
-
-CVImageElement.prototype.createContent = function(){
-    var img = this.img;
-    img.addEventListener('load', this.imageLoaded.bind(this), false);
-    img.addEventListener('error', this.imageFailed.bind(this), false);
+    this.img = new Image();
+    this.img.addEventListener('load', imageLoaded, false);
+    this.img.addEventListener('error', imageFailed, false);
     var assetPath = this.globalData.getAssetsPath(this.assetData);
-    img.src = assetPath;
+    this.img.src = assetPath;
+
+    this._parent.createElements.call(this);
 
 };
 
-CVImageElement.prototype.renderInnerContent = function(parentMatrix){
-    if (this.failed) {
+CVImageElement.prototype.renderFrame = function(parentMatrix){
+    if(this.failed){
         return;
     }
-    this.canvasContext.drawImage(this.img, 0, 0);
+    if(this._parent.renderFrame.call(this,parentMatrix)===false){
+        return;
+    }
+    var ctx = this.canvasContext;
+    this.globalData.renderer.save();
+    var finalMat = this.finalTransform.mat.props;
+    this.globalData.renderer.ctxTransform(finalMat);
+    this.globalData.renderer.ctxOpacity(this.finalTransform.opacity);
+    ctx.drawImage(this.img,0,0);
+    this.globalData.renderer.restore(this.data.hasMask);
+    if(this.firstFrame){
+        this.firstFrame = false;
+    }
 };
 
 CVImageElement.prototype.destroy = function(){
     this.img = null;
-    this.destroyBaseElement();
+    this._parent.destroy.call(this._parent);
 };
-
-CVImageElement.prototype.renderFrame = IImageElement.prototype.renderFrame;

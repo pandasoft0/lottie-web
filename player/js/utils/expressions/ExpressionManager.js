@@ -332,7 +332,7 @@ var ExpressionManager = (function(){
     function createPath(points, inTangents, outTangents, closed) {
         inTangents = inTangents && inTangents.length ? inTangents : points;
         outTangents = outTangents && outTangents.length ? outTangents : points;
-        var path = shape_pool.newElement();
+        var path = shape_pool.newShape();
         var len = points.length;
         path.setPathData(closed, len);
         for(i = 0; i < len; i += 1) {
@@ -360,7 +360,7 @@ var ExpressionManager = (function(){
         //var fnStr = 'var fn = function(){'+val+';this.v = $bm_rt;}';
         //eval(fnStr);
 
-        var fn = eval('[function(){' + val+';if($bm_rt.propType==="shape"){this.v=shape_pool.clone($bm_rt.v);}else{this.v=$bm_rt;}}' + ']')[0];
+        var fn = eval('[function(){' + val+';if($bm_rt.__shapeObject){this.v=shape_pool.clone($bm_rt.v);}else{this.v=$bm_rt;}}' + ']')[0];
         var bindedFn = fn.bind(this);
         var numKeys = property.kf ? data.k.length : 0;
 
@@ -547,14 +547,14 @@ var ExpressionManager = (function(){
             if(_needsRandom){
                 seedRandom(randSeed);
             }
-            if(this.frameExpressionId === elem.globalData.frameId && this.propType !== 'textSelector'){
+            if(this.frameExpressionId === elem.globalData.frameId && this.type !== 'textSelector'){
                 return;
             }
             if(this.lock){
                 this.v = duplicatePropertyValue(this.pv,this.mult);
                 return true;
             }
-            if(this.propType === 'textSelector'){
+            if(this.type === 'textSelector'){
                 textIndex = this.textIndex;
                 textTotal = this.textTotal;
                 selectorValue = this.selectorValue;
