@@ -1,9 +1,11 @@
-function HBaseElement(data,globalData,comp){
+function HBaseElement(data,parentContainer,globalData,comp, placeholder){
     this.globalData = globalData;
     this.comp = comp;
     this.data = data;
     this.matteElement = null;
-    this.layerId = 'ly_'+randomString(10);
+    this.parentContainer = parentContainer;
+    this.layerId = placeholder ? placeholder.layerId : 'ly_'+randomString(10);
+    this.placeholder = placeholder;
     this.init();
 };
 
@@ -12,6 +14,20 @@ HBaseElement.prototype.checkBlendMode = function(){
 
 };
 HBaseElement.prototype.setBlendMode = BaseElement.prototype.setBlendMode;
+
+/*HBaseElement.prototype.appendNodeToParent = function(node) {
+    if(this.data.hd){
+        return;
+    }
+    if(this.placeholder){
+        var g = this.placeholder.phElement;
+        g.parentNode.insertBefore(node, g);
+        //g.parentNode.removeChild(g);
+    }else{
+        this.parentContainer.appendChild(node);
+    }
+};*/
+
 
 HBaseElement.prototype.getBaseElement = function(){
     return this.baseElement;
@@ -37,6 +53,9 @@ HBaseElement.prototype.createElements = function(){
         this.layerElement.setAttribute('id',this.data.ln);
     }
     this.setBlendMode();
+    if(this.layerElement !== this.parentContainer){
+        this.placeholder = null;
+    }
     this.checkParenting();
 };
 
@@ -44,10 +63,15 @@ HBaseElement.prototype.renderFrame = function(parentTransform){
     if(this.data.ty === 3){
         return false;
     }
-    
-    this.finalTransform.opMdf = this.finalTransform.mProp.o.mdf;
+
+    if(this.currentFrameNum === this.lastNum || !this.isVisible){
+        return this.isVisible;
+    }
+    this.lastNum = this.currentFrameNum;
+
+    this.finalTransform.opMdf = this.finalTransform.op.mdf;
     this.finalTransform.matMdf = this.finalTransform.mProp.mdf;
-    this.finalTransform.opacity = this.finalTransform.mProp.o.v;
+    this.finalTransform.opacity = this.finalTransform.op.v;
     if(this.firstFrame){
         this.finalTransform.opMdf = true;
         this.finalTransform.matMdf = true;
@@ -101,6 +125,7 @@ HBaseElement.prototype.renderFrame = function(parentTransform){
 HBaseElement.prototype.destroy = function(){
     this.layerElement = null;
     this.transformedElement = null;
+    this.parentContainer = null;
     if(this.matteElement) {
         this.matteElement = null;
     }
