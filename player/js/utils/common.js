@@ -1,4 +1,5 @@
-var subframeEnabled = true;
+//TODO with subframe enabled, code deopt data shows up
+var subframeEnabled = false;
 var expressionsPlugin;
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 var cachedColors = {};
@@ -60,14 +61,6 @@ function styleDiv(element){
     element.style.transformOrigin = element.style.webkitTransformOrigin = '0 0';
     element.style.backfaceVisibility  = element.style.webkitBackfaceVisibility = 'visible';
     element.style.transformStyle = element.style.webkitTransformStyle = element.style.mozTransformStyle = "preserve-3d";
-}
-
-function styleUnselectableDiv(element){
-    element.style.userSelect = 'none';
-    element.style.MozUserSelect = 'none';
-    element.style.webkitUserSelect = 'none';
-    element.style.oUserSelect = 'none';
-
 }
 
 function BMEnterFrameEvent(n,c,t,d){

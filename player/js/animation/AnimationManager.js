@@ -5,7 +5,6 @@ var animationManager = (function(){
     var len = 0;
     var idled = true;
     var playingAnimationsNum = 0;
-    var _stopped = true;
 
     function removeElement(ev){
         var i = 0;
@@ -96,7 +95,9 @@ var animationManager = (function(){
             registeredAnimations[i].animation.moveFrame(value,animation);
         }
     }
+
     function resume(nowTime) {
+
         var elapsedTime = nowTime - initTime;
         var i;
         for(i=0;i<len;i+=1){
@@ -105,8 +106,6 @@ var animationManager = (function(){
         initTime = nowTime;
         if(!idled) {
             window.requestAnimationFrame(resume);
-        } else {
-            _stopped = true;
         }
     }
 
@@ -189,10 +188,7 @@ var animationManager = (function(){
     function activate(){
         if(idled){
             idled = false;
-            if(_stopped) {
-                window.requestAnimationFrame(first);
-                _stopped = false;
-            }
+            window.requestAnimationFrame(first);
         }
     }
 
