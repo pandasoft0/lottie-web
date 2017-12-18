@@ -1,14 +1,39 @@
-function IShapeElement(data,parentContainer,globalData,comp, placeholder){
+function IShapeElement(data,globalData,comp){
+    //List of drawable elements
     this.shapes = [];
+    // Full shape data
     this.shapesData = data.shapes;
+    //List of styles that will be applied to shapes
     this.stylesList = [];
-    this.itemsData = [];
-    this.prevViewData = [];
+    //List of modifiers that will be applied to shapes
     this.shapeModifiers = [];
+    //List of items in shape tree
+    this.itemsData = [];
+    //List of items in previous shape tree
     this.processedElements = [];
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
+    this.initElement(data,globalData,comp);
+    //Moving any property that doesn't get too much access after initialization because of v8 way of handling more than 10 properties.
+    // List of elements that have been created
+    this.prevViewData = [];
 }
-createElement(SVGBaseElement, IShapeElement);
+
+extendPrototype2([BaseElement,TransformElement,SVGBaseElement,HierarchyElement,FrameElement,RenderableElement], IShapeElement);
+
+IShapeElement.prototype.initElement = function(data,globalData,comp) {
+    this.initFrame();
+    this.initBaseData(data, globalData, comp);
+    this.initTransform(data, globalData, comp);
+    this.initHierarchy();
+    this.initRenderable();
+    this.initRendererElement();
+    this.createContainerElements();
+    this.addMasks();
+    this.createContent();
+    this.hide();
+}
+
+IShapeElement.prototype.initSecondaryElement = function() {
+}
 
 IShapeElement.prototype.identityMatrix = new Matrix();
 
@@ -25,12 +50,12 @@ IShapeElement.prototype.ljEnum = {
 }
 
 IShapeElement.prototype.searchProcessedElement = function(elem){
-    var i = this.processedElements.length;
-    while(i){
-        i -= 1;
+    var i = 0, len = this.processedElements.length;
+    while(i < len){
         if(this.processedElements[i].elem === elem){
             return this.processedElements[i].pos;
         }
+        i += 1;
     }
     return 0;
 };
@@ -45,145 +70,46 @@ IShapeElement.prototype.addProcessedElement = function(elem, pos){
         }
     }
     if(i === 0){
-        this.processedElements.push({
-            elem: elem,
-            pos: pos
-        })
+        this.processedElements.push(new ProcessedElement(elem, pos));
     }
 };
 
 IShapeElement.prototype.buildExpressionInterface = function(){};
 
-IShapeElement.prototype.createElements = function(){
-    //TODO check if I can use symbol so i can set its viewBox
-    this._parent.createElements.call(this);
+IShapeElement.prototype.createContent = function(){
     this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.layerElement,this.dynamicProperties, 0, [], true);
-    if(!this.data.hd || this.data.td){
-        styleUnselectableDiv(this.layerElement);
-    }
-};
-
-IShapeElement.prototype.setGradientData = function(pathElement,arr,data){
-
-    var gradientId = 'gr_'+randomString(10);
-    var gfill;
-    if(arr.t === 1){
-        gfill = createNS('linearGradient');
-    } else {
-        gfill = createNS('radialGradient');
-    }
-    gfill.setAttribute('id',gradientId);
-    gfill.setAttribute('spreadMethod','pad');
-    gfill.setAttribute('gradientUnits','userSpaceOnUse');
-    var stops = [];
-    var stop, j, jLen;
-    jLen = arr.g.p*4;
-    for(j=0;j<jLen;j+=4){
-        stop = createNS('stop');
-        gfill.appendChild(stop);
-        stops.push(stop);
-    }
-    pathElement.setAttribute( arr.ty === 'gf' ? 'fill':'stroke','url(#'+gradientId+')');
-    this.globalData.defs.appendChild(gfill);
-    data.gf = gfill;
-    data.cst = stops;
-}
-
-IShapeElement.prototype.setGradientOpacity = function(arr, data, styleOb){
-    if((arr.g.k.k[0].s && arr.g.k.k[0].s.length > arr.g.p*4) || arr.g.k.k.length > arr.g.p*4){
-        var opFill;
-        var stop, j, jLen;
-        var mask = createNS("mask");
-        var maskElement = createNS( 'path');
-        mask.appendChild(maskElement);
-        var opacityId = 'op_'+randomString(10);
-        var maskId = 'mk_'+randomString(10);
-        mask.setAttribute('id',maskId);
-        if(arr.t === 1){
-            opFill = createNS('linearGradient');
-        } else {
-            opFill = createNS('radialGradient');
-        }
-        opFill.setAttribute('id',opacityId);
-        opFill.setAttribute('spreadMethod','pad');
-        opFill.setAttribute('gradientUnits','userSpaceOnUse');
-        jLen = arr.g.k.k[0].s ? arr.g.k.k[0].s.length : arr.g.k.k.length;
-        var stops = [];
-        for(j=arr.g.p*4;j<jLen;j+=2){
-            stop = createNS('stop');
-            stop.setAttribute('stop-color','rgb(255,255,255)');
-            //stop.setAttribute('offset',Math.round(arr.y[j][0]*100)+'%');
-            //stop.setAttribute('style','stop-color:rgb(255,255,255);stop-opacity:'+arr.y[j][1]);
-            opFill.appendChild(stop);
-            stops.push(stop);
-        }
-        maskElement.setAttribute( arr.ty === 'gf' ? 'fill':'stroke','url(#'+opacityId+')');
-        this.globalData.defs.appendChild(opFill);
-        this.globalData.defs.appendChild(mask);
-        data.of = opFill;
-        data.ost = stops;
-        styleOb.msElem = maskElement;
-        return maskId;
-    }
 };
 
 IShapeElement.prototype.createStyleElement = function(data, level, dynamicProperties){
-    var elementData = {
-    };
-    var styleOb = {
-        data: data,
-        type: data.ty,
-        d: '',
-        ld: '',
-        lvl: level,
-        mdf: false,
-        closed: false
-    };
-    var pathElement = createNS( "path");
-    elementData.o = PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties);
-    if(data.ty == 'st' || data.ty == 'gs') {
+    //TODO: prevent drawing of hidden styles
+    var elementData;
+    var styleOb = new SVGStyleData(data, level);
+
+    var pathElement = styleOb.pElem;
+    if(data.ty === 'st') {
+        elementData = new SVGStrokeStyleData(this, data, dynamicProperties, styleOb);
+    } else if(data.ty === 'fl') {
+        elementData = new SVGFillStyleData(this, data, dynamicProperties, styleOb);
+    } else if(data.ty === 'gf' || data.ty === 'gs') {
+        var gradientConstructor = data.ty === 'gf' ? SVGGradientFillStyleData : SVGGradientStrokeStyleData;
+        elementData = new gradientConstructor(this, data, dynamicProperties, styleOb);
+        this.globalData.defs.appendChild(elementData.gf);
+        if (elementData.maskId) {
+            this.globalData.defs.appendChild(elementData.ms);
+            this.globalData.defs.appendChild(elementData.of);
+            pathElement.setAttribute('mask','url(#' + elementData.maskId + ')');
+        }
+    }
+    
+    if(data.ty === 'st' || data.ty === 'gs') {
         pathElement.setAttribute('stroke-linecap', this.lcEnum[data.lc] || 'round');
-        ////pathElement.style.strokeLinecap = this.lcEnum[data.lc] || 'round';
         pathElement.setAttribute('stroke-linejoin',this.ljEnum[data.lj] || 'round');
-        ////pathElement.style.strokeLinejoin = this.ljEnum[data.lj] || 'round';
         pathElement.setAttribute('fill-opacity','0');
-        ////pathElement.style.fillOpacity = 0;
-        if(data.lj == 1) {
+        if(data.lj === 1) {
             pathElement.setAttribute('stroke-miterlimit',data.ml);
-            ////pathElement.style.strokeMiterlimit = data.ml;
-        }
-
-        elementData.w = PropertyFactory.getProp(this,data.w,0,null,dynamicProperties);
-        if(data.d){
-            var d = new DashProperty(this,data.d,'svg',dynamicProperties);
-            if(!d.k){
-                pathElement.setAttribute('stroke-dasharray', d.dasharray);
-                ////pathElement.style.strokeDasharray = d.dasharray;
-                pathElement.setAttribute('stroke-dashoffset', d.dashoffset[0]);
-                ////pathElement.style.strokeDashoffset = d.dashoffset;
-            }
-            elementData.d = d;
-        }
-
-    }
-    if(data.ty == 'fl' || data.ty == 'st'){
-        elementData.c = PropertyFactory.getProp(this,data.c,1,255,dynamicProperties);
-    } else {
-        elementData.g = new GradientProperty(this,data.g,dynamicProperties);
-        if(data.t == 2){
-            elementData.h = PropertyFactory.getProp(this,data.h,0,0.01,dynamicProperties);
-            elementData.a = PropertyFactory.getProp(this,data.a,0,degToRads,dynamicProperties);
-        }
-        elementData.s = PropertyFactory.getProp(this,data.s,1,null,dynamicProperties);
-        elementData.e = PropertyFactory.getProp(this,data.e,1,null,dynamicProperties);
-        this.setGradientData(pathElement,data,elementData, styleOb);
-        var maskId = this.setGradientOpacity(data,elementData, styleOb);
-        if(maskId){
-            pathElement.setAttribute('mask','url(#'+maskId+')');
         }
     }
-    elementData.elem = pathElement;
-    //container.appendChild(pathElement);
+
     if(data.r === 2) {
         pathElement.setAttribute('fill-rule', 'evenodd');
     }
@@ -194,19 +120,12 @@ IShapeElement.prototype.createStyleElement = function(data, level, dynamicProper
     if(data.cl){
         pathElement.setAttribute('class',data.cl);
     }
-    styleOb.pElem = pathElement;
     this.stylesList.push(styleOb);
-    elementData.style = styleOb;
     return elementData;
 }
 
 IShapeElement.prototype.createGroupElement = function(data) {
-    var elementData = {
-        it: [],
-        prevViewData: []
-    };
-    var g = createNS('g');
-    elementData.gr = g;
+    var elementData = new ShapeGroupData();
     if(data.ln){
         elementData.gr.setAttribute('id',data.ln);
     }
@@ -214,62 +133,44 @@ IShapeElement.prototype.createGroupElement = function(data) {
 }
 
 IShapeElement.prototype.createTransformElement = function(data, dynamicProperties) {
-    var elementData = {
-        transform : {
-            op: PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties),
-            mProps: TransformPropertyFactory.getTransformProperty(this,data,dynamicProperties)
-            //mProps: PropertyFactory.getProp(this,data,2,null,dynamicProperties)
-        },
-        elements: []
-    };
-    return elementData;
+    return new SVGTransformData(TransformPropertyFactory.getTransformProperty(this,data,dynamicProperties), PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties))
 }
 
 IShapeElement.prototype.createShapeElement = function(data, ownTransformers, level, dynamicProperties) {
-    var elementData = {
-        elements : [],
-        caches:[],
-        styles : [],
-        transformers: ownTransformers,
-        lStr: ''
-    };
     var ty = 4;
-    if(data.ty == 'rc'){
+    if(data.ty === 'rc'){
         ty = 5;
-    }else if(data.ty == 'el'){
+    }else if(data.ty === 'el'){
         ty = 6;
-    }else if(data.ty == 'sr'){
+    }else if(data.ty === 'sr'){
         ty = 7;
     }
-    elementData.sh = ShapePropertyFactory.getShapeProp(this,data,ty,dynamicProperties);
-    elementData.lvl = level;
+    var shapeProperty = ShapePropertyFactory.getShapeProp(this,data,ty,dynamicProperties);
+    var elementData = new SVGShapeData(ownTransformers, level, shapeProperty)
     this.shapes.push(elementData.sh);
     this.addShapeToModifiers(elementData);
     return elementData;
 }
 
-var cont = 0;
-
-IShapeElement.prototype.setElementStyles = function(){
+IShapeElement.prototype.setElementStyles = function(elementData){
+    var arr = elementData.styles;
     var j, jLen = this.stylesList.length;
-    var arr = [];
-    for(j=0;j<jLen;j+=1){
-        if(!this.stylesList[j].closed){
+    for (j = 0; j < jLen; j += 1) {
+        if (!this.stylesList[j].closed) {
             arr.push(this.stylesList[j]);
         }
     }
-    return arr;
 }
 
 IShapeElement.prototype.reloadShapes = function(){
     this.firstFrame = true;
     var i, len = this.itemsData.length;
-    for(i=0;i<len;i+=1){
+    for( i = 0; i < len; i += 1) {
         this.prevViewData[i] = this.itemsData[i];
     }
     this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.layerElement,this.dynamicProperties, 0, [], true);
     var i, len = this.dynamicProperties.length;
-    for(i=0;i<len;i+=1){
+    for(i = 0; i < len; i += 1) {
         this.dynamicProperties[i].getValue();
     }
     this.renderModifiers();
@@ -294,7 +195,7 @@ IShapeElement.prototype.searchShapes = function(arr,itemsData,prevViewData,conta
                 itemsData[i].style.closed = false;
             }
             if(arr[i]._render){
-                container.appendChild(itemsData[i].elem);
+                container.appendChild(itemsData[i].style.pElem);
             }
             ownStyles.push(itemsData[i].style);
         }else if(arr[i].ty == 'gr'){
@@ -320,7 +221,7 @@ IShapeElement.prototype.searchShapes = function(arr,itemsData,prevViewData,conta
             if(!processedPos){
                 itemsData[i] = this.createShapeElement(arr[i], ownTransformers, level, dynamicProperties);
             }
-            itemsData[i].elements = this.setElementStyles();
+            this.setElementStyles(itemsData[i]);
 
         }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd' || arr[i].ty == 'ms'){
             if(!processedPos){
@@ -374,39 +275,27 @@ IShapeElement.prototype.renderModifiers = function() {
         this.shapes[i].reset();
     }
 
-
     len = this.shapeModifiers.length;
-
     for(i=len-1;i>=0;i-=1){
         this.shapeModifiers[i].processShapes(this.firstFrame);
     }
 };
 
-IShapeElement.prototype.renderFrame = function(parentMatrix){
-    //this.reloadShapes();
-    var renderParent = this._parent.renderFrame.call(this,parentMatrix);
-    if(renderParent===false){
-        this.hide();
-        return;
-    }
-    if(this.hidden){
-        this.layerElement.style.display = 'block';
-        this.hidden = false;
-    }
+IShapeElement.prototype.prepareFrame = function(num) {
+    this.prepareRenderableFrame(num);
+    this.prepareProperties(num, this.isInRange);
+};
+
+IShapeElement.prototype.renderInnerContent = function() {
     this.renderModifiers();
     var i, len = this.stylesList.length;
     for(i=0;i<len;i+=1){
-        this.stylesList[i].d = '';
-        this.stylesList[i].mdf = false;
+        this.stylesList[i].reset();
     }
     this.renderShape(this.shapesData,this.itemsData, null);
 
+    var pathString;
     for (i = 0; i < len; i += 1) {
-        if (this.stylesList[i].ld === '0') {
-            this.stylesList[i].ld = '1';
-            this.stylesList[i].pElem.style.display = 'block';
-            //this.stylesList[i].parent.appendChild(this.stylesList[i].pElem);
-        }
         if (this.stylesList[i].mdf || this.firstFrame) {
             this.stylesList[i].pElem.setAttribute('d', this.stylesList[i].d || 'M0 0');
             if(this.stylesList[i].msElem){
@@ -414,30 +303,11 @@ IShapeElement.prototype.renderFrame = function(parentMatrix){
             }
         }
     }
-    if (this.firstFrame) {
-        this.firstFrame = false;
-    }
 };
 
-IShapeElement.prototype.hide = function(){
-    if(!this.hidden){
-        this.layerElement.style.display = 'none';
-        var i, len = this.stylesList.length;
-        for(i=len-1;i>=0;i-=1){
-            if(this.stylesList[i].ld !== '0'){
-                this.stylesList[i].ld = '0';
-                this.stylesList[i].pElem.style.display = 'none';
-                if(this.stylesList[i].pElem.parentNode){
-                    this.stylesList[i].parent = this.stylesList[i].pElem.parentNode;
-                    //this.stylesList[i].pElem.parentNode.removeChild(this.stylesList[i].pElem);
-                }
-            }
-        }
-        this.hidden = true;
-    }
-};
 
-IShapeElement.prototype.renderShape = function(items,data, container){
+IShapeElement.prototype.renderShape = function(items, data, container) {
+    //TODO: find out why a container could be missing
     var i, len = items.length - 1;
     var ty;
     for(i=0;i<=len;i+=1){
@@ -449,8 +319,8 @@ IShapeElement.prototype.renderShape = function(items,data, container){
             if(this.firstFrame || data[i].transform.mProps.mdf && container){
                 container.setAttribute('transform',data[i].transform.mProps.v.to2dCSS());
             }
-        }else if(ty == 'sh' || ty == 'el' || ty == 'rc' || ty == 'sr'){
-            this.renderPath(items[i],data[i]);
+        }else if(items[i]._render && (ty == 'sh' || ty == 'el' || ty == 'rc' || ty == 'sr')){
+            this.renderPath(data[i]);
         }else if(ty == 'fl'){
             this.renderFill(items[i],data[i]);
         }else if(ty == 'gf'){
@@ -487,25 +357,17 @@ IShapeElement.prototype.buildShapeString = function(pathNodes, length, closed, m
     return shapeString;
 };
 
-IShapeElement.prototype.renderPath = function(pathData,itemData){
-    var len, i, j, jLen,pathStringTransformed,redraw,pathNodes,l, lLen = itemData.elements.length;
+IShapeElement.prototype.renderPath = function(itemData){
+    var len, i, j, jLen,pathStringTransformed,redraw,pathNodes,l, lLen = itemData.styles.length;
     var lvl = itemData.lvl;
-    if(!pathData._render){
-        return;
-    }
+    var paths, mat, props, iterations, k;
     for(l=0;l<lLen;l+=1){
-        if(itemData.elements[l].data._render){
+        //TODO this condition makes TurboFan bail out of optimization. Look for a way to change it.
+        //if(itemData.styles[l].data._render){
             redraw = itemData.sh.mdf || this.firstFrame;
-            //M0 0 is needed for IE and Edge bug. If it's missing, and shape has a mask with a gradient fill, it won't show up. :/
-            //Removing it because it's causing issues with Chrome, and also it's probably better not to have it so the shape won't be larger than needed.
-            //Keeping previous comment to try to find a solution.
-            pathStringTransformed = '';
-            var paths = itemData.sh.paths;
-            jLen = paths._length;
-
-            if(itemData.elements[l].lvl < lvl){
+            if(itemData.styles[l].lvl < lvl){
                 mat = this.mHelper.reset();
-                iterations = lvl - itemData.elements[l].lvl;
+                iterations = lvl - itemData.styles[l].lvl;
                 k = itemData.transformers.length-1;
                 while(iterations > 0) {
                     redraw = itemData.transformers[k].mProps.mdf || redraw;
@@ -517,7 +379,13 @@ IShapeElement.prototype.renderPath = function(pathData,itemData){
             } else {
                 mat = this.identityMatrix;
             }
+            paths = itemData.sh.paths;
+            jLen = paths._length;
             if(redraw){
+                //M0 0 is needed for IE and Edge bug. If it's missing, and shape has a mask with a gradient fill, it won't show up. :/
+                //Removing it because it's causing issues with Chrome, and also it's probably better not to have it so the shape won't be larger than needed.
+                //Keeping previous comment to try to find a solution.
+                pathStringTransformed = '';
                 for(j=0;j<jLen;j+=1){
                     pathNodes = paths.shapes[j];
                     if(pathNodes && pathNodes._length){
@@ -528,11 +396,11 @@ IShapeElement.prototype.renderPath = function(pathData,itemData){
             } else {
                 pathStringTransformed = itemData.caches[l];
             }
-            itemData.elements[l].d += pathStringTransformed;
-            itemData.elements[l].mdf = redraw || itemData.elements[l].mdf;
-        } else {
-            itemData.elements[l].mdf = true;
-        }
+            itemData.styles[l].d += pathStringTransformed;
+            itemData.styles[l].mdf = redraw || itemData.styles[l].mdf;
+        /*} else {
+            itemData.styles[l].mdf = true;
+        }*/
     }
 };
 
@@ -541,118 +409,114 @@ IShapeElement.prototype.renderFill = function(styleData,itemData){
 
     if(itemData.c.mdf || this.firstFrame){
         styleElem.pElem.setAttribute('fill','rgb('+bm_floor(itemData.c.v[0])+','+bm_floor(itemData.c.v[1])+','+bm_floor(itemData.c.v[2])+')');
-        ////styleElem.pElem.style.fill = 'rgb('+bm_floor(itemData.c.v[0])+','+bm_floor(itemData.c.v[1])+','+bm_floor(itemData.c.v[2])+')';
     }
     if(itemData.o.mdf || this.firstFrame){
         styleElem.pElem.setAttribute('fill-opacity',itemData.o.v);
     }
 };
 
-IShapeElement.prototype.renderGradient = function(styleData,itemData){
+IShapeElement.prototype.renderGradient = function(styleData, itemData) {
     var gfill = itemData.gf;
     var opFill = itemData.of;
-    var pt1 = itemData.s.v,pt2 = itemData.e.v;
+    var pt1 = itemData.s.v, pt2 = itemData.e.v;
 
-    if(itemData.o.mdf || this.firstFrame){
-        var attr = styleData.ty === 'gf' ? 'fill-opacity':'stroke-opacity';
-        itemData.elem.setAttribute(attr,itemData.o.v);
+    if (itemData.o.mdf || this.firstFrame) {
+        var attr = styleData.ty === 'gf' ? 'fill-opacity' : 'stroke-opacity';
+        itemData.style.pElem.setAttribute(attr, itemData.o.v);
     }
-    //clippedElement.setAttribute('transform','matrix(1,0,0,1,-100,0)');
-    if(itemData.s.mdf || this.firstFrame){
-        var attr1 = styleData.t === 1 ? 'x1':'cx';
-        var attr2 = attr1 === 'x1' ? 'y1':'cy';
-        gfill.setAttribute(attr1,pt1[0]);
-        gfill.setAttribute(attr2,pt1[1]);
-        if(opFill){
-            opFill.setAttribute(attr1,pt1[0]);
-            opFill.setAttribute(attr2,pt1[1]);
+    if (itemData.s.mdf || this.firstFrame) {
+        var attr1 = styleData.t === 1 ? 'x1' : 'cx';
+        var attr2 = attr1 === 'x1' ? 'y1' : 'cy';
+        gfill.setAttribute(attr1, pt1[0]);
+        gfill.setAttribute(attr2, pt1[1]);
+        if (opFill) {
+            opFill.setAttribute(attr1, pt1[0]);
+            opFill.setAttribute(attr2, pt1[1]);
         }
     }
     var stops, i, len, stop;
-    if(itemData.g.cmdf || this.firstFrame){
+    if (itemData.g.cmdf || this.firstFrame) {
         stops = itemData.cst;
         var cValues = itemData.g.c;
         len = stops.length;
-        for(i=0;i<len;i+=1){
+        for (i = 0; i < len; i += 1){
             stop = stops[i];
-            stop.setAttribute('offset',cValues[i*4]+'%');
-            stop.setAttribute('stop-color','rgb('+cValues[i*4+1]+','+cValues[i*4+2]+','+cValues[i*4+3]+')');
+            stop.setAttribute('offset', cValues[i * 4] + '%');
+            stop.setAttribute('stop-color','rgb('+ cValues[i * 4 + 1] + ',' + cValues[i * 4 + 2] + ','+cValues[i * 4 + 3] + ')');
         }
     }
-    if(opFill && (itemData.g.omdf || this.firstFrame)){
+    if (opFill && (itemData.g.omdf || this.firstFrame)) {
         stops = itemData.ost;
         var oValues = itemData.g.o;
         len = stops.length;
-        for(i=0;i<len;i+=1){
+        for (i = 0; i < len; i += 1) {
             stop = stops[i];
-            stop.setAttribute('offset',oValues[i*2]+'%');
-            stop.setAttribute('stop-opacity',oValues[i*2+1]);
+            stop.setAttribute('offset', oValues[i * 2] + '%');
+            stop.setAttribute('stop-opacity', oValues[i * 2 + 1]);
         }
     }
-    if(styleData.t === 1){
-        if(itemData.e.mdf  || this.firstFrame){
-            gfill.setAttribute('x2',pt2[0]);
-            gfill.setAttribute('y2',pt2[1]);
-            if(opFill){
-                opFill.setAttribute('x2',pt2[0]);
-                opFill.setAttribute('y2',pt2[1]);
+    if (styleData.t === 1) {
+        if (itemData.e.mdf  || this.firstFrame) {
+            gfill.setAttribute('x2', pt2[0]);
+            gfill.setAttribute('y2', pt2[1]);
+            if (opFill) {
+                opFill.setAttribute('x2', pt2[0]);
+                opFill.setAttribute('y2', pt2[1]);
             }
         }
     } else {
         var rad;
-        if(itemData.s.mdf || itemData.e.mdf || this.firstFrame){
-            rad = Math.sqrt(Math.pow(pt1[0]-pt2[0],2)+Math.pow(pt1[1]-pt2[1],2));
-            gfill.setAttribute('r',rad);
+        if (itemData.s.mdf || itemData.e.mdf || this.firstFrame) {
+            rad = Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) + Math.pow(pt1[1] - pt2[1], 2));
+            gfill.setAttribute('r', rad);
             if(opFill){
-                opFill.setAttribute('r',rad);
+                opFill.setAttribute('r', rad);
             }
         }
-        if(itemData.e.mdf || itemData.h.mdf || itemData.a.mdf || this.firstFrame){
-            if(!rad){
-                rad = Math.sqrt(Math.pow(pt1[0]-pt2[0],2)+Math.pow(pt1[1]-pt2[1],2));
+        if (itemData.e.mdf || itemData.h.mdf || itemData.a.mdf || this.firstFrame) {
+            if (!rad) {
+                rad = Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) + Math.pow(pt1[1] - pt2[1], 2));
             }
-            var ang = Math.atan2(pt2[1]-pt1[1], pt2[0]-pt1[0]);
+            var ang = Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
 
-            var percent = itemData.h.v >= 1 ? 0.99 : itemData.h.v <= -1 ? -0.99:itemData.h.v;
-            var dist = rad*percent;
-            var x = Math.cos(ang + itemData.a.v)*dist + pt1[0];
-            var y = Math.sin(ang + itemData.a.v)*dist + pt1[1];
-            gfill.setAttribute('fx',x);
-            gfill.setAttribute('fy',y);
-            if(opFill){
-                opFill.setAttribute('fx',x);
-                opFill.setAttribute('fy',y);
+            var percent = itemData.h.v >= 1 ? 0.99 : itemData.h.v <= -1 ? -0.99: itemData.h.v;
+            var dist = rad * percent;
+            var x = Math.cos(ang + itemData.a.v) * dist + pt1[0];
+            var y = Math.sin(ang + itemData.a.v) * dist + pt1[1];
+            gfill.setAttribute('fx', x);
+            gfill.setAttribute('fy', y);
+            if (opFill) {
+                opFill.setAttribute('fx', x);
+                opFill.setAttribute('fy', y);
             }
         }
         //gfill.setAttribute('fy','200');
     }
 };
 
-IShapeElement.prototype.renderStroke = function(styleData,itemData){
+IShapeElement.prototype.renderStroke = function(styleData, itemData) {
     var styleElem = itemData.style;
     var d = itemData.d;
-    if(d && (d.mdf || this.firstFrame)){
+    if (d && (d.mdf || this.firstFrame)) {
         styleElem.pElem.setAttribute('stroke-dasharray', d.dashStr);
         styleElem.pElem.setAttribute('stroke-dashoffset', d.dashoffset[0]);
     }
     if(itemData.c && (itemData.c.mdf || this.firstFrame)){
-        styleElem.pElem.setAttribute('stroke','rgb('+bm_floor(itemData.c.v[0])+','+bm_floor(itemData.c.v[1])+','+bm_floor(itemData.c.v[2])+')');
+        styleElem.pElem.setAttribute('stroke','rgb(' + bm_floor(itemData.c.v[0]) + ',' + bm_floor(itemData.c.v[1]) + ',' + bm_floor(itemData.c.v[2]) + ')');
     }
     if(itemData.o.mdf || this.firstFrame){
-        styleElem.pElem.setAttribute('stroke-opacity',itemData.o.v);
+        styleElem.pElem.setAttribute('stroke-opacity', itemData.o.v);
     }
     if(itemData.w.mdf || this.firstFrame){
-        styleElem.pElem.setAttribute('stroke-width',itemData.w.v);
+        styleElem.pElem.setAttribute('stroke-width', itemData.w.v);
         if(styleElem.msElem){
-            styleElem.msElem.setAttribute('stroke-width',itemData.w.v);
+            styleElem.msElem.setAttribute('stroke-width', itemData.w.v);
         }
     }
 };
 
 IShapeElement.prototype.destroy = function(){
-    this._parent.destroy.call(this._parent);
+    this.destroyBaseElement();
     this.shapeData = null;
     this.itemsData = null;
-    this.parentContainer = null;
-    this.placeholder = null;
 };

@@ -1,15 +1,17 @@
 function MaskElement(data,element,globalData) {
+    //TODO: check if dynamic properties array can be used from element
     this.dynamicProperties = [];
     this.data = data;
     this.element = element;
     this.globalData = globalData;
     this.storedData = [];
-    this.masksProperties = this.data.masksProperties;
-    this.viewData = Array.apply(null,{length:this.masksProperties.length});
+    this.masksProperties = this.data.masksProperties || [];
     this.maskElement = null;
     this.firstFrame = true;
     var defs = this.globalData.defs;
-    var i, len = this.masksProperties.length;
+    var i, len = this.masksProperties ? this.masksProperties.length : 0;
+    this.viewData = Array.apply(null,{length:len});
+    this.solidPath = '';
 
 
     var path, properties = this.masksProperties;
@@ -38,6 +40,7 @@ function MaskElement(data,element,globalData) {
 
         path = createNS( 'path');
         if(properties[i].mode == 'n') {
+            // TODO move this to a factory or to a constructor
             this.viewData[i] = {
                 op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,this.dynamicProperties),
                 prop: ShapePropertyFactory.getShapeProp(this.element,properties[i],3,this.dynamicProperties,null),
@@ -48,14 +51,10 @@ function MaskElement(data,element,globalData) {
         }
         count += 1;
 
-        if(properties[i].mode == 's'){
-            path.setAttribute('fill', '#000000');
-        }else{
-            path.setAttribute('fill', '#ffffff');
-        }
+        path.setAttribute('fill', properties[i].mode === 's' ? '#000000':'#ffffff');
         path.setAttribute('clip-rule','nonzero');
 
-        if(properties[i].x.k !== 0){
+        if (properties[i].x.k !== 0) {
             maskType = 'mask';
             maskRef = 'mask';
             x = PropertyFactory.getProp(this.element,properties[i].x,0,null,this.dynamicProperties);
@@ -68,17 +67,13 @@ function MaskElement(data,element,globalData) {
             feMorph.setAttribute('radius','0');
             expansor.appendChild(feMorph);
             defs.appendChild(expansor);
-            if(properties[i].mode == 's'){
-                path.setAttribute('stroke', '#000000');
-            }else{
-                path.setAttribute('stroke', '#ffffff');
-            }
-        }else{
+            path.setAttribute('stroke', properties[i].mode === 's' ? '#000000':'#ffffff');
+        } else {
             feMorph = null;
             x = null;
         }
 
-
+        // TODO move this to a factory or to a constructor
         this.storedData[i] = {
              elem: path,
              x: x,
@@ -109,6 +104,7 @@ function MaskElement(data,element,globalData) {
         if(properties[i].inv && !this.solidPath){
             this.solidPath = this.createLayerSolidPath();
         }
+        // TODO move this to a factory or to a constructor
         this.viewData[i] = {
             elem: path,
             lastPath: '',
@@ -116,6 +112,7 @@ function MaskElement(data,element,globalData) {
             prop:ShapePropertyFactory.getShapeProp(this.element,properties[i],3,this.dynamicProperties,null)
         };
         if(rect){
+            //TODO: move the invRect property to the object definition in order to prevent a new hidden class creation.
             this.viewData[i].invRect = rect;
         }
         if(!this.viewData[i].prop.k){
@@ -130,12 +127,12 @@ function MaskElement(data,element,globalData) {
         this.maskElement.appendChild(currentMasks[i]);
     }
 
-    this.maskElement.setAttribute('id', layerId);
     if(count > 0){
+        this.maskElement.setAttribute('id', layerId);
         this.element.maskedElement.setAttribute(maskRef, "url(" + locationHref + "#" + layerId + ")");
+        defs.appendChild(this.maskElement);
     }
 
-    defs.appendChild(this.maskElement);
 };
 
 MaskElement.prototype.getMaskProperty = function(pos){
@@ -205,24 +202,22 @@ MaskElement.prototype.drawPath = function(pathData,pathNodes,viewData){
     len = pathNodes._length;
     for(i=1;i<len;i+=1){
         //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
-        pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[i][0])+','+bm_rnd(pathNodes.i[i][1]) + " "+bm_rnd(pathNodes.v[i][0])+','+bm_rnd(pathNodes.v[i][1]);
+        pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[i][0]+','+pathNodes.i[i][1] + " "+pathNodes.v[i][0]+','+pathNodes.v[i][1];
     }
         //pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
     if(pathNodes.c && len > 1){
-        pathString += " C"+bm_rnd(pathNodes.o[i-1][0])+','+bm_rnd(pathNodes.o[i-1][1]) + " "+bm_rnd(pathNodes.i[0][0])+','+bm_rnd(pathNodes.i[0][1]) + " "+bm_rnd(pathNodes.v[0][0])+','+bm_rnd(pathNodes.v[0][1]);
+        pathString += " C"+pathNodes.o[i-1][0]+','+pathNodes.o[i-1][1] + " "+pathNodes.i[0][0]+','+pathNodes.i[0][1] + " "+pathNodes.v[0][0]+','+pathNodes.v[0][1];
     }
     //pathNodes.__renderedString = pathString;
 
 
     if(viewData.lastPath !== pathString){
+        var pathShapeValue = '';
         if(viewData.elem){
-            if(!pathNodes.c){
-                viewData.elem.setAttribute('d','');
-            }else if(pathData.inv){
-                viewData.elem.setAttribute('d',this.solidPath + pathString);
-            }else{
-                viewData.elem.setAttribute('d',pathString);
+            if(pathNodes.c){
+                pathShapeValue = pathData.inv ? this.solidPath + pathString : pathString;
             }
+            viewData.elem.setAttribute('d',pathShapeValue);
         }
         viewData.lastPath = pathString;
     }
