@@ -1,4 +1,4 @@
-function CVShapeElement(data, globalData, comp) {
+function CVShapeElement(data, comp,globalData){
     this.shapes = [];
     this.shapesData = data.shapes;
     this.stylesList = [];
@@ -6,29 +6,17 @@ function CVShapeElement(data, globalData, comp) {
     this.prevViewData = [];
     this.shapeModifiers = [];
     this.processedElements = [];
-    this.initElement(data, globalData, comp);
+    this._parent.constructor.call(this,data, comp,globalData);
 }
-
-extendPrototype2([BaseElement,TransformElement,CVBaseElement,HierarchyElement,FrameElement,RenderableElement], CVShapeElement);
-
-CVShapeElement.prototype.initElement = function(data,globalData,comp) {
-    this.initFrame();
-    this.initBaseData(data, globalData, comp);
-    this.initTransform(data, globalData, comp);
-    this.initHierarchy();
-    this.initRenderable();
-    this.initRendererElement();
-    this.createContainerElements();
-    this.addMasks();
-    this.createContent();
-    this.hide();
-}
+createElement(CVBaseElement, CVShapeElement);
 
 CVShapeElement.prototype.transformHelper = {opacity:1,mat:new Matrix(),matMdf:false,opMdf:false};
 
 CVShapeElement.prototype.dashResetter = [];
 
-CVShapeElement.prototype.createContent = function(){
+CVShapeElement.prototype.createElements = function(){
+
+    this._parent.createElements.call(this);
     this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.dynamicProperties, true);
 };
 
@@ -226,17 +214,21 @@ CVShapeElement.prototype.lcEnum = IShapeElement.prototype.lcEnum;
 CVShapeElement.prototype.ljEnum = IShapeElement.prototype.ljEnum;
 CVShapeElement.prototype.searchProcessedElement = IShapeElement.prototype.searchProcessedElement;
 CVShapeElement.prototype.addProcessedElement = IShapeElement.prototype.addProcessedElement;
-CVShapeElement.prototype.prepareFrame = IShapeElement.prototype.prepareFrame;
 
-CVShapeElement.prototype.renderInnerContent = function() {
-
+CVShapeElement.prototype.renderFrame = function(parentMatrix){
+    if(this._parent.renderFrame.call(this, parentMatrix)===false){
+        return;
+    }
     this.transformHelper.mat.reset();
-    this.transformHelper.opacity = this.finalTransform.mProp.o.v;
+    this.transformHelper.opacity = this.finalTransform.opacity;
     this.transformHelper.matMdf = false;
     this.transformHelper.opMdf = this.finalTransform.opMdf;
     this.renderModifiers();
     this.renderShape(this.transformHelper,null,null,true);
-}
+    if(this.data.hasMask){
+        this.globalData.renderer.restore(true);
+    }
+};
 
 CVShapeElement.prototype.renderShape = function(parentTransform,items,data,isMain){
     var i, len;
@@ -291,8 +283,8 @@ CVShapeElement.prototype.renderShape = function(parentTransform,items,data,isMai
     }
     len = this.stylesList.length;
     var j, jLen, k, kLen,elems,nodes, renderer = this.globalData.renderer, ctx = this.globalData.canvasContext, type;
-    //renderer.save();
-    //renderer.ctxTransform(this.finalTransform.mat.props);
+    renderer.save();
+    renderer.ctxTransform(this.finalTransform.mat.props);
     for(i=0;i<len;i+=1){
         type = this.stylesList[i].type;
         if((type === 'st' && this.stylesList[i].wi === 0) || !this.stylesList[i].data._render){
@@ -347,7 +339,7 @@ CVShapeElement.prototype.renderShape = function(parentTransform,items,data,isMai
         }
         renderer.restore();
     }
-    //renderer.restore();
+    renderer.restore();
     if(this.firstFrame){
         this.firstFrame = false;
     }
