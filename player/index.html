@@ -11,7 +11,7 @@
         }
 
         #lottie{
-            background-color:#FFF7DC;
+            background-color:#000;
             width:100%;
             height:100%;
             /*width:360px;
@@ -132,8 +132,8 @@
     var elem = document.getElementById('lottie')
     var animData = {
         container: elem,
-        renderer: 'svg',
-        loop: false,
+        renderer: 'canvas',
+        loop: true,
         autoplay: true,
         rendererSettings: {
             progressiveLoad:false
