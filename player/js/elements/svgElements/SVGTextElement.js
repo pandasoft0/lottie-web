@@ -1,16 +1,12 @@
-function SVGTextElement(data,parentContainer,globalData,comp, placeholder){
+function SVGTextElement(data,globalData,comp){
     this.textSpans = [];
     this.renderType = 'svg';
-    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
+    this.initElement(data,globalData,comp);
 }
-createElement(SVGBaseElement, SVGTextElement);
 
-extendPrototype(ITextElement, SVGTextElement);
+extendPrototype2([BaseElement,TransformElement,SVGBaseElement,HierarchyElement,FrameElement,RenderableDOMElement,ITextElement], SVGTextElement);
 
-SVGTextElement.prototype.createElements = function(){
-
-    this._parent.createElements.call(this);
-
+SVGTextElement.prototype.createContent = function(){
 
     if(this.data.ln){
         this.layerElement.setAttribute('id',this.data.ln);
@@ -149,7 +145,7 @@ SVGTextElement.prototype.buildNewText = function(){
 
 SVGTextElement.prototype.sourceRectAtTime = function(time){
     this.prepareFrame(this.comp.renderedFrame - this.data.st);
-    this.renderLetters();
+    this.renderInnerContent();
     if(this._sizeChanged){
         this._sizeChanged = false;
         var textBox = this.layerElement.getBBox();
@@ -163,7 +159,7 @@ SVGTextElement.prototype.sourceRectAtTime = function(time){
     return this.bbox;
 }
 
-SVGTextElement.prototype.renderLetters = function(){
+SVGTextElement.prototype.renderInnerContent = function(){
 
     if(!this.data.singleShape){
         this.textAnimator.getMeasures(this.textProperty.currentData, this.lettersChangedFlag);
@@ -200,20 +196,4 @@ SVGTextElement.prototype.renderLetters = function(){
             }
         }
     }
-}
-
-SVGTextElement.prototype.renderFrame = function(parentMatrix){
-
-    var renderParent = this._parent.renderFrame.call(this,parentMatrix);
-    if(renderParent===false){
-        this.hide();
-        return;
-    }
-    if(this.hidden){
-        this.show();
-    }
-    if(this.firstFrame) {
-        this.firstFrame = false;
-    }
-    this.renderLetters();
 }
