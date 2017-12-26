@@ -1,5 +1,5 @@
 var TransformPropertyFactory = (function() {
-
+    
     function applyToMatrix(mat) {
         var i, len = this.dynamicProperties.length;
         for(i = 0; i < len; i += 1) {
@@ -29,12 +29,12 @@ var TransformPropertyFactory = (function() {
             mat.translate(this.p.v[0], this.p.v[1], -this.p.v[2]);
         }
     }
-    function processKeys(firstFrame){
+    function processKeys(){
         if (this.elem.globalData.frameId === this.frameId) {
             return;
         }
 
-        this.mdf = firstFrame;
+        this.mdf = false;
         var i, len = this.dynamicProperties.length;
 
         for(i = 0; i < len; i += 1) {
@@ -118,7 +118,7 @@ var TransformPropertyFactory = (function() {
     function TransformProperty(elem,data,arr){
         this.elem = elem;
         this.frameId = -1;
-        this.propType = 'transform';
+        this.type = 'transform';
         this.dynamicProperties = [];
         this.mdf = false;
         this.data = data;
@@ -158,7 +158,6 @@ var TransformPropertyFactory = (function() {
         if(data.s) {
             this.s = PropertyFactory.getProp(elem,data.s,1,0.01,this.dynamicProperties);
         }
-        // Opacity is not part of the transform properties, that's why it won't use this.dynamicProperties. That way transforms won't get updated if opacity changes.
         if(data.o){
             this.o = PropertyFactory.getProp(elem,data.o,0,0.01,arr);
         } else {
@@ -167,7 +166,29 @@ var TransformPropertyFactory = (function() {
         if(this.dynamicProperties.length){
             arr.push(this);
         }else{
-            this.getValue(true);
+            if(this.a){
+                this.v.translate(-this.a.v[0],-this.a.v[1],this.a.v[2]);
+            }
+            if(this.s){
+                this.v.scale(this.s.v[0],this.s.v[1],this.s.v[2]);
+            }
+            if(this.sk){
+                this.v.skewFromAxis(-this.sk.v,this.sa.v);
+            }
+            if(this.r){
+                this.v.rotate(-this.r.v);
+            }else{
+                this.v.rotateZ(-this.rz.v).rotateY(this.ry.v).rotateX(this.rx.v).rotateZ(-this.or.v[2]).rotateY(this.or.v[1]).rotateX(this.or.v[0]);
+            }
+            if(this.data.p.s){
+                if(data.p.z) {
+                    this.v.translate(this.px.v, this.py.v, -this.pz.v);
+                } else {
+                    this.v.translate(this.px.v, this.py.v, 0);
+                }
+            }else{
+                this.v.translate(this.p.v[0],this.p.v[1],-this.p.v[2]);
+            }
         }
     }
 

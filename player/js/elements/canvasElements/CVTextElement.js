@@ -1,4 +1,4 @@
-function CVTextElement(data, globalData, comp){
+function CVTextElement(data, comp, globalData){
     this.textSpans = [];
     this.yOffset = 0;
     this.fillColorAnim = false;
@@ -15,9 +15,11 @@ function CVTextElement(data, globalData, comp){
         sWidth: 0,
         fValue: ''
     }
-    this.initElement(data,globalData,comp);
+    this._parent.constructor.call(this,data,comp, globalData);
 }
-extendPrototype2([BaseElement,TransformElement,CVBaseElement,HierarchyElement,FrameElement,RenderableElement,ITextElement], CVTextElement);
+createElement(CVBaseElement, CVTextElement);
+
+extendPrototype(ITextElement, CVTextElement);
 
 CVTextElement.prototype.tHelper = document.createElement('canvas').getContext('2d');
 
@@ -102,9 +104,15 @@ CVTextElement.prototype.buildNewText = function(){
     }
 }
 
-CVTextElement.prototype.renderInnerContent = function(){
+CVTextElement.prototype.renderFrame = function(parentMatrix){
+    if(this._parent.renderFrame.call(this, parentMatrix)===false){
+        return;
+    }
     var ctx = this.canvasContext;
     var finalMat = this.finalTransform.mat.props;
+    this.globalData.renderer.save();
+    this.globalData.renderer.ctxTransform(finalMat);
+    this.globalData.renderer.ctxOpacity(this.finalTransform.opacity);
     ctx.font = this.values.fValue;
     ctx.lineCap = 'butt';
     ctx.lineJoin = 'miter';
@@ -198,4 +206,8 @@ CVTextElement.prototype.renderInnerContent = function(){
     /*if(this.data.hasMask){
      this.globalData.renderer.restore(true);
      }*/
+    this.globalData.renderer.restore(this.data.hasMask);
+    if(this.firstFrame){
+        this.firstFrame = false;
+    }
 };

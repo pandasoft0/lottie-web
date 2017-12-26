@@ -167,13 +167,13 @@ var Matrix = (function(){
     function transform(a2, b2, c2, d2, e2, f2, g2, h2, i2, j2, k2, l2, m2, n2, o2, p2) {
 
         if(a2 === 1 && b2 === 0 && c2 === 0 && d2 === 0 && e2 === 0 && f2 === 1 && g2 === 0 && h2 === 0 && i2 === 0 && j2 === 0 && k2 === 1 && l2 === 0){
-            //NOTE: commenting this condition because TurboFan deoptimizes code when present
-            //if(m2 !== 0 || n2 !== 0 || o2 !== 0){
-                this.props[12] = this.props[12] * a2 + this.props[15] * m2;
-                this.props[13] = this.props[13] * f2 + this.props[15] * n2;
-                this.props[14] = this.props[14] * k2 + this.props[15] * o2;
-                this.props[15] = this.props[15] * p2;
-            //}
+            if(m2 !== 0 || n2 !== 0 || o2 !== 0){
+
+                this.props[12] = this.props[12] * a2 + this.props[13] * e2 + this.props[14] * i2 + this.props[15] * m2 ;
+                this.props[13] = this.props[12] * b2 + this.props[13] * f2 + this.props[14] * j2 + this.props[15] * n2 ;
+                this.props[14] = this.props[12] * c2 + this.props[13] * g2 + this.props[14] * k2 + this.props[15] * o2 ;
+                this.props[15] = this.props[12] * d2 + this.props[13] * h2 + this.props[14] * l2 + this.props[15] * p2 ;
+            }
             this._identityCalculated = false;
             return this;
         }
@@ -235,17 +235,6 @@ var Matrix = (function(){
         return this._identity;
     }
 
-    function equals(matr){
-        var i = 0;
-        while (i < 16) {
-            if(matr.props[i] !== this.props[i]) {
-                return false;
-            }
-            i+=1;
-        }
-        return true;
-    }
-
     function clone(matr){
         var i;
         for(i=0;i<16;i+=1){
@@ -303,7 +292,7 @@ var Matrix = (function(){
 
     function applyToPointArray(x,y,z,dimensions){
         if(dimensions && dimensions === 2) {
-            var arr = point_pool.newElement();
+            var arr = point_pool.newPoint();
             arr[0] = x * this.props[0] + y * this.props[4] + z * this.props[8] + this.props[12]; 
             arr[1] = x * this.props[1] + y * this.props[5] + z * this.props[9] + this.props[13]; 
             return arr;    
@@ -314,7 +303,7 @@ var Matrix = (function(){
         if(this.isIdentity()) {
             return x + ',' + y;
         }
-        return (x * this.props[0] + y * this.props[4] + this.props[12])+','+(x * this.props[1] + y * this.props[5] + this.props[13]);
+        return (bm_rnd(x * this.props[0] + y * this.props[4] + this.props[12]))+','+(bm_rnd(x * this.props[1] + y * this.props[5] + this.props[13]));
     }
 
     function toCSS() {
@@ -337,6 +326,7 @@ var Matrix = (function(){
     function to2dCSS() {
         //Doesn't make much sense to add this optimization. If it is an identity matrix, it's very likely this will get called only once since it won't be keyframed.
         /*if(this.isIdentity()) {
+            console.log(new Error().stack)
             return '';
         }*/
         var v = 10000;
@@ -367,7 +357,6 @@ var Matrix = (function(){
         this.to2dCSS = to2dCSS;
         this.clone = clone;
         this.cloneFromProps = cloneFromProps;
-        this.equals = equals;
         this.inversePoints = inversePoints;
         this.inversePoint = inversePoint;
         this._t = this.transform;

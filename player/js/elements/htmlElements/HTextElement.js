@@ -1,4 +1,4 @@
-function HTextElement(data,globalData,comp){
+function HTextElement(data,parentContainer,globalData,comp, placeholder){
     this.textSpans = [];
     this.textPaths = [];
     this.currentBBox = {
@@ -9,26 +9,38 @@ function HTextElement(data,globalData,comp){
     }
     this.renderType = 'svg';
     this.isMasked = false;
-    this.initElement(data,globalData,comp);
+    this._parent.constructor.call(this,data,parentContainer,globalData,comp, placeholder);
 
 }
-extendPrototype2([BaseElement,TransformElement,HBaseElement,HierarchyElement,FrameElement,RenderableDOMElement,ITextElement], HTextElement);
+createElement(HBaseElement, HTextElement);
 
-HTextElement.prototype.createContent = function(){
+extendPrototype(ITextElement, HTextElement);
+
+HTextElement.prototype.createElements = function(){
     this.isMasked = this.checkMasks();
+    var parent = document.createElement('div');
+    styleDiv(parent);
+    this.layerElement = parent;
+    this.transformedElement = parent;
     if(this.isMasked){
         this.renderType = 'svg';
+        var cont = createNS('svg');
+        styleDiv(cont);
+        this.cont = cont;
         this.compW = this.comp.data.w;
         this.compH = this.comp.data.h;
-        this.svgElement.setAttribute('width',this.compW);
-        this.svgElement.setAttribute('height',this.compH);
+        cont.setAttribute('width',this.compW);
+        cont.setAttribute('height',this.compH);
         var g = createNS('g');
-        this.maskedElement.appendChild(g);
+        cont.appendChild(g);
+        parent.appendChild(cont);
+        this.maskedElement = g;
         this.innerElem = g;
     } else {
         this.renderType = 'html';
-        this.innerElem = this.layerElement;
+        this.innerElem = parent;
     }
+    this.baseElement = parent;
 
     this.checkParenting();
 
@@ -166,7 +178,20 @@ HTextElement.prototype.buildNewText = function(){
     }
 }
 
-HTextElement.prototype.renderInnerContent = function() {
+HTextElement.prototype.hide = SVGTextElement.prototype.hide;
+
+HTextElement.prototype.renderFrame = function(parentMatrix){
+
+    var renderParent = this._parent.renderFrame.call(this,parentMatrix);
+    if(renderParent===false){
+        this.hide();
+        return;
+    }
+    if(this.hidden){
+        this.hidden = false;
+        this.innerElem.style.display = 'block';
+        this.layerElement.style.display = 'block';
+    }
 
     if(this.data.singleShape){
         if(!this.firstFrame && !this.lettersChangedFlag){
@@ -174,8 +199,8 @@ HTextElement.prototype.renderInnerContent = function() {
         } else {
             // Todo Benchmark if using this is better than getBBox
              if(this.isMasked && this.finalTransform.matMdf){
-                 this.svgElement.setAttribute('viewBox',-this.finalTransform.mProp.p.v[0]+' '+ -this.finalTransform.mProp.p.v[1]+' '+this.compW+' '+this.compH);
-                this.svgElement.style.transform = this.svgElement.style.webkitTransform = 'translate(' + -this.finalTransform.mProp.p.v[0] + 'px,' + -this.finalTransform.mProp.p.v[1] + 'px)';
+                 this.cont.setAttribute('viewBox',-this.finalTransform.mProp.p.v[0]+' '+ -this.finalTransform.mProp.p.v[1]+' '+this.compW+' '+this.compH);
+                this.cont.style.transform = this.cont.style.webkitTransform = 'translate(' + -this.finalTransform.mProp.p.v[0] + 'px,' + -this.finalTransform.mProp.p.v[1] + 'px)';
              }
         }
     }
@@ -218,19 +243,17 @@ HTextElement.prototype.renderInnerContent = function() {
             textPath.style.color = renderedLetter.fc;
         }
     }
-
-    //TODO: this also needs to be recalculated every time a property changes. Check how canvas renderer uses globalData.mdf. Also would be great to calculate size from shapes and not from DOM.
-    if(this.isVisible && (this.firstFrame)){
+    if(this.isVisible && (this.elemMdf || this.firstFrame)){
         if(this.innerElem.getBBox){
             var boundingBox = this.innerElem.getBBox();
 
             if(this.currentBBox.w !== boundingBox.width){
                 this.currentBBox.w = boundingBox.width;
-                this.svgElement.setAttribute('width',boundingBox.width);
+                this.cont.setAttribute('width',boundingBox.width);
             }
             if(this.currentBBox.h !== boundingBox.height){
                 this.currentBBox.h = boundingBox.height;
-                this.svgElement.setAttribute('height',boundingBox.height);
+                this.cont.setAttribute('height',boundingBox.height);
             }
 
             var margin = 1;
@@ -240,9 +263,12 @@ HTextElement.prototype.renderInnerContent = function() {
                 this.currentBBox.x = boundingBox.x - margin;
                 this.currentBBox.y = boundingBox.y - margin;
 
-                this.svgElement.setAttribute('viewBox',this.currentBBox.x+' '+this.currentBBox.y+' '+this.currentBBox.w+' '+this.currentBBox.h);
-                this.svgElement.style.transform = this.svgElement.style.webkitTransform = 'translate(' + this.currentBBox.x + 'px,' + this.currentBBox.y + 'px)';
+                this.cont.setAttribute('viewBox',this.currentBBox.x+' '+this.currentBBox.y+' '+this.currentBBox.w+' '+this.currentBBox.h);
+                this.cont.style.transform = this.cont.style.webkitTransform = 'translate(' + this.currentBBox.x + 'px,' + this.currentBBox.y + 'px)';
             }
         }
+    }
+    if(this.firstFrame){
+        this.firstFrame = false;
     }
 }
