@@ -38,7 +38,6 @@ RenderableElement.prototype.checkLayerLimits = function(num) {
     {
         if(this.isInRange !== true){
             this.globalData.mdf = true;
-            this._mdf = true;
             this.isInRange = true;
             this.show();
         }

@@ -18,7 +18,6 @@ ITextElement.prototype.initElement = function(data,globalData,comp){
 };
 
 ITextElement.prototype.prepareFrame = function(num) {
-    this._mdf = false;
     this.prepareRenderableFrame(num);
     this.prepareProperties(num, this.isInRange);
     if(this.textProperty.mdf || this.textProperty.firstFrame) {

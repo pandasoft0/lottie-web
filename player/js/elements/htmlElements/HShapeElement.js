@@ -47,7 +47,8 @@ HShapeElement.prototype.createContent = function(){
 HShapeElement.prototype.renderInnerContent = function() {
     this._renderShapeFrame();
 
-    if(!this.hidden && (this.firstFrame || this._mdf)) {
+    //TODO: this also needs to be recalculated every time a property changes. Check how canvas renderer uses globalData.mdf. Also would be great to calculate size from shapes and not from DOM.
+    if(!this.hidden && this.firstFrame) {
         var boundingBox = this.shapeCont.getBBox();
         var changed = false;
         if(this.currentBBox.w !== boundingBox.width){
