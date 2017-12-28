@@ -265,9 +265,19 @@ CanvasRenderer.prototype.renderFrame = function(num){
     this.renderedFrame = num;
     this.globalData.frameNum = num - this.animationItem.firstFrame;
     this.globalData.frameId += 1;
-    this.globalData.mdf = false;
     this.globalData.projectInterface.currentFrame = num;
-    
+    if(this.renderConfig.clearCanvas === true){
+        //this.reset();
+        //this.canvasContext.save();
+        //this.canvasContext.canvas.width = this.canvasContext.canvas.width;
+        this.canvasContext.clearRect(this.transformCanvas.tx, this.transformCanvas.ty, this.transformCanvas.w*this.transformCanvas.sx, this.transformCanvas.h*this.transformCanvas.sy);
+    }else{
+        this.save();
+    }
+    this.canvasContext.beginPath();
+    this.canvasContext.rect(0,0,this.transformCanvas.w,this.transformCanvas.h);
+    this.canvasContext.closePath();
+    this.canvasContext.clip();
 
      // console.log('--------');
      // console.log('NEW: ',num);
@@ -281,30 +291,17 @@ CanvasRenderer.prototype.renderFrame = function(num){
             this.elements[i].prepareFrame(num - this.layers[i].st);
         }
     }
-    if(this.globalData.mdf) {
-        if(this.renderConfig.clearCanvas === true){
-            //this.reset();
-            //this.canvasContext.save();
-            //this.canvasContext.canvas.width = this.canvasContext.canvas.width;
-            this.canvasContext.clearRect(this.transformCanvas.tx, this.transformCanvas.ty, this.transformCanvas.w*this.transformCanvas.sx, this.transformCanvas.h*this.transformCanvas.sy);
-        }else{
-            this.save();
-        }
-        this.canvasContext.beginPath();
-        this.canvasContext.rect(0,0,this.transformCanvas.w,this.transformCanvas.h);
-        this.canvasContext.closePath();
-        this.canvasContext.clip();
-        for (i = len - 1; i >= 0; i-=1) {
-            if(this.completeLayers || this.elements[i]){
-                this.elements[i].renderFrame();
-            }
-        }
-        if(this.renderConfig.clearCanvas !== true){
-            this.restore();
-        } else {
-            //this.canvasContext.restore();
+    for (i = len - 1; i >= 0; i-=1) {
+        if(this.completeLayers || this.elements[i]){
+            this.elements[i].renderFrame();
         }
     }
+    if(this.renderConfig.clearCanvas !== true){
+        this.restore();
+    } else {
+        //this.canvasContext.restore();
+    }
+    // console.log(this.contextData.cTr.props)
 };
 
 CanvasRenderer.prototype.buildItem = function(pos){
