@@ -4916,7 +4916,7 @@ TextProperty.prototype.completeTextData = function(documentData) {
             break;
         }
     }
-    documentData.fWeight = fWeight;
+    documentData.fWeight = fontData.fWeight || fWeight;
     documentData.fStyle = fStyle;
     len = documentData.t.length;
     documentData.finalSize = documentData.s;
@@ -4977,7 +4977,7 @@ TextProperty.prototype.completeTextData = function(documentData) {
                 flag = false;
             }
         }
-        
+
     }
     lineWidth = - trackingOffset;
     cLength = 0;
@@ -5142,6 +5142,7 @@ TextProperty.prototype.setMinimumFontSize = function(_fontValue) {
     this.minimumFontSize = Math.floor(_fontValue) || 1;
     this.recalculate(this.keysIndex);
 };
+
 var TextSelectorProp = (function(){
     var max = Math.max;
     var min = Math.min;
@@ -9432,7 +9433,7 @@ HybridRenderer.prototype.createImage = function (data) {
 
 HybridRenderer.prototype.createComp = function (data) {
     if(!this.supports3d){
-        return new ICompElement(data, this.globalData, this);
+        return new SVGCompElement(data, this.globalData, this);
     }
     return new HCompElement(data, this.globalData, this);
 
@@ -10609,8 +10610,10 @@ HCompElement.prototype.createContainerElements = function(){
     if(this.data.hasMask){
         this.svgElement.setAttribute('width',this.data.w);
         this.svgElement.setAttribute('height',this.data.h);
+        this.transformedElement = this.baseElement;
+    } else {
+        this.transformedElement = this.layerElement;
     }
-    this.transformedElement = this.layerElement;
 };
 function HShapeElement(data,globalData,comp){
     //List of drawable elements
@@ -13538,7 +13541,7 @@ GroupEffect.prototype.init = function(data,element,dynamicProperties){
     lottiejs.inBrowser = inBrowser;
     lottiejs.installPlugin = installPlugin;
     lottiejs.__getFactory = getFactory;
-    lottiejs.version = '5.1.5';
+    lottiejs.version = '5.1.6';
 
     function checkReady() {
         if (document.readyState === "complete") {

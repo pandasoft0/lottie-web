@@ -4916,7 +4916,7 @@ TextProperty.prototype.completeTextData = function(documentData) {
             break;
         }
     }
-    documentData.fWeight = fWeight;
+    documentData.fWeight = fontData.fWeight || fWeight;
     documentData.fStyle = fStyle;
     len = documentData.t.length;
     documentData.finalSize = documentData.s;
@@ -4977,7 +4977,7 @@ TextProperty.prototype.completeTextData = function(documentData) {
                 flag = false;
             }
         }
-        
+
     }
     lineWidth = - trackingOffset;
     cLength = 0;
@@ -5142,6 +5142,7 @@ TextProperty.prototype.setMinimumFontSize = function(_fontValue) {
     this.minimumFontSize = Math.floor(_fontValue) || 1;
     this.recalculate(this.keysIndex);
 };
+
 var TextSelectorProp = (function(){
     var max = Math.max;
     var min = Math.min;
@@ -9138,7 +9139,7 @@ function EffectsManager(){}
     lottiejs.inBrowser = inBrowser;
     lottiejs.installPlugin = installPlugin;
     lottiejs.__getFactory = getFactory;
-    lottiejs.version = '5.1.5';
+    lottiejs.version = '5.1.6';
 
     function checkReady() {
         if (document.readyState === "complete") {
