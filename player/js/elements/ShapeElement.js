@@ -43,16 +43,15 @@ IShapeElement.prototype = {
         return 0;
     },
     addProcessedElement: function(elem, pos){
-        var i = this.processedElements.length, found = false;
+        var i = this.processedElements.length;
         while(i){
             i -= 1;
             if(this.processedElements[i].elem === elem){
                 this.processedElements[i].pos = pos;
-                found = true;
                 break;
             }
         }
-        if(!found){
+        if(i === 0){
             this.processedElements.push(new ProcessedElement(elem, pos));
         }
     },

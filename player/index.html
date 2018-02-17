@@ -12,8 +12,8 @@
 
         #lottie{
             background-color:#000;
-            width:800px;
-            height:600px;
+            width:960px;
+            height:540px;
             /*width:360px;
             height:640px;*/
             display:block;
@@ -35,7 +35,6 @@
     <script src="js/utils/helpers/arrays.js"></script>
     <script src="js/utils/helpers/svg_elements.js"></script>
     <script src="js/utils/helpers/html_elements.js"></script>
-    <script src="js/utils/helpers/dynamicProperties.js"></script>
     <script src="js/3rd_party/transformation-matrix.js"></script>
     <script src="js/3rd_party/seedrandom.js"></script>
     <script src="js/3rd_party/BezierEaser.js"></script>
@@ -161,19 +160,13 @@
         container: elem,
         renderer: 'svg',
         loop: false,
-        autoplay: false,
+        autoplay: true,
         rendererSettings: {
             progressiveLoad:false,
         },
         path: 'exports/render/data.json'
     };
     anim = lottie.loadAnimation(animData);
-    anim.addEventListener('DOMLoaded', function() {
-        anim.setSpeed(0.1);
-        //anim.goToAndStop(9, true);
-        anim.play();
-    })
-    //anim.setSubframe(false);
 </script>
 </body>
 </html>

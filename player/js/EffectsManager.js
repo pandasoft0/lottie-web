@@ -1,18 +1,20 @@
-function EffectsManager(data,element){
+function EffectsManager(data,element,dynamicProperties){
     var effects = data.ef || [];
     this.effectElements = [];
     var i,len = effects.length;
     var effectItem;
     for(i=0;i<len;i++) {
-        effectItem = new GroupEffect(effects[i],element);
+        effectItem = new GroupEffect(effects[i],element,dynamicProperties);
         this.effectElements.push(effectItem);
     }
 }
 
-function GroupEffect(data,element){
-    this.container = element;
+function GroupEffect(data,element,dynamicProperties){
     this.dynamicProperties = [];
-    this.init(data,element);
+    this.init(data,element,this.dynamicProperties);
+    if(this.dynamicProperties.length){
+        dynamicProperties.push(this);
+    }
 }
 
 GroupEffect.prototype.getValue = function(){
@@ -20,15 +22,11 @@ GroupEffect.prototype.getValue = function(){
     var i, len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
         this.dynamicProperties[i].getValue();
-        if(this.dynamicProperties[i]._mdf) {
-            this._mdf = true;
-        }
+        this._mdf = this.dynamicProperties[i]._mdf || this._mdf;
     }
 };
 
-GroupEffect.prototype.addDynamicProperty = addDynamicProperty;
-
-GroupEffect.prototype.init = function(data,element){
+GroupEffect.prototype.init = function(data,element,dynamicProperties){
     this.data = data;
     this._mdf = false;
     this.effectElements = [];
@@ -38,33 +36,33 @@ GroupEffect.prototype.init = function(data,element){
         eff = null;
         switch(effects[i].ty){
             case 0:
-                eff = new SliderEffect(effects[i],element,this);
+                eff = new SliderEffect(effects[i],element,dynamicProperties);
                 break;
             case 1:
-                eff = new AngleEffect(effects[i],element,this);
+                eff = new AngleEffect(effects[i],element,dynamicProperties);
                 break;
             case 2:
-                eff = new ColorEffect(effects[i],element,this);
+                eff = new ColorEffect(effects[i],element,dynamicProperties);
                 break;
             case 3:
-                eff = new PointEffect(effects[i],element,this);
+                eff = new PointEffect(effects[i],element,dynamicProperties);
                 break;
             case 4:
             case 7:
-                eff = new CheckboxEffect(effects[i],element,this);
+                eff = new CheckboxEffect(effects[i],element,dynamicProperties);
                 break;
             case 10:
-                eff = new LayerIndexEffect(effects[i],element,this);
+                eff = new LayerIndexEffect(effects[i],element,dynamicProperties);
                 break;
             case 11:
-                eff = new MaskIndexEffect(effects[i],element,this);
+                eff = new MaskIndexEffect(effects[i],element,dynamicProperties);
                 break;
             case 5:
-                eff = new EffectsManager(effects[i],element,this);
+                eff = new EffectsManager(effects[i],element,dynamicProperties);
                 break;
             //case 6:
             default:
-                eff = new NoValueEffect(effects[i],element,this);
+                eff = new NoValueEffect(effects[i],element,dynamicProperties);
                 break;
         }
         if(eff) {
