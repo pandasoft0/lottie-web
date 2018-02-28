@@ -4,8 +4,9 @@ function HCompElement(data,globalData,comp){
     this.completeLayers = false;
     this.pendingElements = [];
     this.elements = this.layers ? createSizedArray(this.layers.length) : [];
+    this.tm = data.tm ? PropertyFactory.getProp(this,data.tm,0,globalData.frameRate,this.dynamicProperties) : {_placeholder:true};
+    
     this.initElement(data,globalData,comp);
-    this.tm = data.tm ? PropertyFactory.getProp(this,data.tm,0,globalData.frameRate,this) : {_placeholder:true};
 }
 
 extendPrototype([HybridRenderer, ICompElement, HBaseElement], HCompElement);
@@ -22,3 +23,19 @@ HCompElement.prototype.createContainerElements = function(){
         this.transformedElement = this.layerElement;
     }
 };
+
+HCompElement.prototype.addTo3dContainer = function(elem,pos) {
+    var j = 0;
+    var nextElement;
+    while(j<pos){
+        if(this.elements[j] && this.elements[j].getBaseElement){
+            nextElement = this.elements[j].getBaseElement();
+        }
+        j += 1;
+    }
+    if(nextElement){
+        this.layerElement.insertBefore(elem, nextElement);
+    } else {
+        this.layerElement.appendChild(elem);
+    }
+}

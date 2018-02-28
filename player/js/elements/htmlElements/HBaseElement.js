@@ -62,7 +62,7 @@ HBaseElement.prototype = {
         }
     },
     addMasks: function(){
-        this.maskManager = new MaskElement(this.data, this, this.globalData);
+        this.maskManager = new MaskElement(this.data, this, this.globalData, this.dynamicProperties);
     },
     setMatte: function(){}
 };

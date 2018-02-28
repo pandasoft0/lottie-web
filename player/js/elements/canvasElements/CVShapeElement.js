@@ -18,10 +18,10 @@ CVShapeElement.prototype.transformHelper = {opacity:1,mat:new Matrix(),_matMdf:f
 CVShapeElement.prototype.dashResetter = [];
 
 CVShapeElement.prototype.createContent = function(){
-    this.searchShapes(this.shapesData,this.itemsData,this.prevViewData, true);
+    this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.dynamicProperties, true);
 };
 
-CVShapeElement.prototype.createStyleElement = function(data){
+CVShapeElement.prototype.createStyleElement = function(data, dynamicProperties){
     var styleElem = {
         data: data,
         type: data.ty,
@@ -29,24 +29,24 @@ CVShapeElement.prototype.createStyleElement = function(data){
     };
     var elementData = {};
     if(data.ty == 'fl' || data.ty == 'st'){
-        elementData.c = PropertyFactory.getProp(this,data.c,1,255,this);
+        elementData.c = PropertyFactory.getProp(this,data.c,1,255,dynamicProperties);
         if(!elementData.c.k){
             styleElem.co = 'rgb('+bm_floor(elementData.c.v[0])+','+bm_floor(elementData.c.v[1])+','+bm_floor(elementData.c.v[2])+')';
         }
     }
-    elementData.o = PropertyFactory.getProp(this,data.o,0,0.01,this);
+    elementData.o = PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties);
     if(data.ty == 'st') {
         styleElem.lc = this.lcEnum[data.lc] || 'round';
         styleElem.lj = this.ljEnum[data.lj] || 'round';
         if(data.lj == 1) {
             styleElem.ml = data.ml;
         }
-        elementData.w = PropertyFactory.getProp(this,data.w,0,null,this);
+        elementData.w = PropertyFactory.getProp(this,data.w,0,null,dynamicProperties);
         if(!elementData.w.k){
             styleElem.wi = elementData.w.v;
         }
         if(data.d){
-            var d = new DashProperty(this,data.d,'canvas');
+            var d = new DashProperty(this,data.d,'canvas',dynamicProperties);
             elementData.d = d;
             if(!elementData.d.k){
                 styleElem.da = elementData.d.dashArray;
@@ -71,22 +71,23 @@ CVShapeElement.prototype.createGroupElement = function(data) {
     return elementData;
 };
 
-CVShapeElement.prototype.createTransformElement = function(data) {
+CVShapeElement.prototype.createTransformElement = function(data, dynamicProperties) {
     var elementData = {
         transform : {
             mat: new Matrix(),
             opacity: 1,
             _matMdf:false,
             _opMdf:false,
-            op: PropertyFactory.getProp(this,data.o,0,0.01,this),
-            mProps: TransformPropertyFactory.getTransformProperty(this,data,this)
+            op: PropertyFactory.getProp(this,data.o,0,0.01,dynamicProperties),
+            //mProps: PropertyFactory.getProp(this,data,2,null,dynamicProperties)
+            mProps: TransformPropertyFactory.getTransformProperty(this,data,dynamicProperties)
         },
         elements: []
     };
     return elementData;
 };
 
-CVShapeElement.prototype.createShapeElement = function(data) {
+CVShapeElement.prototype.createShapeElement = function(data, dynamicProperties) {
     var elementData = {
         nodes:[],
         trNodes:[],
@@ -100,7 +101,7 @@ CVShapeElement.prototype.createShapeElement = function(data) {
     }else if(data.ty == 'sr'){
         ty = 7;
     }
-    elementData.sh = ShapePropertyFactory.getShapeProp(this,data,ty,this);
+    elementData.sh = ShapePropertyFactory.getShapeProp(this,data,ty,dynamicProperties);
     this.shapes.push(elementData.sh);
     this.addShapeToModifiers(elementData);
     var j, jLen = this.stylesList.length;
@@ -126,7 +127,7 @@ CVShapeElement.prototype.reloadShapes = function(){
     for(i=0;i<len;i+=1){
         this.prevViewData[i] = this.itemsData[i];
     }
-    this.searchShapes(this.shapesData,this.itemsData,this.prevViewData, true);
+    this.searchShapes(this.shapesData,this.itemsData,this.prevViewData,this.dynamicProperties, true);
     len = this.dynamicProperties.length;
     for(i=0;i<len;i+=1){
         this.dynamicProperties[i].getValue();
@@ -134,7 +135,7 @@ CVShapeElement.prototype.reloadShapes = function(){
     this.renderModifiers();
 };
 
-CVShapeElement.prototype.searchShapes = function(arr,itemsData, prevViewData, render){
+CVShapeElement.prototype.searchShapes = function(arr,itemsData, prevViewData,dynamicProperties, render){
     var i, len = arr.length - 1;
     var j, jLen;
     var ownArrays = [], ownModifiers = [], processedPos, modifier;
@@ -147,7 +148,7 @@ CVShapeElement.prototype.searchShapes = function(arr,itemsData, prevViewData, re
         }
         if(arr[i].ty == 'fl' || arr[i].ty == 'st'){
             if(!processedPos){
-                itemsData[i] = this.createStyleElement(arr[i]);
+                itemsData[i] = this.createStyleElement(arr[i], dynamicProperties);
             } else {
                 itemsData[i].style.closed = false;
             }
@@ -162,20 +163,20 @@ CVShapeElement.prototype.searchShapes = function(arr,itemsData, prevViewData, re
                     itemsData[i].prevViewData[j] = itemsData[i].it[j];
                 }
             }
-            this.searchShapes(arr[i].it,itemsData[i].it,itemsData[i].prevViewData, render);
+            this.searchShapes(arr[i].it,itemsData[i].it,itemsData[i].prevViewData,dynamicProperties, render);
         }else if(arr[i].ty == 'tr'){
             if(!processedPos){
-                itemsData[i] = this.createTransformElement(arr[i]);
+                itemsData[i] = this.createTransformElement(arr[i], dynamicProperties);
             }
         }else if(arr[i].ty == 'sh' || arr[i].ty == 'rc' || arr[i].ty == 'el' || arr[i].ty == 'sr'){
             if(!processedPos){
-                itemsData[i] = this.createShapeElement(arr[i]);
+                itemsData[i] = this.createShapeElement(arr[i], dynamicProperties);
             }
             
         }else if(arr[i].ty == 'tm' || arr[i].ty == 'rd'){
             if(!processedPos){
                 modifier = ShapeModifiers.getModifier(arr[i].ty);
-                modifier.init(this,arr[i]);
+                modifier.init(this,arr[i],dynamicProperties);
                 itemsData[i] = modifier;
                 this.shapeModifiers.push(modifier);
             } else {
@@ -187,7 +188,7 @@ CVShapeElement.prototype.searchShapes = function(arr,itemsData, prevViewData, re
             if(!processedPos){
                 modifier = ShapeModifiers.getModifier(arr[i].ty);
                 itemsData[i] = modifier;
-                modifier.init(this,arr,i,itemsData);
+                modifier.init(this,arr,i,itemsData,dynamicProperties);
                 this.shapeModifiers.push(modifier);
                 render = false;
             }else{

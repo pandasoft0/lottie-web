@@ -3,9 +3,9 @@ extendPrototype([ShapeModifier], RepeaterModifier);
 
 RepeaterModifier.prototype.initModifierProperties = function(elem,data){
     this.getValue = this.processKeys;
-    this.c = PropertyFactory.getProp(elem,data.c,0,null,this);
-    this.o = PropertyFactory.getProp(elem,data.o,0,null,this);
-    this.tr = TransformPropertyFactory.getTransformProperty(elem,data.tr,this);
+    this.c = PropertyFactory.getProp(elem,data.c,0,null,this.dynamicProperties);
+    this.o = PropertyFactory.getProp(elem,data.o,0,null,this.dynamicProperties);
+    this.tr = TransformPropertyFactory.getTransformProperty(elem,data.tr,this.dynamicProperties);
     this.data = data;
     if(!this.dynamicProperties.length){
         this.getValue(true);
@@ -30,9 +30,8 @@ RepeaterModifier.prototype.applyTransforms = function(pMatrix, rMatrix, sMatrix,
     sMatrix.translate(transform.a.v[0], transform.a.v[1], transform.a.v[2]);
 };
 
-RepeaterModifier.prototype.init = function(elem, arr, pos, elemsData) {
+RepeaterModifier.prototype.init = function(elem, arr, pos, elemsData, dynamicProperties) {
     this.elem = elem;
-    this.container = elem;
     this.arr = arr;
     this.pos = pos;
     this.elemsData = elemsData;
@@ -51,6 +50,7 @@ RepeaterModifier.prototype.init = function(elem, arr, pos, elemsData) {
     }
     if(this.dynamicProperties.length){
         this.k = true;
+        dynamicProperties.push(this);
     }else{
         this.getValue(true);
     }

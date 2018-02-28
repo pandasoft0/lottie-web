@@ -1,4 +1,4 @@
-function TextProperty(elem, data){
+function TextProperty(elem, data, dynamicProperties){
 	this._frameId = initialDefaultFrame;
 	this.pv = '';
 	this.v = '';
@@ -42,7 +42,7 @@ function TextProperty(elem, data){
 
 	};
 	if(this.searchProperty()) {
-        elem.addDynamicProperty(this);
+		dynamicProperties.push(this);
 	} else {
 		this.getValue(true);
 	}

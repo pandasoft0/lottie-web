@@ -1,4 +1,4 @@
-function MaskElement(data,element,globalData) {
+function MaskElement(data,element,globalData, dynamicProperties) {
     this.data = data;
     this.element = element;
     this.globalData = globalData;
@@ -40,8 +40,8 @@ function MaskElement(data,element,globalData) {
         if(properties[i].mode == 'n') {
             // TODO move this to a factory or to a constructor
             this.viewData[i] = {
-                op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,this.element),
-                prop: ShapePropertyFactory.getShapeProp(this.element,properties[i],3),
+                op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,dynamicProperties),
+                prop: ShapePropertyFactory.getShapeProp(this.element,properties[i],3,dynamicProperties,null),
                 elem: path
             };
             defs.appendChild(path);
@@ -56,7 +56,7 @@ function MaskElement(data,element,globalData) {
         if (properties[i].x.k !== 0) {
             maskType = 'mask';
             maskRef = 'mask';
-            x = PropertyFactory.getProp(this.element,properties[i].x,0,null,this.element);
+            x = PropertyFactory.getProp(this.element,properties[i].x,0,null,dynamicProperties);
             filterID = 'fi_'+randomString(10);
             expansor = createNS('filter');
             expansor.setAttribute('id',filterID);
@@ -107,8 +107,8 @@ function MaskElement(data,element,globalData) {
         this.viewData[i] = {
             elem: path,
             lastPath: '',
-            op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,this.element),
-            prop:ShapePropertyFactory.getShapeProp(this.element,properties[i],3),
+            op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,dynamicProperties),
+            prop:ShapePropertyFactory.getShapeProp(this.element,properties[i],3,dynamicProperties,null),
             invRect: rect
         };
         if(!this.viewData[i].prop.k){

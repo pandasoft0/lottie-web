@@ -18,7 +18,7 @@ CVBaseElement.prototype = {
         }
     },
     addMasks: function(){
-        this.maskManager = new CVMaskElement(this.data, this);
+        this.maskManager = new CVMaskElement(this.data, this, this.dynamicProperties);
     },
     hideElement: function(){
         if (!this.hidden && (!this.isInRange || this.isTransparent)) {

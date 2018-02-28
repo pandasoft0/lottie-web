@@ -3,11 +3,10 @@ function TextAnimatorProperty(textData, renderType, elem){
     this._isFirstFrame = true;
 	this._hasMaskedPath = false;
 	this._frameId = -1;
-	this.dynamicProperties = [];
+	this._dynamicProperties = [];
 	this._textData = textData;
 	this._renderType = renderType;
-    this._elem = elem;
-	this.container = elem;
+	this._elem = elem;
 	this._animatorsData = createSizedArray(this._textData.a.length);
 	this._pathData = {};
 	this._moreOptions = {
@@ -18,19 +17,17 @@ function TextAnimatorProperty(textData, renderType, elem){
 
 }
 
-TextAnimatorProperty.prototype.addDynamicProperty = addDynamicProperty;
-
-TextAnimatorProperty.prototype.searchProperties = function(){
+TextAnimatorProperty.prototype.searchProperties = function(dynamicProperties){
     var i, len = this._textData.a.length, animatorProps;
     var getProp = PropertyFactory.getProp;
     for(i=0;i<len;i+=1){
         animatorProps = this._textData.a[i];
-        this._animatorsData[i] = new TextAnimatorDataProperty(this._elem, animatorProps, this);
+        this._animatorsData[i] = new TextAnimatorDataProperty(this._elem, animatorProps, this._dynamicProperties);
     }
     if(this._textData.p && 'm' in this._textData.p){
         this._pathData = {
-            f: getProp(this._elem,this._textData.p.f,0,0,this),
-            l: getProp(this._elem,this._textData.p.l,0,0,this),
+            f: getProp(this._elem,this._textData.p.f,0,0,this._dynamicProperties),
+            l: getProp(this._elem,this._textData.p.l,0,0,this._dynamicProperties),
             r: this._textData.p.r,
             m: this._elem.maskManager.getMaskProperty(this._textData.p.m)
         };
@@ -38,7 +35,10 @@ TextAnimatorProperty.prototype.searchProperties = function(){
     } else {
         this._hasMaskedPath = false;
     }
-    this._moreOptions.alignment = getProp(this._elem,this._textData.m.a,1,0,this);
+    this._moreOptions.alignment = getProp(this._elem,this._textData.m.a,1,0,this._dynamicProperties);
+    if(this._dynamicProperties.length) {
+    	dynamicProperties.push(this);
+    }
 };
 
 TextAnimatorProperty.prototype.getMeasures = function(documentData, lettersChangedFlag){
@@ -560,11 +560,11 @@ TextAnimatorProperty.prototype.getValue = function(){
         return;
     }
     this._frameId = this._elem.globalData.frameId;
-	var i, len = this.dynamicProperties.length;
+	var i, len = this._dynamicProperties.length;
     this._mdf = false;
 	for(i = 0; i < len; i += 1) {
-		this.dynamicProperties[i].getValue();
-        this._mdf = this.dynamicProperties[i]._mdf || this._mdf;
+		this._dynamicProperties[i].getValue();
+        this._mdf = this._dynamicProperties[i]._mdf || this._mdf;
 	}
 };
 

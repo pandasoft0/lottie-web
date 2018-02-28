@@ -1,5 +1,5 @@
 
-function CVMaskElement(data,element){
+function CVMaskElement(data,element, dynamicProperties){
     this.data = data;
     this.element = element;
     this.masksProperties = this.data.masksProperties || [];
@@ -9,7 +9,7 @@ function CVMaskElement(data,element){
         if(this.masksProperties[i].mode !== 'n'){
             hasMasks = true;
         }
-        this.viewData[i] = ShapePropertyFactory.getShapeProp(this.element,this.masksProperties[i],3);
+        this.viewData[i] = ShapePropertyFactory.getShapeProp(this.element,this.masksProperties[i],3,dynamicProperties,null);
     }
     this.hasMasks = hasMasks;
 }

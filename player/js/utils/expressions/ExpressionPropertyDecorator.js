@@ -135,7 +135,7 @@
             frameNum *= this.elem.globalData.frameRate;
             frameNum -= this.offsetTime;
             this._cachingAtTime.lastIndex = this._cachingAtTime.lastFrame < frameNum ? this._cachingAtTime.lastIndex : 0;
-            this._cachingAtTime.value = this.interpolateValue(frameNum, this._cachingAtTime);
+            this._cachingAtTime.value = this.interpolateValue(frameNum, this.pv, this._cachingAtTime);
             this._cachingAtTime.lastFrame = frameNum;
         }
         return this._cachingAtTime.value;
@@ -174,13 +174,17 @@
         if(data.x){
             prop.k = true;
             prop.x = true;
+            if(prop.getValue) {
+                prop.getPreValue = prop.getValue;
+            }
+
             prop.initiateExpression = ExpressionManager.initiateExpression;
-            prop.effectsSequence.push(prop.initiateExpression(elem,data,prop).bind(prop));
+            prop.getValue = prop.initiateExpression(elem,data,prop);
         }
     }
 
     function getTransformValueAtTime(time) {
-        console.warn('Transform at time not supported');
+        //console.log('time:', time)
     }
 
     function getTransformStaticValueAtTime(time) {
@@ -218,8 +222,8 @@
     }());
 
     var getTransformProperty = TransformPropertyFactory.getTransformProperty;
-    TransformPropertyFactory.getTransformProperty = function(elem, data, container) {
-        var prop = getTransformProperty(elem, data, container);
+    TransformPropertyFactory.getTransformProperty = function(elem, data, arr) {
+        var prop = getTransformProperty(elem, data, arr);
         if(prop.dynamicProperties.length) {
             prop.getValueAtTime = getTransformValueAtTime.bind(prop);
         } else {
@@ -230,8 +234,8 @@
     };
 
     var propertyGetProp = PropertyFactory.getProp;
-    PropertyFactory.getProp = function(elem,data,type, mult, container){
-        var prop = propertyGetProp(elem,data,type, mult, container);
+    PropertyFactory.getProp = function(elem,data,type, mult, arr){
+        var prop = propertyGetProp(elem,data,type, mult, arr);
         //prop.getVelocityAtTime = getVelocityAtTime;
         //prop.loopOut = loopOut;
         //prop.loopIn = loopIn;
@@ -245,6 +249,7 @@
         prop.loopIn = loopIn;
         prop.getVelocityAtTime = getVelocityAtTime;
         prop.numKeys = data.a === 1 ? data.k.length : 0;
+        var isAdded = prop.k;
         prop.propertyIndex = data.ix;
         var value = 0;
         if(type !== 0) {
@@ -256,8 +261,8 @@
             value: value
         };
         searchExpressions(elem,data,prop);
-        if(prop.k){
-            container.addDynamicProperty(prop);
+        if(!isAdded && prop.x){
+            arr.push(prop);
         }
 
         return prop;
@@ -275,7 +280,7 @@
         if(frameNum !== this._cachingAtTime.lastTime) {
             this._cachingAtTime.lastTime = frameNum;
             frameNum *= this.elem.globalData.frameRate;
-            this.interpolateShape(frameNum, this._cachingAtTime.shapeValue, this._cachingAtTime);
+            this.interpolateShape(frameNum, this._cachingAtTime.shapeValue, false, this._cachingAtTime);
         }
         return this._cachingAtTime.shapeValue;
     }
@@ -376,6 +381,7 @@
     var propertyGetShapeProp = ShapePropertyFactory.getShapeProp;
     ShapePropertyFactory.getShapeProp = function(elem,data,type, arr, trims){
         var prop = propertyGetShapeProp(elem,data,type, arr, trims);
+        var isAdded = prop.k;
         prop.propertyIndex = data.ix;
         prop.lock = false;
         if(type === 3){
@@ -383,8 +389,8 @@
         } else if(type === 4){
             searchExpressions(elem,data.ks,prop);
         }
-        if(prop.k){
-            elem.addDynamicProperty(prop);
+        if(!isAdded && prop.x){
+            arr.push(prop);
         }
         return prop;
     };
