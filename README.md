@@ -177,7 +177,7 @@ Animation instances have these main methods:
 ### destroy()
 ***
 
-### Additional methods:
+### Aditional methods:
 - updateTextDocumentData -- updates a text layer's data
 [More Info](https://github.com/airbnb/lottie-web/wiki/TextLayer.updateDocumentData)
 ***
