@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
     <style>
         body, html{
             background-color:#000;
@@ -190,16 +189,15 @@
     //elem.style.display = 'none';
     var animData = {
         container: elem,
-        renderer: 'html',
+        renderer: 'svg',
         loop: false,
-        autoplay: false,
+        autoplay: true,
         rendererSettings: {
             progressiveLoad:false,
         },
-        path: 'exports/render/data.json'
+        path: 'exports/render/pinkbackground.json'
     };
     anim = lottie.loadAnimation(animData);
-    anim.setSubframe(false);
 </script>
 </body>
 </html>

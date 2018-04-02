@@ -5,7 +5,6 @@ var TextSelectorProp = (function(){
 
     function TextSelectorProp(elem,data){
         this._mdf = false;
-        this._currentTextLength = -1;
         this.k = false;
         this.data = data;
         this.dynamicProperties = [];
@@ -32,9 +31,6 @@ var TextSelectorProp = (function(){
     TextSelectorProp.prototype = {
         addDynamicProperty: addDynamicProperty,
         getMult: function(ind) {
-            if(this._currentTextLength !== this.elem.textProperty.currentData.l.length) {
-                this.getValue();
-            }
             //var easer = bez.getEasingCurve(this.ne.v/100,0,1-this.xe.v/100,1);
             var easer = BezierFactory.getBezierEasing(this.ne.v/100,0,1-this.xe.v/100,1).get;
             var mult = 0;
@@ -116,11 +112,11 @@ var TextSelectorProp = (function(){
                     }
                 }
             }
-            this._currentTextLength = this.elem.textProperty.currentData.l.length || 0;
+            var totalChars = this.data.totalChars || this.elem.textProperty.currentData.l.length || 0;
             if(newCharsFlag && this.data.r === 2) {
-                this.e.v = this._currentTextLength;
+                this.e.v = totalChars;
             }
-            var divisor = this.data.r === 2 ? 1 : 100 / this._currentTextLength;
+            var divisor = this.data.r === 2 ? 1 : 100 / totalChars;
             var o = this.o.v/divisor;
             var s = this.s.v/divisor + o;
             var e = (this.e.v/divisor) + o;

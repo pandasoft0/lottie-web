@@ -38,30 +38,25 @@ HybridRenderer.prototype.appendElementInPos = function(element, pos){
     }
     var layer = this.layers[pos];
     if(!layer.ddd || !this.supports3d){
-        if(this.threeDElements) {
-            this.addTo3dContainer(newDOMElement,pos);
-        } else {
-            var i = 0;
-            var nextDOMElement, nextLayer, tmpDOMElement;
-            while(i<pos){
-                if(this.elements[i] && this.elements[i]!== true && this.elements[i].getBaseElement){
-                    nextLayer = this.elements[i];
-                    tmpDOMElement = this.layers[i].ddd ? this.getThreeDContainerByPos(i) : nextLayer.getBaseElement();
-                    nextDOMElement = tmpDOMElement || nextDOMElement;
-                }
-                i += 1;
+        var i = 0;
+        var nextDOMElement, nextLayer, tmpDOMElement;
+        while(i<pos){
+            if(this.elements[i] && this.elements[i]!== true && this.elements[i].getBaseElement){
+                nextLayer = this.elements[i];
+                tmpDOMElement = this.layers[i].ddd ? this.getThreeDContainerByPos(i) : nextLayer.getBaseElement();
+                nextDOMElement = tmpDOMElement || nextDOMElement;
             }
-            if(nextDOMElement){
-                if(!layer.ddd || !this.supports3d){
-                    this.layerElement.insertBefore(newDOMElement, nextDOMElement);
-                }
-            } else {
-                if(!layer.ddd || !this.supports3d){
-                    this.layerElement.appendChild(newDOMElement);
-                }
+            i += 1;
+        }
+        if(nextDOMElement){
+            if(!layer.ddd || !this.supports3d){
+                this.layerElement.insertBefore(newDOMElement, nextDOMElement);
+            }
+        } else {
+            if(!layer.ddd || !this.supports3d){
+                this.layerElement.appendChild(newDOMElement);
             }
         }
-        
     } else {
         this.addTo3dContainer(newDOMElement,pos);
     }
@@ -120,26 +115,22 @@ HybridRenderer.prototype.getThreeDContainerByPos = function(pos){
     }
 };
 
-HybridRenderer.prototype.createThreeDContainer = function(pos, type){
+HybridRenderer.prototype.createThreeDContainer = function(pos){
     var perspectiveElem = createTag('div');
     styleDiv(perspectiveElem);
+    perspectiveElem.style.width = this.globalData.compSize.w+'px';
+    perspectiveElem.style.height = this.globalData.compSize.h+'px';
+    perspectiveElem.style.transformOrigin = perspectiveElem.style.mozTransformOrigin = perspectiveElem.style.webkitTransformOrigin = "50% 50%";
     var container = createTag('div');
     styleDiv(container);
-    if(type === '3d') {
-        perspectiveElem.style.width = this.globalData.compSize.w+'px';
-        perspectiveElem.style.height = this.globalData.compSize.h+'px';
-        perspectiveElem.style.transformOrigin = perspectiveElem.style.mozTransformOrigin = perspectiveElem.style.webkitTransformOrigin = "50% 50%";
-        container.style.transform = container.style.webkitTransform = 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)';
-    }
-    
+    container.style.transform = container.style.webkitTransform = 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)';
     perspectiveElem.appendChild(container);
-    //this.resizerElem.appendChild(perspectiveElem);
+    this.resizerElem.appendChild(perspectiveElem);
     var threeDContainerData = {
         container:container,
         perspectiveElem:perspectiveElem,
         startPos: pos,
-        endPos: pos,
-        type: type
+        endPos: pos
     };
     this.threeDElements.push(threeDContainerData);
     return threeDContainerData;
@@ -148,25 +139,15 @@ HybridRenderer.prototype.createThreeDContainer = function(pos, type){
 HybridRenderer.prototype.build3dContainers = function(){
     var i, len = this.layers.length;
     var lastThreeDContainerData;
-    var currentContainer = '';
     for(i=0;i<len;i+=1){
         if(this.layers[i].ddd && this.layers[i].ty !== 3){
-            if(currentContainer !== '3d'){
-                currentContainer = '3d';
-                lastThreeDContainerData = this.createThreeDContainer(i,'3d');
+            if(!lastThreeDContainerData){
+                lastThreeDContainerData = this.createThreeDContainer(i);
             }
             lastThreeDContainerData.endPos = Math.max(lastThreeDContainerData.endPos,i);
         } else {
-            if(currentContainer !== '2d'){
-                currentContainer = '2d';
-                lastThreeDContainerData = this.createThreeDContainer(i,'2d');
-            }
-            lastThreeDContainerData.endPos = Math.max(lastThreeDContainerData.endPos,i);
+            lastThreeDContainerData = null;
         }
-    }
-    len = this.threeDElements.length;
-    for(i = len - 1; i >= 0; i --) {
-        this.resizerElem.appendChild(this.threeDElements[i].perspectiveElem);
     }
 };
 
