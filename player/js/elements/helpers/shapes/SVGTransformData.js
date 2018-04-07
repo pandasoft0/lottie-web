@@ -1,9 +1,7 @@
-function SVGTransformData(mProps, op, container) {
+function SVGTransformData(mProps, op) {
 	this.transform = {
 		mProps: mProps,
-		op: op,
-		container: container
+		op: op
 	};
 	this.elements = [];
-    this._isAnimated = this.transform.mProps.dynamicProperties.length || this.transform.op.effectsSequence.length;
 }
