@@ -1,10 +1,13 @@
 function TextAnimatorProperty(textData, renderType, elem){
+    this._mdf = false;
     this._isFirstFrame = true;
 	this._hasMaskedPath = false;
 	this._frameId = -1;
+	this.dynamicProperties = [];
 	this._textData = textData;
 	this._renderType = renderType;
     this._elem = elem;
+	this.container = elem;
 	this._animatorsData = createSizedArray(this._textData.a.length);
 	this._pathData = {};
 	this._moreOptions = {
@@ -12,9 +15,10 @@ function TextAnimatorProperty(textData, renderType, elem){
 	};
 	this.renderedLetters = [];
     this.lettersChangedFlag = false;
-    this.initDynamicPropertyContainer(elem);
 
 }
+
+TextAnimatorProperty.prototype.addDynamicProperty = addDynamicProperty;
 
 TextAnimatorProperty.prototype.searchProperties = function(){
     var i, len = this._textData.a.length, animatorProps;
@@ -557,9 +561,13 @@ TextAnimatorProperty.prototype.getValue = function(){
         return;
     }
     this._frameId = this._elem.globalData.frameId;
-    this.iterateDynamicProperties();
+	var i, len = this.dynamicProperties.length;
+    this._mdf = false;
+	for(i = 0; i < len; i += 1) {
+		this.dynamicProperties[i].getValue();
+        this._mdf = this.dynamicProperties[i]._mdf || this._mdf;
+	}
 };
 
 TextAnimatorProperty.prototype.mHelper = new Matrix();
 TextAnimatorProperty.prototype.defaultPropsArray = [];
-extendPrototype([DynamicPropertyContainer], TextAnimatorProperty);

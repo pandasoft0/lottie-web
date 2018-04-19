@@ -29,6 +29,7 @@ function RenderableDOMElement() {}
                 }
                 this.hidden = false;
                 this._isFirstFrame = true;
+                this.maskManager._isFirstFrame = true;
             }
         },
         renderFrame: function() {

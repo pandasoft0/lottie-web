@@ -5,6 +5,7 @@ function MaskElement(data,element,globalData) {
     this.storedData = [];
     this.masksProperties = this.data.masksProperties || [];
     this.maskElement = null;
+    this._isFirstFrame = true;
     var defs = this.globalData.defs;
     var i, len = this.masksProperties ? this.masksProperties.length : 0;
     this.viewData = createSizedArray(len);
@@ -41,8 +42,7 @@ function MaskElement(data,element,globalData) {
             this.viewData[i] = {
                 op: PropertyFactory.getProp(this.element,properties[i].o,0,0.01,this.element),
                 prop: ShapePropertyFactory.getShapeProp(this.element,properties[i],3),
-                elem: path,
-                lastPath: ''
+                elem: path
             };
             defs.appendChild(path);
             continue;
@@ -128,9 +128,6 @@ function MaskElement(data,element,globalData) {
         this.element.maskedElement.setAttribute(maskRef, "url(" + locationHref + "#" + layerId + ")");
         defs.appendChild(this.maskElement);
     }
-    if (this.viewData.length) {
-        this.element.addRenderableComponent(this);
-    }
 
 }
 
@@ -138,22 +135,21 @@ MaskElement.prototype.getMaskProperty = function(pos){
     return this.viewData[pos].prop;
 };
 
-MaskElement.prototype.renderFrame = function (isFirstFrame) {
-    var finalMat = this.element.finalTransform.mat;
+MaskElement.prototype.renderFrame = function (finalMat) {
     var i, len = this.masksProperties.length;
     for (i = 0; i < len; i++) {
-        if(this.viewData[i].prop._mdf || isFirstFrame){
+        if(this.viewData[i].prop._mdf || this._isFirstFrame){
             this.drawPath(this.masksProperties[i],this.viewData[i].prop.v,this.viewData[i]);
         }
-        if(this.viewData[i].op._mdf || isFirstFrame){
+        if(this.viewData[i].op._mdf || this._isFirstFrame){
             this.viewData[i].elem.setAttribute('fill-opacity',this.viewData[i].op.v);
         }
         if(this.masksProperties[i].mode !== 'n'){
-            if(this.viewData[i].invRect && (this.element.finalTransform.mProp._mdf || isFirstFrame)){
+            if(this.viewData[i].invRect && (this.element.finalTransform.mProp._mdf || this._isFirstFrame)){
                 this.viewData[i].invRect.setAttribute('x', -finalMat.props[12]);
                 this.viewData[i].invRect.setAttribute('y', -finalMat.props[13]);
             }
-            if(this.storedData[i].x && (this.storedData[i].x._mdf || isFirstFrame)){
+            if(this.storedData[i].x && (this.storedData[i].x._mdf || this._isFirstFrame)){
                 var feMorph = this.storedData[i].expan;
                 if(this.storedData[i].x.v < 0){
                     if(this.storedData[i].lastOperator !== 'erode'){
@@ -172,6 +168,7 @@ MaskElement.prototype.renderFrame = function (isFirstFrame) {
             }
         }
     }
+    this._isFirstFrame = false;
 };
 
 MaskElement.prototype.getMaskelement = function () {

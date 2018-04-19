@@ -9,7 +9,6 @@ TrimModifier.prototype.initModifierProperties = function(elem, data) {
     this.eValue = 0;
     this.getValue = this.processKeys;
     this.m = data.m;
-    this._isAnimated = !!this.s.effectsSequence.length || !!this.e.effectsSequence.length || !!this.o.effectsSequence.length;
 };
 
 TrimModifier.prototype.addShapeToModifier = function(shapeData){
@@ -91,8 +90,6 @@ TrimModifier.prototype.processShapes = function(_isFirstFrame) {
             s = e;
             e = _s;
         }
-        s = Math.round(s*1000)/1000;
-        e = Math.round(e*1000)/1000;
         this.sValue = s;
         this.eValue = e;
     } else {

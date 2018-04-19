@@ -35,7 +35,7 @@ ITextElement.prototype.createPathShape = function(matrixHelper, shapes) {
     var shapeStr = '';
     for(j=0;j<jLen;j+=1){
         pathNodes = shapes[j].ks.k;
-        shapeStr += buildShapeString(pathNodes, pathNodes.i.length, true, matrixHelper);
+        shapeStr += this.buildShapeString(pathNodes, pathNodes.i.length, true, matrixHelper);
     }
     return shapeStr;
 };
@@ -72,6 +72,8 @@ ITextElement.prototype.applyTextPropertiesToMatrix = function(documentData, matr
 ITextElement.prototype.buildColor = function(colorData) {
     return 'rgb(' + Math.round(colorData[0]*255) + ',' + Math.round(colorData[1]*255) + ',' + Math.round(colorData[2]*255) + ')';
 };
+
+ITextElement.prototype.buildShapeString = IShapeElement.prototype.buildShapeString;
 
 ITextElement.prototype.emptyProp = new LetterProps();
 
