@@ -39,7 +39,7 @@ IShapeElement.prototype = {
     ljEnum: {
         '1': 'miter',
         '2': 'round',
-        '3': 'bevel'
+        '3': 'butt'
     },
     searchProcessedElement: function(elem){
         var elements = this.processedElements;
