@@ -571,6 +571,7 @@ var ExpressionManager = (function(){
             if (!thisLayer) {
                 text = elem.layerInterface.text;
                 thisLayer = elem.layerInterface;
+                console.log(thisLayer)
                 thisComp = elem.comp.compInterface;
                 toWorld = thisLayer.toWorld.bind(thisLayer);
                 fromWorld = thisLayer.fromWorld.bind(thisLayer);

@@ -300,6 +300,6 @@ SVGShapeElement.prototype.renderShape = function() {
 
 SVGShapeElement.prototype.destroy = function(){
     this.destroyBaseElement();
-    this.shapesData = null;
+    this.shapeData = null;
     this.itemsData = null;
 };
