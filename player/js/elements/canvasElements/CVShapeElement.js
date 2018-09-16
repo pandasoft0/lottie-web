@@ -262,10 +262,6 @@ CVShapeElement.prototype.drawLayer = function() {
                 if(currentStyle.da){
                     ctx.setLineDash(currentStyle.da);
                     ctx.lineDashOffset = currentStyle.do;
-                    this.globalData.isDashed = true;
-                }else if(this.globalData.isDashed){
-                    ctx.setLineDash(this.dashResetter);
-                    this.globalData.isDashed = false;
                 }
             }
             nodes = elems[j].trNodes;
@@ -282,6 +278,9 @@ CVShapeElement.prototype.drawLayer = function() {
             }
             if(type === 'st' || type === 'gs'){
                 ctx.stroke();
+                if(currentStyle.da){
+                    ctx.setLineDash(this.dashResetter);
+                }
             }
         }
         if(type !== 'st' && type !== 'gs'){
@@ -320,13 +319,12 @@ CVShapeElement.prototype.renderShape = function(parentTransform,items,data,isMai
 };
 
 CVShapeElement.prototype.renderStyledShape = function(styledShape, shape){
-    if(this._isFirstFrame || shape._mdf || transformSequence._mdf) {
-        var transformSequence = styledShape.transforms;
+    if(this._isFirstFrame || shape._mdf || styledShape.transforms._mdf) {
         var shapeNodes = styledShape.trNodes;
         var paths = shape.paths;
-        var j, jLen = paths._length;
+        var i, len, j, jLen = paths._length;
         shapeNodes.length = 0;
-        var groupTransformMat = transformSequence.finalTransform;
+        var groupTransformMat = styledShape.transforms.finalTransform;
         for (j = 0; j < jLen; j += 1) {
             var pathNodes = paths.shapes[j];
             if(pathNodes && pathNodes.v){
