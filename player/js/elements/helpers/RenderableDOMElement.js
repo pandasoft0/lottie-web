@@ -10,7 +10,7 @@ function RenderableDOMElement() {}
             this.initRenderable();
             this.initRendererElement();
             this.createContainerElements();
-            this.createRenderableComponents();
+            this.addMasks();
             this.createContent();
             this.hide();
         },

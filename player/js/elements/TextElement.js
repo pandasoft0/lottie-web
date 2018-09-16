@@ -12,7 +12,7 @@ ITextElement.prototype.initElement = function(data,globalData,comp){
     this.initRenderable();
     this.initRendererElement();
     this.createContainerElements();
-    this.createRenderableComponents();
+    this.addMasks();
     this.createContent();
     this.hide();
     this.textAnimator.searchProperties(this.dynamicProperties);

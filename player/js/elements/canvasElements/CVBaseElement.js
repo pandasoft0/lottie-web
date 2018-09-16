@@ -17,7 +17,7 @@ CVBaseElement.prototype = {
             globalData.canvasContext.globalCompositeOperation = blendModeValue;
         }
     },
-    createRenderableComponents: function(){
+    addMasks: function(){
         this.maskManager = new CVMaskElement(this.data, this);
     },
     hideElement: function(){
