@@ -43,11 +43,6 @@ var ExpressionValue = (function() {
         expressionValue.speedAtTime = elementProp.getSpeedAtTime;
         expressionValue.velocityAtTime = elementProp.getVelocityAtTime;
         expressionValue.propertyGroup = elementProp.propertyGroup;
-        Object.defineProperty(expressionValue, 'velocity', {
-            get: function(){
-                return elementProp.getVelocityAtTime(elementProp.comp.currentFrame);
-            }
-        });
         return expressionValue;
 	};
 }());
