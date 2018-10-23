@@ -340,6 +340,7 @@ var ExpressionManager = (function(){
         var elemType = elem.data.ty;
         var transform,$bm_transform,content,effect;
         var thisProperty = property;
+        thisProperty.valueAtTime = thisProperty.getValueAtTime;
         elem.comp.frameDuration = 1/elem.comp.globalData.frameRate;
         var inPoint = elem.data.ip/elem.comp.globalData.frameRate;
         var outPoint = elem.data.op/elem.comp.globalData.frameRate;
@@ -574,9 +575,7 @@ var ExpressionManager = (function(){
         var hasParent = !!(elem.hierarchy && elem.hierarchy.length);
         var parent;
         var randSeed = Math.floor(Math.random()*1000000);
-        var globalData = elem.globalData;
         function executeExpression(_value) {
-            // globalData.pushExpression();
             value = _value;
             if (_needsRandom) {
                 seedRandom(randSeed);
@@ -633,7 +632,6 @@ var ExpressionManager = (function(){
             if (scoped_bm_rt.propType === "shape") {
                 scoped_bm_rt = shape_pool.clone(scoped_bm_rt.v);
             }
-            // globalData.popExpression();
             return scoped_bm_rt;
         }
         return executeExpression;
