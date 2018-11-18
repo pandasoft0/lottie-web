@@ -117,9 +117,6 @@ SVGShapeElement.prototype.createGroupElement = function(data) {
     if(data.ln){
         elementData.gr.setAttribute('id',data.ln);
     }
-    if(data.cl){
-        elementData.gr.setAttribute('class',data.cl);
-    }
     return elementData;
 };
 
