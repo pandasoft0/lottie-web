@@ -126,6 +126,14 @@ SVGBaseElement.prototype = {
     },
     renderElement: function() {
         if (this.finalTransform._matMdf) {
+            if (this.data.hasOwnProperty('nm') && this.data.nm) {
+                let name = this.data.nm;
+                this.transformedElement.setAttribute('name', name);
+                this.transformedElement.addEventListener("click", function() {
+                    var event = new CustomEvent("lottieElementClicked", { 'detail': { 'name': name } });
+                    window.dispatchEvent(event);
+                });
+            }
             this.transformedElement.setAttribute('transform', this.finalTransform.mat.to2dCSS());
         }
         if (this.finalTransform._opMdf) {
