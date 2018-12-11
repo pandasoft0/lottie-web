@@ -7303,8 +7303,8 @@ SVGBaseElement.prototype = {
             if (this.data.hasOwnProperty('nm') && this.data.nm) {
                 let name = this.data.nm;
                 this.transformedElement.setAttribute('name', name);
-                this.transformedElement.addEventListener("click", function() {
-                    var event = new CustomEvent("lottieElementClicked", { 'detail': { 'name': name } });
+                this.transformedElement.addEventListener("click", function(evt) {
+                    var event = new CustomEvent("lottieElementClicked", { 'detail': { 'name': name, 'event' : evt } });
                     window.dispatchEvent(event);
                 });
             }
